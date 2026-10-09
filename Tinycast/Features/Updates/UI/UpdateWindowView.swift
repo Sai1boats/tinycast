@@ -67,26 +67,26 @@ struct UpdateWindowView: View {
 
     private var title: String {
         switch updates.stage {
-        case .checking: return "Checking for updates…"
-        case .upToDate: return "\(Bundle.main.appDisplayName) is up to date"
-        case .localBuild: return "\(Bundle.main.appDisplayName) doesn't update itself"
+        case .checking: return String(localized: "Checking for updates…")
+        case .upToDate: return String(localized: "\(Bundle.main.appDisplayName) is up to date")
+        case .localBuild: return String(localized: "\(Bundle.main.appDisplayName) doesn't update itself")
         case .available(let release), .blocked(_, let release), .installing(let release, _):
-            return "\(Bundle.main.appDisplayName) \(release.version) is available"
-        case .readyToRelaunch: return "Update installed"
-        case .failed: return "Update failed"
+            return String(localized: "\(Bundle.main.appDisplayName) \(release.version) is available")
+        case .readyToRelaunch: return String(localized: "Update installed")
+        case .failed: return String(localized: "Update failed")
         }
     }
 
     private var subtitle: String {
         switch updates.stage {
         case .checking, .upToDate, .failed:
-            return "Version \(updates.runningVersion)"
+            return String(localized: "Version \(updates.runningVersion)")
         case .localBuild:
-            return "This is a local build — rebuild it to move it forward."
+            return String(localized: "This is a local build — rebuild it to move it forward.")
         case .available, .blocked, .installing:
-            return "You have \(updates.runningVersion)."
+            return String(localized: "You have \(updates.runningVersion).")
         case .readyToRelaunch:
-            return "Relaunch to start using it."
+            return String(localized: "Relaunch to start using it.")
         }
     }
 
@@ -116,7 +116,7 @@ struct UpdateWindowView: View {
 
     private func report(_ failure: UpdateFailure) -> some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-            Text(failure.errorDescription ?? "Something went wrong.")
+            Text(failure.errorDescription ?? String(localized: "Something went wrong."))
                 .font(.callout)
             if let recovery = failure.recoverySuggestion {
                 Text(recovery)
@@ -161,31 +161,31 @@ struct UpdateWindowView: View {
             switch updates.stage {
             case .checking:
                 ProgressView().controlSize(.small)
-                Button("Cancel") { updates.dismiss() }
+                Button(String(localized: "Cancel")) { updates.dismiss() }
                     .keyboardShortcut(.cancelAction)
             case .upToDate, .localBuild:
-                Button("OK") { updates.dismiss() }
+                Button(String(localized: "OK")) { updates.dismiss() }
                     .keyboardShortcut(.defaultAction)
             case .available:
-                Button("Later") { updates.skip() }
+                Button(String(localized: "Later")) { updates.skip() }
                     .keyboardShortcut(.cancelAction)
-                Button("Update Now") { updates.install() }
+                Button(String(localized: "Update Now")) { updates.install() }
                     .keyboardShortcut(.defaultAction)
             case .blocked:
-                Button("Later") { updates.skip() }
+                Button(String(localized: "Later")) { updates.skip() }
                     .keyboardShortcut(.cancelAction)
-                Button("Try Again") { updates.retry() }
+                Button(String(localized: "Try Again")) { updates.retry() }
                     .keyboardShortcut(.defaultAction)
             case .installing:
-                Button("Cancel") { updates.cancelInstall() }
+                Button(String(localized: "Cancel")) { updates.cancelInstall() }
                     .keyboardShortcut(.cancelAction)
             case .readyToRelaunch:
-                Button("Later") { updates.dismiss() }
+                Button(String(localized: "Later")) { updates.dismiss() }
                     .keyboardShortcut(.cancelAction)
-                Button("Relaunch") { updates.relaunch() }
+                Button(String(localized: "Relaunch")) { updates.relaunch() }
                     .keyboardShortcut(.defaultAction)
             case .failed:
-                Button("Close") { updates.dismiss() }
+                Button(String(localized: "Close")) { updates.dismiss() }
                     .keyboardShortcut(.defaultAction)
             }
         }

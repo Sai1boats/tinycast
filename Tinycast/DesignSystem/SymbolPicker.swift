@@ -24,7 +24,7 @@ struct SymbolPicker: View {
             } label: {
                 HStack(spacing: Theme.Spacing.sm) {
                     SymbolImage(name: fallback, size: 14)
-                    Text("Automatic")
+                    Text(String(localized: "Automatic"))
                     Spacer(minLength: 0)
                 }
                 .contentShape(Rectangle())

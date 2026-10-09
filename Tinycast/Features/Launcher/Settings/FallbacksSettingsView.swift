@@ -13,7 +13,7 @@ struct FallbacksSettingsView: View {
             Section {
                 let fallbacks = fallbacks
                 if fallbacks.isEmpty {
-                    Text("Nothing to offer — their features are off.")
+                    Text(String(localized: "Nothing to offer — their features are off."))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)
                 } else {
@@ -24,7 +24,7 @@ struct FallbacksSettingsView: View {
             } header: {
                 SettingsSectionHeader(.fallbacksFallbacks)
             } footer: {
-                Text("Shown below every search as “Use … with”. Includes quicklinks with an {argument}.")
+                Text(String(localized: "Shown below every search as “Use … with”. Includes quicklinks with an {argument}."))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -46,7 +46,7 @@ private struct FallbackRow: View {
 
     var body: some View {
         if let entry = core.fallbackCoordinator.entry(for: fallback) {
-            SettingsRow(title: entry.name, subtitle: entry.kindLabel) {
+            SettingsRow(title: entry.localizedName, subtitle: entry.kindLabel) {
                 AppIconView(app: entry)
                     .frame(width: SettingsListMetrics.iconSize, height: SettingsListMetrics.iconSize)
             } trailing: {
@@ -56,18 +56,18 @@ private struct FallbackRow: View {
                     Image(systemName: "chevron.up")
                 }
                 .disabled(index == 0)
-                .accessibilityLabel("Move \(entry.name) up")
+                .accessibilityLabel(String(localized: "Move \(entry.name) up"))
                 Button {
                     move(by: 1)
                 } label: {
                     Image(systemName: "chevron.down")
                 }
                 .disabled(index == order.count - 1)
-                .accessibilityLabel("Move \(entry.name) down")
+                .accessibilityLabel(String(localized: "Move \(entry.name) down"))
                 Toggle("", isOn: enabledBinding)
                     .labelsHidden()
                     .toggleStyle(.checkbox)
-                    .accessibilityLabel("Offer \(entry.name) as a fallback")
+                    .accessibilityLabel(String(localized: "Offer \(entry.name) as a fallback"))
             }
         }
     }

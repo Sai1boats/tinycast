@@ -8,7 +8,7 @@ struct SectionHeader: View {
     var isFirst = false
     /// A gear beside the label, for a section whose membership the reader chooses.
     var configure: (() -> Void)?
-    var configureHelp = "Configure…"
+    var configureHelp = String(localized: "Configure…")
 
     var body: some View {
         HStack(spacing: metrics.spacing.sm) {

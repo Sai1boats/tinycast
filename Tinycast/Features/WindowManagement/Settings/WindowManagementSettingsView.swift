@@ -14,7 +14,7 @@ struct WindowManagementSettingsView: View {
             FeatureSwitchSection(
                 anchor: .windowManagementWindowManagement,
                 enableTitle: "Enable window management",
-                enableSubtitle: "Moves the last window you used. Needs Accessibility.",
+                enableSubtitle: String(localized: "Moves the last window you used. Needs Accessibility."),
                 isEnabled: $settings.windowManagementEnabled,
                 showsInLauncher: $settings.windowManagementShowInLauncher,
                 showsIcon: true,
@@ -50,9 +50,9 @@ struct WindowManagementSettingsView: View {
         }
         .alert(item: $pendingDeletion) { layout in
             Alert(
-                title: Text("Delete \u{201C}\(layout.name)\u{201D}?"),
-                message: Text("Its global shortcut and launcher references go with it."),
-                primaryButton: .destructive(Text("Delete")) {
+                title: Text(String(localized: "Delete \u{201C}\(layout.name)\u{201D}?")),
+                message: Text(String(localized: "Its global shortcut and launcher references go with it.")),
+                primaryButton: .destructive(Text(String(localized: "Delete"))) {
                     core.windowLayoutCoordinator.deleteWindowLayout(id: layout.id)
                 },
                 secondaryButton: .cancel())
@@ -64,7 +64,7 @@ struct WindowManagementSettingsView: View {
         return Section {
             Picker(selection: $settings.windowCycle) {
                 ForEach(WindowCycle.allCases) { cycle in
-                    Text(cycle.title).tag(cycle)
+                    Text(LocalizedStringKey(cycle.title)).tag(cycle)
                 }
             } label: {
                 SettingsRowTitle(.windowManagementOptions, "Cycling")
@@ -73,31 +73,31 @@ struct WindowManagementSettingsView: View {
 
             LabeledContent {
                 HStack(spacing: Theme.Spacing.sm) {
-                    Text("\(settings.windowGap) pt")
+                    Text(String(localized: "\(settings.windowGap) pt"))
                         .monospacedDigit()
                         .foregroundStyle(.secondary)
                     Stepper(
-                        "Gap between windows", value: $settings.windowGap,
+                        String(localized: "Gap between windows"), value: $settings.windowGap,
                         in: WindowPlacementEngine.gapRange, step: 2
                     )
                     .labelsHidden()
                 }
             } label: {
                 SettingsRowTitle(.windowManagementOptions, "Gap between windows")
-                Text("Between tiled windows and screen edges.")
+                Text(String(localized: "Between tiled windows and screen edges."))
             }
 
             LabeledContent {
                 HStack(spacing: Theme.Spacing.sm) {
-                    Picker("Shortcut preset", selection: $chosenPreset) {
-                        Text("Choose…").tag(WindowShortcutPreset?.none)
+                    Picker(String(localized: "Shortcut preset"), selection: $chosenPreset) {
+                        Text(String(localized: "Choose…")).tag(WindowShortcutPreset?.none)
                         ForEach(WindowShortcutPreset.allCases) { preset in
-                            Text(preset.title).tag(Optional(preset))
+                            Text(LocalizedStringKey(preset.title)).tag(Optional(preset))
                         }
                     }
                     .labelsHidden()
                     .fixedSize()
-                    Button("Apply") {
+                    Button(String(localized: "Apply")) {
                         guard let chosenPreset else { return }
                         Task { await core.windowShortcutPresetCoordinator.apply(chosenPreset) }
                     }
@@ -108,7 +108,7 @@ struct WindowManagementSettingsView: View {
                 }
             } label: {
                 SettingsRowTitle(.windowManagementOptions, "Shortcut preset")
-                Text("Fills in another app's shortcuts. Others stay as they are.")
+                Text(String(localized: "Fills in another app's shortcuts. Others stay as they are."))
             }
         } header: {
             SettingsSectionHeader(.windowManagementOptions)
@@ -124,7 +124,7 @@ struct WindowManagementSettingsView: View {
                         command: command, showsInLauncher: settings.windowManagementShowInLauncher)
                 }
             } header: {
-                Text(section.group.title)
+                Text(LocalizedStringKey(section.group.title))
             }
         }
     }
@@ -139,7 +139,7 @@ private struct WindowCommandSettingsRow: View {
     var body: some View {
         let entry = AppEntry(command)
         let isVisible = visibility.isItemVisible(entry)
-        SettingsRow(title: command.name) {
+        SettingsRow(title: NSLocalizedString(command.name, comment: "Window command")) {
             Image(systemName: command.sfSymbol)
         } trailing: {
             // The ranker never sees a hidden entry, so typing here would match nothing.
@@ -154,7 +154,7 @@ private struct WindowCommandSettingsRow: View {
             .labelsHidden()
             .toggleStyle(.checkbox)
             .launcherVisibilityHelp()
-            .accessibilityLabel("Show \(command.name) in launcher")
+            .accessibilityLabel(String(localized: "Show \(command.name) in launcher"))
         }
     }
 }

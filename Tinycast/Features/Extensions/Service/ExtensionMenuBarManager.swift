@@ -265,7 +265,7 @@ final class ExtensionMenuBarManager: ExtensionRuntimeDelegate {
             }
         }
         controller.onActionUnavailable = { [weak self] in
-            self?.onError("This menu item changed. Open the menu and try again.", owner, false)
+            self?.onError(String(localized: "This menu item changed. Open the menu and try again."), owner, false)
         }
         controllers[reference.entryID] = controller
         return controller
@@ -282,7 +282,7 @@ final class ExtensionMenuBarManager: ExtensionRuntimeDelegate {
             {
                 return
             }
-            self.runtime(session.runtime, session: session.id, didFail: "The menu bar command timed out.")
+            self.runtime(session.runtime, session: session.id, didFail: String(localized: "The menu bar command timed out."))
         }
     }
 

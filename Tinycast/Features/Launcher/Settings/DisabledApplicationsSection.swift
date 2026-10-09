@@ -14,7 +14,7 @@ struct DisabledApplicationsList: View {
             }
         }
 
-        Button("Add Application…") { picking = true }
+        Button(String(localized: "Add Application…")) { picking = true }
             .popover(isPresented: $picking, arrowEdge: .bottom) {
                 AppPickerPopover(excluded: Set(bundleIDs)) { bundleID in
                     if let bundleID { bundleIDs.append(bundleID) }
@@ -58,7 +58,7 @@ private struct DisabledAppRow: View {
                     .foregroundStyle(.tertiary)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Stop excluding \(name)")
+            .accessibilityLabel(String(localized: "Stop excluding \(name)"))
         } label: {
             Label {
                 Text(name).lineLimit(1)

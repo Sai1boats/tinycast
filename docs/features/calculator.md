@@ -588,6 +588,10 @@ served rather than discarded — but it counts as no age at all, so the store re
 instead of trusting a `fetchedAt` that says the table is hours fresh. `CurrencyFeed.pricesCoins` is
 that test, and it is sound only because a partial snapshot is never persisted.
 
+The native Currency Converter shares this same store and offers an explicit refresh. Manual and
+scheduled refreshes coalesce into one store-owned task; closing the converter does not cancel a
+refresh the calculator also uses. App termination cancels both the refresh and the scheduling loop.
+
 The table is cached at `~/Library/Caches/<bundle-id>/currency-rates.json` and refreshed every 24h.
 The feed republishes about once a day, so a tighter interval would cost requests without returning
 newer numbers. Age is measured from the persisted `fetchedAt`, not from launch, so relaunching

@@ -30,18 +30,20 @@ struct SettingsSearchEntry: Identifiable, Hashable, Sendable {
     init(pane: SettingsTab, keywords: [String] = []) {
         self.tab = pane
         self.target = nil
-        self.title = pane.title
+        self.title = pane.sourceTitle
         self.keywords = keywords
     }
 
+    var localizedTitle: String { NSLocalizedString(title, comment: "Settings search result") }
+
     var anchor: SettingsAnchor? { target?.anchor }
 
-    var id: String { "\(tab.title)/\(anchor?.title ?? "")/\(title)" }
+    var id: String { "\(tab.sourceTitle)/\(anchor?.title ?? "")/\(title)" }
 
     /// The result row's second line — "General", or "General › Hyper Key".
     var breadcrumb: String {
-        guard let anchor, anchor.title != tab.title else { return tab.title }
-        return "\(tab.title) › \(anchor.title)"
+        guard let anchor, anchor.title != tab.sourceTitle else { return tab.title }
+        return "\(tab.title) › \(NSLocalizedString(anchor.title, comment: "Settings section"))"
     }
 }
 
@@ -81,7 +83,8 @@ enum SettingsSearchCatalog {
         var titleScore = 0
         var titleMatches = 0
         for term in query.terms {
-            if let match = FuzzyMatch.match(term, candidate: entry.title) {
+            if let match = FuzzyMatch.match(term, candidate: entry.localizedTitle)
+                ?? FuzzyMatch.match(term, candidate: entry.title) {
                 titleMatches += 1
                 titleScore += match.score
                 continue
@@ -114,6 +117,7 @@ enum SettingsSearchCatalog {
         + backup + about
 
     private static let general: [SettingsSearchEntry] = [
+        .init(.generalGeneral, "Language", keywords: ["中文", "English", "语言", "language"]),
         .init(pane: .general, keywords: ["preferences", "settings"]),
         .init(
             .generalGlobalShortcuts, "App Launcher",

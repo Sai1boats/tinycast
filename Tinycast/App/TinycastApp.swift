@@ -64,15 +64,15 @@ struct TinycastApp: App {
     @CommandsBuilder
     private var menuBarCommands: some Commands {
         CommandGroup(replacing: .appInfo) {
-            Button("About \(appName)") { AppCore.shared.settingsCoordinator.showAbout() }
-            Button("Check for Updates…") { AppCore.shared.updateCoordinator.checkForUpdates() }
+            Button(String(localized: "About \(appName)")) { AppCore.shared.settingsCoordinator.showAbout() }
+            Button(String(localized: "Check for Updates…")) { AppCore.shared.updateCoordinator.checkForUpdates() }
         }
         CommandGroup(replacing: .appSettings) {
-            Button("Settings…") { AppCore.shared.settingsCoordinator.showSettings() }
+            Button(String(localized: "Settings…")) { AppCore.shared.settingsCoordinator.showSettings() }
                 .keyboardShortcut(",")
         }
         CommandGroup(replacing: .appTermination) {
-            Button("Close Window") {
+            Button(String(localized: "Close Window")) {
                 // The chat window closes itself when it is in front; otherwise ⌘Q is Settings'.
                 guard !AppCore.shared.aiChatCoordinator.closeWindowIfKey() else { return }
                 AppCore.shared.settingsCoordinator.closeSettings()

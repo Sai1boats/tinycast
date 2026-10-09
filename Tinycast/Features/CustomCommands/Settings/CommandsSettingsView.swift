@@ -16,20 +16,20 @@ struct CommandsSettingsView: View {
             LauncherItemsSection(
                 kind: .command,
                 anchor: .commandsCommands,
-                searchPrompt: "Search commands…")
+                searchPrompt: String(localized: "Search commands…"))
 
             FeatureSwitchSection(
                 anchor: .commandsCustomCommands,
                 enableTitle: "Enable custom commands",
                 enableSubtitle:
-                    "Run as you in /bin/zsh, or the interpreter a #! line names. "
-                    + "Use full executable paths.",
+                    String(localized: "Run as you in /bin/zsh, or the interpreter a #! line names. ")
+                    + String(localized: "Use full executable paths."),
                 isEnabled: $settings.customCommandsEnabled,
                 showsInLauncher: $settings.customCommandsShowInLauncher)
 
             Section {
                 if store.commands.isEmpty {
-                    Text("No custom commands yet.")
+                    Text(String(localized: "No custom commands yet."))
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(sortedCommands) { command in
@@ -57,7 +57,7 @@ struct CommandsSettingsView: View {
                     SettingsRowTitle(.commandsCustomCommands, "Import Raycast Scripts")
                 }
             } footer: {
-                Text("Import reads a folder of Raycast script commands.")
+                Text(String(localized: "Import reads a folder of Raycast script commands."))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -71,9 +71,9 @@ struct CommandsSettingsView: View {
         }
         .alert(item: $pendingDeletion) { command in
             Alert(
-                title: Text("Delete “\(command.name)”?"),
-                message: Text("Its global shortcut and launcher references will also be removed."),
-                primaryButton: .destructive(Text("Delete")) {
+                title: Text(String(localized: "Delete “\(command.name)”?")),
+                message: Text(String(localized: "Its global shortcut and launcher references will also be removed.")),
+                primaryButton: .destructive(Text(String(localized: "Delete"))) {
                     core.customCommandCoordinator.deleteCustomCommand(id: command.id)
                 },
                 secondaryButton: .cancel())
@@ -106,7 +106,7 @@ private struct CustomCommandSettingsRow: View {
             if !command.showsInRootSearch {
                 Image(systemName: "eye.slash")
                     .foregroundStyle(.secondary)
-                    .help("Hidden from root search")
+                    .help(String(localized: "Hidden from root search"))
             }
 
             // An alias only reaches the ranker through the launcher slice, so it dims with it.
@@ -121,22 +121,22 @@ private struct CustomCommandSettingsRow: View {
                 Image(systemName: "pencil")
             }
             .buttonStyle(.plain)
-            .help("Edit Command")
-            .accessibilityLabel("Edit \(command.name)")
+            .help(String(localized: "Edit Command"))
+            .accessibilityLabel(String(localized: "Edit \(command.name)"))
 
             Button(action: onDelete) {
                 Image(systemName: "trash")
                     .foregroundStyle(.red)
             }
             .buttonStyle(.plain)
-            .help("Delete Command")
-            .accessibilityLabel("Delete \(command.name)")
+            .help(String(localized: "Delete Command"))
+            .accessibilityLabel(String(localized: "Delete \(command.name)"))
 
             Toggle("", isOn: $isEnabled)
                 .labelsHidden()
                 .toggleStyle(.checkbox)
-                .help("Enabled")
-                .accessibilityLabel("Enable \(command.name)")
+                .help(String(localized: "Enabled"))
+                .accessibilityLabel(String(localized: "Enable \(command.name)"))
         }
     }
 }

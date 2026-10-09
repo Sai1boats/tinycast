@@ -36,18 +36,22 @@ struct QuicklinkEditorPanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
-            SettingsEditorHeader(title: quicklink == nil ? "Add Quicklink" : "Edit Quicklink")
+            SettingsEditorHeader(title: quicklink == nil ? String(
+                localized: "Add Quicklink"
+            ) : String(
+                localized: "Edit Quicklink"
+            ))
 
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("Name")
+                Text(String(localized: "Name"))
                     .font(.callout.weight(.medium))
-                TextField("Search GitHub", text: $name)
+                TextField(String(localized: "Search GitHub"), text: $name)
                     .settingsEditorTextField()
             }
 
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 HStack {
-                    Text("Link")
+                    Text(String(localized: "Link"))
                         .font(.callout.weight(.medium))
                     Spacer()
                     insertMenu
@@ -65,11 +69,11 @@ struct QuicklinkEditorPanel: View {
 
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 optionToggle(
-                    "Show in root search", isOn: $showsInRootSearch,
-                    detail: "List this quicklink alongside apps and commands.")
+                    String(localized: "Show in root search"), isOn: $showsInRootSearch,
+                    detail: String(localized: "List this quicklink alongside apps and commands."))
                 optionToggle(
-                    "Pin to top", isOn: $isPinned,
-                    detail: "Keep it above the other quicklinks.")
+                    String(localized: "Pin to top"), isOn: $isPinned,
+                    detail: String(localized: "Keep it above the other quicklinks."))
             }
 
             if let errorMessage {
@@ -79,10 +83,10 @@ struct QuicklinkEditorPanel: View {
             }
 
             HStack(spacing: Theme.Spacing.md) {
-                Button("Cancel") { dismiss() }
+                Button(String(localized: "Cancel")) { dismiss() }
                     .buttonStyle(.modalAction(.cancel))
                     .keyboardShortcut(.cancelAction)
-                Button("Save", action: save)
+                Button(String(localized: "Save"), action: save)
                     .buttonStyle(.modalAction(.primary))
                     .keyboardShortcut(.defaultAction)
                     .disabled(trimmed(name).isEmpty || trimmed(link).isEmpty)
@@ -102,7 +106,7 @@ struct QuicklinkEditorPanel: View {
         if value.isEmpty {
             EmptyView()
         } else if QuicklinkDestination.containsPlaceholder(value) {
-            Text("Resolved when you open it — placeholders are filled in first.")
+            Text(String(localized: "Resolved when you open it — placeholders are filled in first."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else if let destination = QuicklinkDestination.detect(value) {
@@ -112,7 +116,7 @@ struct QuicklinkEditorPanel: View {
                 .lineLimit(1)
                 .truncationMode(.middle)
         } else {
-            Text("This doesn't look like a URL, file path, or deeplink.")
+            Text(String(localized: "This doesn't look like a URL, file path, or deeplink."))
                 .font(.caption)
                 .foregroundStyle(.orange)
         }
@@ -120,17 +124,17 @@ struct QuicklinkEditorPanel: View {
 
     /// Only tokens meaningful in a destination; `{cursor}` and `{snippet:…}` stay literal.
     private var insertMenu: some View {
-        Menu("Insert…") {
-            Button("Argument") { insert("{argument}") }
-            Button("Named Argument") { insert("{argument name=\"Query\"}") }
+        Menu(String(localized: "Insert…")) {
+            Button(String(localized: "Argument")) { insert("{argument}") }
+            Button(String(localized: "Named Argument")) { insert("{argument name=\"Query\"}") }
             Divider()
-            Button("Clipboard") { insert("{clipboard}") }
-            Button("Selected Text") { insert("{selection}") }
+            Button(String(localized: "Clipboard")) { insert("{clipboard}") }
+            Button(String(localized: "Selected Text")) { insert("{selection}") }
             Divider()
-            Button("Date") { insert("{date}") }
-            Button("Time") { insert("{time}") }
-            Button("Date & Time") { insert("{datetime}") }
-            Button("Custom Date Format") { insert("{date format=\"yyyy-MM-dd\"}") }
+            Button(String(localized: "Date")) { insert("{date}") }
+            Button(String(localized: "Time")) { insert("{time}") }
+            Button(String(localized: "Date & Time")) { insert("{datetime}") }
+            Button(String(localized: "Custom Date Format")) { insert("{date format=\"yyyy-MM-dd\"}") }
             Divider()
             Button("UUID") { insert("{uuid}") }
         }
@@ -148,14 +152,14 @@ struct QuicklinkEditorPanel: View {
 
     private var iconField: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            Text("Icon")
+            Text(String(localized: "Icon"))
                 .font(.callout.weight(.medium))
             Button {
                 showingIconPicker = true
             } label: {
                 HStack(spacing: Theme.Spacing.sm) {
                     SymbolImage(name: resolvedSymbol, size: 14)
-                    Text(iconSymbol == nil ? "Automatic" : "Custom")
+                    Text(iconSymbol == nil ? String(localized: "Automatic") : String(localized: "Custom"))
                         .lineLimit(1)
                     Spacer(minLength: 0)
                 }
@@ -173,7 +177,7 @@ struct QuicklinkEditorPanel: View {
 
     private var openWithField: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            Text("Open With")
+            Text(String(localized: "Open With"))
                 .font(.callout.weight(.medium))
             Button {
                 showingAppPicker = true
@@ -184,14 +188,14 @@ struct QuicklinkEditorPanel: View {
                         Image(nsImage: app.icon).resizable().frame(width: 16, height: 16)
                         Text(app.name).lineLimit(1)
                     } else {
-                        Text("Default app")
+                        Text(String(localized: "Default app"))
                     }
                     Spacer(minLength: 0)
                 }
                 .frame(width: 180)
             }
             .popover(isPresented: $showingAppPicker, arrowEdge: .bottom) {
-                AppPickerPopover(clearTitle: "Default app") { bundleID in
+                AppPickerPopover(clearTitle: String(localized: "Default app")) { bundleID in
                     openWithBundleID = bundleID
                     showingAppPicker = false
                 }
@@ -248,7 +252,7 @@ struct QuicklinkEditorPanel: View {
             }
             dismiss()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = NSLocalizedString(error.localizedDescription, comment: "Validation error")
         }
     }
 }

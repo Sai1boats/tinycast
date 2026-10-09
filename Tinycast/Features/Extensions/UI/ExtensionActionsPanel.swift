@@ -77,7 +77,7 @@ struct ExtensionActionsPanel: View {
                 .frame(height: hairline)
                 .accessibilityHidden(true)
             ExtensionMenuSearchField(
-                placeholder: "Search for actions…", height: panel.rowHeight,
+                placeholder: String(localized: "Search for actions…"), height: panel.rowHeight,
                 verticalOffset: -metrics.spacing.xxs / 2)
         }
         // The panel holds focus while open, so the screen's own shortcut keys never see these.
@@ -98,7 +98,7 @@ struct ExtensionActionsPanel: View {
         if items.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
                 headerLabel
-                Text("No Results")
+                Text(String(localized: "No Results"))
                     .font(metrics.typography.menuRow)
                     .foregroundStyle(Theme.Colors.textTertiary)
                     .frame(maxWidth: .infinity)

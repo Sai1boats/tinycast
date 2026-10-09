@@ -176,6 +176,16 @@ final class LauncherCoordinator {
             core.quickActionCoordinator.run(.rewrite)
         case .translate:
             core.quickActionCoordinator.run(.translate)
+        case .jsonTools:
+            core.utilityCoordinator.show(.json)
+        case .timestampConverter:
+            core.utilityCoordinator.show(.timestamp)
+        case .currencyConverter:
+            core.utilityCoordinator.show(.currency)
+        case .quickTranslate:
+            core.translationCoordinator.show(selection: false)
+        case .translateSelection:
+            core.translationCoordinator.show(selection: true)
         case .summarize:
             core.quickActionCoordinator.run(.summarize)
         case .calculatorHistory:

@@ -70,8 +70,8 @@ struct WindowLayoutEditorPanel: View {
     }
 
     private var title: String {
-        if request.isCapture { return "Capture Window Layout" }
-        return request.layout == nil ? "New Window Layout" : "Edit Window Layout"
+        if request.isCapture { return String(localized: "Capture Window Layout") }
+        return request.layout == nil ? String(localized: "New Window Layout") : String(localized: "Edit Window Layout")
     }
 
     private var previewGap: CGFloat {
@@ -88,12 +88,12 @@ struct WindowLayoutEditorPanel: View {
                     .lineLimit(2)
             }
             Spacer(minLength: 0)
-            Button("Cancel") { dismiss() }
+            Button(String(localized: "Cancel")) { dismiss() }
                 .buttonStyle(.modalAction(.cancel, fillsWidth: false))
                 .keyboardShortcut(.cancelAction)
             Button(action: save) {
                 HStack(spacing: Theme.Spacing.sm) {
-                    Text("Save")
+                    Text(String(localized: "Save"))
                     HStack(spacing: Theme.Spacing.xxs) {
                         KeyCapChip(text: "⌘", scale: .compact)
                         KeyCapChip(text: "↵", scale: .compact)
@@ -120,7 +120,7 @@ struct WindowLayoutEditorPanel: View {
             }
             dismiss()
         } catch {
-            errorMessage = error.errorDescription
+            errorMessage = error.errorDescription.map { NSLocalizedString($0, comment: "Validation error") }
         }
     }
 }

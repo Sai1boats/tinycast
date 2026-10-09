@@ -26,8 +26,8 @@ struct GeneralSettingsView: View {
 
     /// The missing-permission half is its own row, so it can carry the button that fixes it.
     private var hyperSubtitle: String {
-        guard settings.hyperKey != .none else { return "Remap one key to \(hyperGlyphs) held together." }
-        return "\(settings.hyperKey.title) sends \(hyperGlyphs), shown as ✦ in shortcuts."
+        guard settings.hyperKey != .none else { return String(localized: "Remap one key to \(hyperGlyphs) held together.") }
+        return String(localized: "\(settings.hyperKey.title) sends \(hyperGlyphs), shown as ✦ in shortcuts.")
     }
 
     var body: some View {
@@ -42,43 +42,51 @@ struct GeneralSettingsView: View {
             }
 
             Section {
+                Picker(selection: $settings.language) {
+                    ForEach(AppLanguage.allCases) { language in
+                        Text(language.title).tag(language)
+                    }
+                } label: {
+                    SettingsRowTitle(.generalGeneral, "Language")
+                    Text(String(localized: "Restart Tinycast to apply the new language."))
+                }
                 Toggle(isOn: $settings.launchAtLogin) {
                     SettingsRowTitle(.generalGeneral, "Launch at login")
                 }
                 Toggle(isOn: $settings.showInMenuBar) {
                     SettingsRowTitle(.generalGeneral, "Show in menu bar")
-                    Text("Shortcuts still work when hidden.")
+                    Text(String(localized: "Shortcuts still work when hidden."))
                 }
                 Toggle(isOn: $settings.automaticallyCheckForUpdates) {
                     SettingsRowTitle(.generalGeneral, "Automatically check for updates")
-                    Text("Check for Updates remains available when off.")
+                    Text(String(localized: "Check for Updates remains available when off."))
                 }
                 Picker(selection: $settings.popToRootTimeout) {
                     ForEach(PopToRootTimeout.allCases) { timeout in
-                        Text(timeout.title).tag(timeout)
+                        Text(LocalizedStringKey(timeout.title)).tag(timeout)
                     }
                 } label: {
                     SettingsRowTitle(.generalGeneral, "Pop to Root Search")
-                    Text("After the launcher closes.")
+                    Text(String(localized: "After the launcher closes."))
                 }
                 Picker(selection: $settings.escapeKeyBehavior) {
                     ForEach(EscapeKeyBehavior.allCases) { behavior in
-                        Text(behavior.title).tag(behavior)
+                        Text(LocalizedStringKey(behavior.title)).tag(behavior)
                     }
                 } label: {
                     SettingsRowTitle(.generalGeneral, "Escape Key Behavior")
-                    Text("When the search field is empty.")
+                    Text(String(localized: "When the search field is empty."))
                 }
                 // Empty only when TIS fails; one layout still lists, so the row stays put.
                 if !inputSources.isEmpty {
                     Picker(selection: $settings.autoSwitchInputSourceID) {
-                        Text("None").tag(nil as String?)
+                        Text(String(localized: "None")).tag(nil as String?)
                         ForEach(inputSources) { source in
                             Text(source.title).tag(Optional(source.id))
                         }
                     } label: {
                         SettingsRowTitle(.generalGeneral, "Auto-switch input source")
-                        Text("While the launcher is open.")
+                        Text(String(localized: "While the launcher is open."))
                     }
                 }
             } header: {
@@ -88,7 +96,7 @@ struct GeneralSettingsView: View {
             Section {
                 Picker(selection: $settings.appearance) {
                     ForEach(AppAppearance.allCases) { appearance in
-                        Text(appearance.title).tag(appearance)
+                        Text(LocalizedStringKey(appearance.title)).tag(appearance)
                     }
                 } label: {
                     SettingsRowTitle(.generalAppearance, "Theme")
@@ -97,7 +105,7 @@ struct GeneralSettingsView: View {
                 WindowModeRow()
                 Toggle(isOn: $settings.showFavoritesInCompactMode) {
                     SettingsRowTitle(.generalAppearance, "Show favorites in compact mode")
-                    Text("Launch them with ⌘1–⌘5.")
+                    Text(String(localized: "Launch them with ⌘1–⌘5."))
                 }
                 .settingsEnabled(settings.compactMode)
                 Toggle(isOn: $settings.openOnCursorScreen) {
@@ -105,7 +113,7 @@ struct GeneralSettingsView: View {
                 }
                 Toggle(isOn: $settings.paletteDraggable) {
                     SettingsRowTitle(.generalAppearance, "Drag to reposition")
-                    Text("Drag the strip above the search field.")
+                    Text(String(localized: "Drag the strip above the search field."))
                 }
             } header: {
                 SettingsSectionHeader(.generalAppearance)
@@ -114,7 +122,7 @@ struct GeneralSettingsView: View {
             Section {
                 Picker(selection: hyperKeySelection) {
                     ForEach(HyperKeyPhysicalKey.allCases) { key in
-                        Text(key.title).tag(key)
+                        Text(LocalizedStringKey(key.title)).tag(key)
                     }
                 } label: {
                     SettingsRowTitle(.generalHyperKey, "Hyper Key")
@@ -126,23 +134,23 @@ struct GeneralSettingsView: View {
                         Image(systemName: "exclamationmark.triangle")
                             .foregroundStyle(.orange)
                             .frame(width: Theme.Size.settingsRowIcon)
-                        Text("Remapping needs Accessibility access.")
+                        Text(String(localized: "Remapping needs Accessibility access."))
                             .foregroundStyle(.orange)
                         Spacer(minLength: Theme.Spacing.lg)
-                        Button("Grant Access…") { Permissions.openAccessibilitySettings() }
+                        Button(String(localized: "Grant Access…")) { Permissions.openAccessibilitySettings() }
                     }
                 }
 
                 if settings.hyperKey.hasOriginalFunction {
                     Picker(selection: $settings.hyperKeyQuickPress) {
-                        Text("Does Nothing").tag(HyperKeyQuickPress.none)
+                        Text(String(localized: "Does Nothing")).tag(HyperKeyQuickPress.none)
                         if let original = settings.hyperKey.quickPressOriginalTitle {
                             Text(original).tag(HyperKeyQuickPress.originalKey)
                         }
-                        Text("Trigger Escape").tag(HyperKeyQuickPress.escape)
+                        Text(String(localized: "Trigger Escape")).tag(HyperKeyQuickPress.escape)
                     } label: {
                         SettingsRowTitle(.generalHyperKey, "Quick Press")
-                        Text("When \(settings.hyperKey.title) is pressed alone.")
+                        Text(String(localized: "When \(settings.hyperKey.title) is pressed alone."))
                     }
                 }
 
@@ -163,7 +171,7 @@ struct GeneralSettingsView: View {
                     }
                 } label: {
                     SettingsRowTitle(.generalCalculator, "Number format")
-                    Text("With a decimal comma, ; separates arguments.")
+                    Text(String(localized: "With a decimal comma, ; separates arguments."))
                 }
             } header: {
                 SettingsSectionHeader(.generalCalculator)
@@ -172,24 +180,24 @@ struct GeneralSettingsView: View {
             Section {
                 Toggle(isOn: $settings.launcherShowsSuggestions) {
                     SettingsRowTitle(.generalSearch, "Show suggestions")
-                    Text("What you open most, while the search field is empty.")
+                    Text(String(localized: "What you open most, while the search field is empty."))
                 }
                 Picker(selection: $settings.rootSearchSensitivity) {
                     ForEach(SearchSensitivity.allCases) { sensitivity in
-                        Text(sensitivity.title).tag(sensitivity)
+                        Text(LocalizedStringKey(sensitivity.title)).tag(sensitivity)
                     }
                 } label: {
                     SettingsRowTitle(.generalSearch, "Search sensitivity")
-                    Text("Lower finds names from scattered letters.")
+                    Text(String(localized: "Lower finds names from scattered letters."))
                 }
                 LabeledContent {
-                    Button("Reset…", role: .destructive) {
+                    Button(String(localized: "Reset…"), role: .destructive) {
                         confirmingRankingReset = true
                     }
                     .disabled(launcherRanking.isEmpty)
                 } label: {
                     SettingsRowTitle(.generalSearch, "Learned ranking")
-                    Text("Learned privately from the results you pick.")
+                    Text(String(localized: "Learned privately from the results you pick."))
                 }
             } header: {
                 SettingsSectionHeader(.generalSearch)
@@ -198,16 +206,16 @@ struct GeneralSettingsView: View {
         .formStyle(.grouped)
         .settingsScrollTarget(.general)
         .confirmationDialog(
-            "Reset learned launcher ranking?",
+            String(localized: "Reset learned launcher ranking?"),
             isPresented: $confirmingRankingReset,
             titleVisibility: .visible
         ) {
-            Button("Reset Ranking", role: .destructive) {
+            Button(String(localized: "Reset Ranking"), role: .destructive) {
                 launcherRanking.resetAll()
             }
-            Button("Cancel", role: .cancel) {}
+            Button(String(localized: "Cancel"), role: .cancel) {}
         } message: {
-            Text("Tinycast will relearn your preferred results as you use the launcher.")
+            Text(String(localized: "Tinycast will relearn your preferred results as you use the launcher."))
         }
         .onAppear(perform: refreshInputSources)
         .onReceive(
@@ -230,12 +238,12 @@ private struct WindowModeRow: View {
 
     var body: some View {
         SettingsRow(
-            title: "Window mode", subtitle: "Choose how the launcher opens.",
+            title: "Window mode", subtitle: String(localized: "Choose how the launcher opens."),
             subtitleLineLimit: 2, alignment: .top, anchor: .generalAppearance
         ) {
             HStack(spacing: Theme.Spacing.md) {
-                option("Compact", image: "WindowModeCompact", compact: true)
-                option("Expanded", image: "WindowModeExpanded", compact: false)
+                option(String(localized: "Compact"), image: "WindowModeCompact", compact: true)
+                option(String(localized: "Expanded"), image: "WindowModeExpanded", compact: false)
             }
         }
     }
@@ -303,7 +311,7 @@ private struct InterfaceSizeRow: View {
     var body: some View {
         SettingsRow(
             title: "Interface size",
-            subtitle: "Scales the launcher and its panels, not Settings.",
+            subtitle: String(localized: "Scales the launcher and its panels, not Settings."),
             anchor: .generalAppearance
         ) {
             HStack(spacing: Theme.Spacing.xs) {

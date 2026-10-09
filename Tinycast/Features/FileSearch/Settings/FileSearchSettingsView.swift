@@ -10,7 +10,7 @@ struct FileSearchSettingsView: View {
                 Toggle(isOn: $settings.fileSearchEnabled) {
                     SettingsFeatureToggleLabel(
                         anchor: .fileSearchFileSearch, title: "Enable File Search",
-                        subtitle: "Uses the Spotlight index, only when you search.")
+                        subtitle: String(localized: "Uses the Spotlight index, only when you search."))
                 }
             }
             .settingsAnchor(.fileSearchFileSearch)
@@ -49,10 +49,10 @@ private struct FileSearchScopesSection: View {
             }
 
             HStack(spacing: Theme.Spacing.lg) {
-                Button("Add…", action: addScopes)
-                    .help("Add a folder to search.")
+                Button(String(localized: "Add…"), action: addScopes)
+                    .help(String(localized: "Add a folder to search."))
                 if !isDefault {
-                    Button("Restore Defaults") {
+                    Button(String(localized: "Restore Defaults")) {
                         settings.fileSearchScopes = FileSearchScope.defaultScopes
                     }
                 }
@@ -60,7 +60,7 @@ private struct FileSearchScopesSection: View {
         } header: {
             SettingsSectionHeader(.fileSearchSearchScopes)
         } footer: {
-            Text("Home covers its visible folders and cloud drives, never Library.")
+            Text(String(localized: "Home covers its visible folders and cloud drives, never Library."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -81,8 +81,8 @@ private struct FileSearchScopesSection: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = true
-        panel.prompt = "Add"
-        panel.message = "Choose folders to include when searching for files."
+        panel.prompt = String(localized: "Add")
+        panel.message = String(localized: "Choose folders to include when searching for files.")
         // Tinycast is an accessory app, so the panel opens behind the frontmost app without this.
         NSApp.activate(ignoringOtherApps: true)
         guard panel.runModal() == .OK else { return }
@@ -106,12 +106,12 @@ private struct FileSearchIgnoreSection: View {
                 }
             }
 
-            TextField("Add pattern…", text: $draft)
+            TextField(String(localized: "Add pattern…"), text: $draft)
                 .onSubmit(addPattern)
         } header: {
             SettingsSectionHeader(.fileSearchIgnorePatterns)
         } footer: {
-            Text("No slash matches a name, like *.tmp. A slash matches the path, like **/[Cc]ache/**.")
+            Text(String(localized: "No slash matches a name, like *.tmp. A slash matches the path, like **/[Cc]ache/**."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -141,7 +141,7 @@ private struct PatternRow: View {
                         .foregroundStyle(.tertiary)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Remove \(pattern)")
+                .accessibilityLabel(String(localized: "Remove \(pattern)"))
             }
         } label: {
             Text(pattern)

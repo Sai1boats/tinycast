@@ -154,7 +154,7 @@ struct RootPaletteView: View {
         PopoverMenuContent(
             items: ClipboardFilter.allCases.enumerated().map { index, filter in
                 PopoverMenuItem(
-                    title: filter.title, systemImage: filter.systemImage,
+                    title: NSLocalizedString(filter.title, comment: "Built-in label"), systemImage: filter.systemImage,
                     startsSection: index == 1
                 ) {
                     vm.clipboardFilter = filter
@@ -166,7 +166,10 @@ struct RootPaletteView: View {
     private var fileSearchFilterContent: PopoverMenuContent {
         PopoverMenuContent(
             items: FileSearchFilter.allCases.map { filter in
-                PopoverMenuItem(title: filter.title, systemImage: filter.systemImage) {
+                PopoverMenuItem(
+                    title: NSLocalizedString(filter.title, comment: "Built-in label"),
+                    systemImage: filter.systemImage
+                ) {
                     vm.fileSearchFilter = filter
                 }
             })
@@ -177,7 +180,7 @@ struct RootPaletteView: View {
         PopoverMenuContent(
             items: EmojiCategoryFilter.allCases.enumerated().map { index, filter in
                 PopoverMenuItem(
-                    title: filter.title, systemImage: filter.systemImage,
+                    title: NSLocalizedString(filter.title, comment: "Built-in label"), systemImage: filter.systemImage,
                     startsSection: index == 1
                 ) {
                     vm.emojiCategoryFilter = filter
@@ -193,24 +196,24 @@ struct RootPaletteView: View {
             header: title,
             items: [
                 PopoverMenuItem(
-                    title: "Changelog",
+                    title: String(localized: "Changelog"),
                     systemImage: "clock.arrow.trianglehead.2.counterclockwise.rotate.90"
                 ) {
                     if let url = URL(string: "https://github.com/abue-ammar/tinycast/releases") {
                         openURL(url)
                     }
                 },
-                PopoverMenuItem(title: "About Tinycast", systemImage: "info.circle") {
+                PopoverMenuItem(title: String(localized: "About Tinycast"), systemImage: "info.circle") {
                     core.settingsCoordinator.showAbout()
                 },
-                PopoverMenuItem(title: "Support Tinycast", systemImage: "heart") {
+                PopoverMenuItem(title: String(localized: "Support Tinycast"), systemImage: "heart") {
                     core.supportCoordinator.showSupport()
                 },
-                PopoverMenuItem(title: "Settings", systemImage: "gearshape", shortcut: "⌘,") {
+                PopoverMenuItem(title: String(localized: "Settings"), systemImage: "gearshape", shortcut: "⌘,") {
                     core.settingsCoordinator.showSettings()
                 },
                 PopoverMenuItem(
-                    title: "Quit \(appName)", systemImage: "rectangle.portrait.and.arrow.right",
+                    title: String(localized: "Quit \(appName)"), systemImage: "rectangle.portrait.and.arrow.right",
                     startsSection: true, isDestructive: true
                 ) {
                     NSApp.terminate(nil)
@@ -232,7 +235,7 @@ struct RootPaletteView: View {
             return PaletteMenuContent(
                 popover: filtered.content, selection: $menuSelection,
                 search: PopoverMenu.Search(
-                    placeholder: "Search for actions…", placement: .bottom),
+                    placeholder: String(localized: "Search for actions…"), placement: .bottom),
                 onActivate: activateMenuItem, preferredSelection: filtered.bestMatch)
         case .clipboardFilter:
             return headerMenu(
@@ -687,17 +690,18 @@ struct RootPaletteView: View {
             if !isCollapsed, vm.mode == .fileSearch {
                 headerGutter(width: metrics.spacing.md)
                 HeaderMenuButton(
-                    title: vm.fileSearchFilter.title, systemImage: vm.fileSearchFilter.systemImage,
-                    isOpen: openMenu == .fileSearchFilter, help: "Filter by type  ⌘P",
+                    title: NSLocalizedString(vm.fileSearchFilter.title, comment: "Filter title"),
+                    systemImage: vm.fileSearchFilter.systemImage,
+                    isOpen: openMenu == .fileSearchFilter, help: String(localized: "Filter by type  ⌘P"),
                     action: toggleFileSearchFilter)
             }
             if !isCollapsed, vm.mode == .emoji {
                 headerGutter(width: metrics.spacing.md)
                 HeaderMenuButton(
-                    title: vm.emojiCategoryFilter.title,
+                    title: NSLocalizedString(vm.emojiCategoryFilter.title, comment: "Filter title"),
                     systemImage: vm.emojiCategoryFilter.systemImage,
                     isOpen: openMenu == .emojiCategory,
-                    help: "Filter by category  ⌘P",
+                    help: String(localized: "Filter by category  ⌘P"),
                     action: toggleEmojiCategory)
             }
             if !isCollapsed, vm.mode == .ai {
@@ -769,13 +773,13 @@ struct RootPaletteView: View {
     private var quickAITabHint: some View {
         BarButton(chrome: .rounded, action: cycleMode) {
             HStack(spacing: metrics.spacing.sm) {
-                Text("Quick AI")
+                Text(String(localized: "Quick AI"))
                     .font(metrics.typography.bar)
                     .foregroundStyle(Theme.Colors.textSecondary)
                 KeyCapChip(text: "⇥", style: .outline)
             }
         }
-        .help("Ask Quick AI what you typed  ⇥")
+        .help(String(localized: "Ask Quick AI what you typed  ⇥"))
     }
 
     /// Resolved through `PaletteTabAction`, so the hint cannot promise the wrong destination.
@@ -934,7 +938,7 @@ struct RootPaletteView: View {
             if showActions {
                 BarButton(action: toggleActions) {
                     HStack(spacing: metrics.spacing.sm) {
-                        Text("Actions")
+                        Text(String(localized: "Actions"))
                             .font(metrics.typography.bar)
                             .foregroundStyle(Theme.Colors.textSecondary)
                         HStack(spacing: metrics.spacing.xxs) {
@@ -1066,7 +1070,7 @@ struct RootPaletteView: View {
         let filtered = popover.matching(ActionMenuSearchQuery(vm.menuQuery))
         return PaletteMenuContent(
             popover: filtered.content, selection: $menuSelection, width: width,
-            search: PopoverMenu.Search(placeholder: "Search…", placement: .top),
+            search: PopoverMenu.Search(placeholder: String(localized: "Search…"), placement: .top),
             onActivate: activateMenuItem, preferredSelection: filtered.bestMatch)
     }
 
@@ -1405,8 +1409,8 @@ struct RootPaletteView: View {
 
     /// Never promises a step the click does not take: a root screen closes rather than backs.
     private var backHelp: String {
-        let escape = hasBackStep ? "Esc to go back" : "Esc to close"
-        return "\(escape) or ⌘ Esc to go to root search"
+        let escape = hasBackStep ? String(localized: "Esc to go back") : String(localized: "Esc to close")
+        return String(localized: "\(escape) or ⌘ Esc to go to root search")
     }
 
     private func goBack() {

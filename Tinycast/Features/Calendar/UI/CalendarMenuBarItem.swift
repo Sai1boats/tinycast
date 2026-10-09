@@ -22,9 +22,9 @@ struct CalendarMenuBarLabel: View {
             }
         case (.meetingTitle, nil)
         where !AppCore.shared.calendarCoordinator.hasUpcomingMenuBarEvent:
-            title("No upcoming events")
+            title(String(localized: "No upcoming events"))
         case (_, nil):
-            icon("calendar", describing: "no current meeting")
+            icon("calendar", describing: String(localized: "no current meeting"))
         }
     }
 
@@ -52,25 +52,25 @@ struct CalendarMenuBarMenu: View {
             if let meeting = coordinator.menuBarEvent {
                 Section {
                     if let link = meeting.link {
-                        Button("Join \(meeting.title)", systemImage: link.provider.sfSymbol) {
+                        Button(String(localized: "Join \(meeting.title)"), systemImage: link.provider.sfSymbol) {
                             coordinator.join(meeting)
                         }
                     }
-                    Button("Open in Calendar", systemImage: "calendar") {
+                    Button(String(localized: "Open in Calendar"), systemImage: "calendar") {
                         coordinator.openInCalendar(meeting)
                     }
-                    Button("Dismiss Event", systemImage: "xmark.circle") {
+                    Button(String(localized: "Dismiss Event"), systemImage: "xmark.circle") {
                         coordinator.dismissMenuBarEvent(meeting)
                     }
                 }
             }
             MenuBarAgenda()
             Section {
-                Button("My Schedule", systemImage: "calendar.day.timeline.left") {
+                Button(String(localized: "My Schedule"), systemImage: "calendar.day.timeline.left") {
                     coordinator.showSchedule()
                 }
                 .keyboardShortcut("o")
-                Button("Calendar Settings…", systemImage: "gearshape") {
+                Button(String(localized: "Calendar Settings…"), systemImage: "gearshape") {
                     AppCore.shared.settingsCoordinator.showSettings(tab: .calendar)
                 }
                 .keyboardShortcut(",")

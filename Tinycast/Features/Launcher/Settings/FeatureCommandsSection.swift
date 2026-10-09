@@ -27,7 +27,7 @@ struct FeatureCommandRow: View {
 
     var body: some View {
         SettingsRow(
-            title: entry.name,
+            title: entry.localizedName,
             labelOpacity: visibility.isItemVisible(entry) ? 1 : 0.45
         ) {
             AppIconView(app: entry)
@@ -41,7 +41,7 @@ struct FeatureCommandRow: View {
                 .labelsHidden()
                 .toggleStyle(.checkbox)
                 .launcherVisibilityHelp()
-                .accessibilityLabel("Show \(entry.name) in launcher")
+                .accessibilityLabel(String(localized: "Show \(entry.name) in launcher"))
         }
     }
 

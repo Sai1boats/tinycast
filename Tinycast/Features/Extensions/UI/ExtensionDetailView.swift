@@ -27,7 +27,7 @@ struct ExtensionDetailBody: View {
         ScrollView {
             VStack(alignment: .leading, spacing: metrics.spacing.md) {
                 if isLoading && (markdown ?? "").isEmpty {
-                    Text("Loading…").foregroundStyle(.secondary)
+                    Text(String(localized: "Loading…")).foregroundStyle(.secondary)
                 }
                 if let markdown, !markdown.isEmpty {
                     ExtensionMarkdownView(markdown: markdown)

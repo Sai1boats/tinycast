@@ -33,7 +33,7 @@ struct FileSearchQuickLook: View {
                 Spacer(minLength: metrics.spacing.lg)
                 BarButton(action: onClose) {
                     HStack(spacing: metrics.spacing.sm) {
-                        Text("Close")
+                        Text(String(localized: "Close"))
                             .font(metrics.typography.bar)
                             .foregroundStyle(Theme.Colors.textSecondary)
                         KeyCapChip(text: "esc", style: .outline)

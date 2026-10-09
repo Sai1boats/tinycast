@@ -58,7 +58,7 @@ final class ExtensionRuntime: @unchecked Sendable {
             case .runtimeResourceMissing:
                 return "RaycastRuntime.generated.js is missing from the app bundle."
             case .bootFailed(let message):
-                return "The extension runtime failed to start: \(message)"
+                return String(localized: "The extension runtime failed to start: \(message)")
             }
         }
     }
@@ -293,7 +293,7 @@ final class ExtensionRuntime: @unchecked Sendable {
         guard let delegate else { return }
         // Parsing a large list is the expensive part, and it belongs off the main actor.
         guard let tree = RenderTree(json: json) else {
-            report(level: "error", message: "Could not decode the render tree for \(session).")
+            report(level: "error", message: String(localized: "Could not decode the render tree for \(session)."))
             return
         }
         Task { @MainActor in delegate.runtime(self, session: session, didRender: tree) }

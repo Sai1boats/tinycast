@@ -50,7 +50,7 @@ private struct MissingFileStage: View {
             Image(systemName: "doc.badge.exclamationmark")
                 .font(.system(.largeTitle))
                 .symbolRenderingMode(.hierarchical)
-            Text("File is no longer available")
+            Text(String(localized: "File is no longer available"))
                 .font(metrics.typography.rowTrailing)
         }
         .foregroundStyle(.tertiary)

@@ -26,6 +26,7 @@ struct TerminalLogView: NSViewRepresentable {
         scrollView.hasVerticalScroller = true
         scrollView.autohidesScrollers = true
         guard let textView = scrollView.documentView as? NSTextView else { return scrollView }
+        textView.textContainer?.replaceLayoutManager(TerminalBlockLayoutManager())
         textView.isEditable = false
         textView.drawsBackground = false
         textView.textContainerInset = Self.inset

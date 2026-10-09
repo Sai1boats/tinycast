@@ -22,7 +22,7 @@ struct EmojiSettingsView: View {
                                     .settingsOptionSegment(isSelected: selected)
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel(tone.title)
+                            .accessibilityLabel(Text(LocalizedStringKey(tone.title)))
                             .accessibilityAddTraits(selected ? [.isSelected] : [])
                             .help(tone.title)
                         }
@@ -69,7 +69,7 @@ private struct EmojiColumnCountPicker: View {
             .contentShape(.rect)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(columns.rawValue) columns")
+        .accessibilityLabel(String(localized: "\(columns.rawValue) columns"))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 }

@@ -204,3 +204,7 @@ left out and decided by hand in `CalcCurrency.contested`. The crypto tickers are
 they have no external source of truth, so `CalcCurrency.crypto` is hand-written, and that same list is
 the set of symbols the fetch asks for. Re-run the script when a currency is added or retired; nothing
 breaks in the meantime, since an unquoted code just reports "no exchange rate".
+
+## Interface localization
+
+See [localization.md](localization.md) for the language setting, resource tables, and verification.

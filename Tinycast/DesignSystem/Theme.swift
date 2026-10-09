@@ -65,6 +65,15 @@ enum Theme {
     }
 
     enum Size {
+        static let currencyToolWindow = CGSize(width: 720, height: 700)
+        static let currencyToolMinimum = CGSize(width: 620, height: 580)
+        static let jsonToolWindow = CGSize(width: 1100, height: 620)
+        static let utilityWindow = CGSize(width: 900, height: 620)
+        static let utilityMinimum = CGSize(width: 760, height: 550)
+        static let utilityEditorMinimum: CGFloat = 260
+        static let translationPanel = CGSize(width: 900, height: 340)
+        static let translationMinimum = CGSize(width: 650, height: 320)
+        static let translationTool: CGFloat = 24
         static let panelWidth: CGFloat = 750
         static let panelHeight: CGFloat = 475
         /// Opening size on a first run and the floor: below it the title bar's own parts collide.

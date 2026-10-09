@@ -14,7 +14,7 @@ struct AIModelSelectionRows<ModelLabel: View, EffortLabel: View>: View {
 
     var body: some View {
         if modelGroups.isEmpty {
-            Label("No AI provider configured", systemImage: "sparkles")
+            Label(String(localized: "No AI provider configured"), systemImage: "sparkles")
                 .foregroundStyle(.secondary)
         } else {
             Picker(selection: modelBinding) {

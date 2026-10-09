@@ -155,7 +155,7 @@ struct PopoverMenu: View {
                     headerLabel(header)
                     Color.clear.frame(height: metrics.size.menuRowSpacing)
                 }
-                Text("No Results")
+                Text(String(localized: "No Results"))
                     .font(metrics.typography.menuRow)
                     .foregroundStyle(Theme.Colors.textTertiary)
                     .frame(maxWidth: .infinity)

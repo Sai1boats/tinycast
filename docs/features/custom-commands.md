@@ -199,6 +199,10 @@ where most tools log progress, so colouring it as an error made a successful `br
 broken. A bare carriage return rewinds its line, so a progress bar redraws in place instead of
 stacking a line per frame.
 
+Block characters (`█`, `▀`, `▄` and fractional blocks) fill their text cells directly through
+`TerminalBlockLayoutManager`, so terminal QR codes have no font-bearing or line-height gaps.
+Their original characters remain selectable and copyable.
+
 The log is an `NSTextView` and only the undrawn tail is appended; a quarter-megabyte of output
 re-laid-out per line is seconds of work. The run publishes each append as an explicit `delta` and
 `revision`, so the view adds just that when it is exactly one step behind and redraws from the whole

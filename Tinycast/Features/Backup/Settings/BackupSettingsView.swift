@@ -38,7 +38,7 @@ struct BackupSettingsView: View {
 
     private var raycastFileSubtitle: String {
         guard let name = raycastFile?.lastPathComponent else {
-            return "A .rayconfig file from Raycast 2.0 or later."
+            return String(localized: "A .rayconfig file from Raycast 2.0 or later.")
         }
         return "\(name) — \(isRaycastExport ? "Raycast export" : "not a Raycast export")"
     }
@@ -50,11 +50,11 @@ struct BackupSettingsView: View {
                     if exporting {
                         ProgressView().controlSize(.small)
                     } else {
-                        Button("Export…") { runExport() }.disabled(exportSelection.isEmpty)
+                        Button(String(localized: "Export…")) { runExport() }.disabled(exportSelection.isEmpty)
                     }
                 } label: {
                     SettingsRowTitle(.backupExport, "Export Backup")
-                    Text("The ticked items, as one .tinycast file.")
+                    Text(String(localized: "The ticked items, as one .tinycast file."))
                 }
                 BackupCategorySelection(selection: $exportSelection)
                 if let backupStatus { statusRow(backupStatus) }
@@ -64,7 +64,7 @@ struct BackupSettingsView: View {
 
             Section {
                 LabeledContent {
-                    Button("Choose…") { chooseBackupFile() }
+                    Button(String(localized: "Choose…")) { chooseBackupFile() }
                 } label: {
                     SettingsRowTitle(.backupImport, "Backup File")
                     Text(backupFileSubtitle)
@@ -76,11 +76,11 @@ struct BackupSettingsView: View {
                         if importingBackup {
                             ProgressView().controlSize(.small)
                         } else {
-                            Button("Import") { runBackupImport() }
+                            Button(String(localized: "Import")) { runBackupImport() }
                                 .disabled(importSelection.isEmpty)
                         }
                     } label: {
-                        Text("Import")
+                        Text(String(localized: "Import"))
                     }
                 }
             } header: {
@@ -89,14 +89,18 @@ struct BackupSettingsView: View {
 
             Section {
                 LabeledContent {
-                    Button("Choose…") { chooseRaycastFile() }
+                    Button(String(localized: "Choose…")) { chooseRaycastFile() }
                 } label: {
                     SettingsRowTitle(.backupImportFromRaycast, "Raycast Export")
                     Text(raycastFileSubtitle)
                 }
                 LabeledContent {
                     RevealableSecureField(
-                        title: "Passphrase", text: $passphrase, prompt: Text("Export password")
+                        title: String(
+                            localized: "Passphrase"
+                        ), text: $passphrase, prompt: Text(String(
+                            localized: "Export password"
+                        ))
                     )
                     .labelsHidden()
                     .textFieldStyle(.roundedBorder)
@@ -105,7 +109,7 @@ struct BackupSettingsView: View {
                     .frame(width: 160)
                     .onSubmit(runRaycastImport)
                 } label: {
-                    Text("Passphrase")
+                    Text(String(localized: "Passphrase"))
                 }
                 RaycastImportSelection(selection: $selection)
                 conflictNotice
@@ -113,11 +117,11 @@ struct BackupSettingsView: View {
                     if importing {
                         ProgressView().controlSize(.small)
                     } else {
-                        Button("Import") { runRaycastImport() }
+                        Button(String(localized: "Import")) { runRaycastImport() }
                             .disabled(!isRaycastExport || passphrase.isEmpty || selection.isEmpty)
                     }
                 } label: {
-                    Text("Import")
+                    Text(String(localized: "Import"))
                 }
                 if let status { statusRow(status) }
             } header: {
@@ -131,9 +135,9 @@ struct BackupSettingsView: View {
                 }
                 if core.settings.settingsFileEnabled {
                     LabeledContent {
-                        Button("Show in Finder", action: BackupActions.revealSettingsFile)
+                        Button(String(localized: "Show in Finder"), action: BackupActions.revealSettingsFile)
                     } label: {
-                        Text("Settings changed here are written to the file, and edits to it apply here.")
+                        Text(String(localized: "Settings changed here are written to the file, and edits to it apply here."))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -150,17 +154,17 @@ struct BackupSettingsView: View {
     private var conflictNotice: some View {
         if raycastRunning {
             LabeledContent {
-                Button("Quit Raycast") { BackupActions.quitRaycast() }
+                Button(String(localized: "Quit Raycast")) { BackupActions.quitRaycast() }
             } label: {
                 Label(
-                    "Raycast is running — quit it to avoid hotkey conflicts.",
+                    String(localized: "Raycast is running — quit it to avoid hotkey conflicts."),
                     systemImage: "exclamationmark.triangle.fill"
                 )
                 .foregroundStyle(.orange)
             }
         } else {
             Label(
-                "Unset matching Raycast shortcuts to avoid conflicts.",
+                String(localized: "Unset matching Raycast shortcuts to avoid conflicts."),
                 systemImage: "info.circle"
             )
             .foregroundStyle(.secondary)
@@ -181,9 +185,9 @@ struct BackupSettingsView: View {
 
     private var backupFileSubtitle: String {
         guard let name = backupFile?.lastPathComponent else {
-            return "A .tinycast file exported from Tinycast."
+            return String(localized: "A .tinycast file exported from Tinycast.")
         }
-        return openedManifest == nil ? "\(name) — couldn't be read" : name
+        return openedManifest == nil ? String(localized: "\(name) — couldn't be read") : name
     }
 
     private func available(in manifest: BackupManifest) -> [BackupCategory: Int] {

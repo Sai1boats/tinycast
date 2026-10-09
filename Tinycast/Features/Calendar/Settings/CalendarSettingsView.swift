@@ -12,8 +12,8 @@ struct CalendarSettingsView: View {
                 anchor: .calendarCalendar,
                 enableTitle: "Join meetings from Tinycast",
                 enableSubtitle:
-                    "Reads \(settings.calendarSpan.possessivePhrase) events for join links. "
-                    + "Nothing leaves this Mac.",
+                    String(localized: "Reads \(NSLocalizedString(settings.calendarSpan.possessivePhrase, comment: "Calendar span")) events for join links. ")
+                    + String(localized: "Nothing leaves this Mac."),
                 isEnabled: enabledBinding,
                 showsInLauncher: $settings.calendarShowInLauncher,
                 showsIcon: true,
@@ -22,7 +22,7 @@ struct CalendarSettingsView: View {
             Section {
                 Picker(selection: $settings.calendarLauncherLimit) {
                     ForEach(CalendarLauncherLimit.allCases) { limit in
-                        Text(limit.title).tag(limit)
+                        Text(LocalizedStringKey(limit.title)).tag(limit)
                     }
                 } label: {
                     SettingsRowTitle(.calendarCalendar, "Upcoming meetings in launcher")
@@ -33,10 +33,10 @@ struct CalendarSettingsView: View {
             if settings.calendarEnabled, store.access == .notDetermined {
                 Section {
                     SettingsRow(
-                        title: "Calendar access is needed",
-                        subtitle: "Needed to read events and find join links."
+                        title: String(localized: "Calendar access is needed"),
+                        subtitle: String(localized: "Needed to read events and find join links.")
                     ) {
-                        Button("Allow Calendar Access…") {
+                        Button(String(localized: "Allow Calendar Access…")) {
                             core.calendarCoordinator.setCalendarEnabled(true)
                         }
                     }
@@ -44,10 +44,10 @@ struct CalendarSettingsView: View {
             } else if store.access == .denied {
                 Section {
                     SettingsRow(
-                        title: "Calendar access is off",
-                        subtitle: "Allow it in Privacy & Security ▸ Calendars."
+                        title: String(localized: "Calendar access is off"),
+                        subtitle: String(localized: "Allow it in Privacy & Security ▸ Calendars.")
                     ) {
-                        Button("Open System Settings…") { Permissions.openCalendarSettings() }
+                        Button(String(localized: "Open System Settings…")) { Permissions.openCalendarSettings() }
                     }
                 }
             }
@@ -55,15 +55,15 @@ struct CalendarSettingsView: View {
             Section {
                 Picker(selection: $settings.joinWindowMinutes) {
                     ForEach(JoinWindow.allCases) { window in
-                        Text(window.title).tag(window)
+                        Text(LocalizedStringKey(window.title)).tag(window)
                     }
                 } label: {
                     SettingsRowTitle(.calendarJoining, "Show the join card")
-                    Text("Before and after a meeting starts.")
+                    Text(String(localized: "Before and after a meeting starts."))
                 }
                 Toggle(isOn: $settings.autoJoinMeetings) {
                     SettingsRowTitle(.calendarJoining, "Auto Join Meetings")
-                    Text("As they start.")
+                    Text(String(localized: "As they start."))
                 }
                 Toggle(isOn: $settings.autoJoinNamedProvidersOnly) {
                     SettingsRowTitle(.calendarJoining, "Only join known meeting services")
@@ -77,7 +77,7 @@ struct CalendarSettingsView: View {
                 .settingsEnabled(settings.autoJoinMeetings)
                 Toggle(isOn: $settings.cameraPreview) {
                     SettingsRowTitle(.calendarJoining, "Camera Preview")
-                    Text("Before joining a meeting.")
+                    Text(String(localized: "Before joining a meeting."))
                 }
                 MeetingBrowserPicker(selection: $settings.meetingBrowserBundleID)
             } header: {
@@ -88,27 +88,27 @@ struct CalendarSettingsView: View {
             Section {
                 Picker(selection: $settings.calendarMenuBarDisplay) {
                     ForEach(CalendarMenuBarDisplay.allCases) { display in
-                        Text(display.title).tag(display)
+                        Text(LocalizedStringKey(display.title)).tag(display)
                     }
                 } label: {
                     SettingsRowTitle(.calendarMenuBar, "Calendar in Menu Bar")
-                    Text("Separate from the Tinycast icon.")
+                    Text(String(localized: "Separate from the Tinycast icon."))
                 }
                 Picker(selection: $settings.calendarSpan) {
                     ForEach(MeetingSpan.allCases) { span in
-                        Text(span.title).tag(span)
+                        Text(LocalizedStringKey(span.title)).tag(span)
                     }
                 } label: {
                     SettingsRowTitle(.calendarMenuBar, "Days to Show")
-                    Text("In the menu, My Schedule and launcher search.")
+                    Text(String(localized: "In the menu, My Schedule and launcher search."))
                 }
                 Picker(selection: $settings.menuBarEvents) {
                     ForEach(MenuBarEvents.allCases) { lead in
-                        Text(lead.title).tag(lead)
+                        Text(LocalizedStringKey(lead.title)).tag(lead)
                     }
                 } label: {
                     SettingsRowTitle(.calendarMenuBar, "Show Upcoming Events")
-                    Text("When the next event appears.")
+                    Text(String(localized: "When the next event appears."))
                 }
                 .settingsEnabled(settings.calendarMenuBarDisplay != .disabled)
                 Toggle(isOn: $settings.menuBarLinkedEventsOnly) {
@@ -123,11 +123,11 @@ struct CalendarSettingsView: View {
                 .settingsEnabled(settings.calendarMenuBarDisplay != .disabled)
                 Picker(selection: $settings.hideCurrentEvent) {
                     ForEach(HideCurrentEvent.allCases) { hide in
-                        Text(hide.title).tag(hide)
+                        Text(LocalizedStringKey(hide.title)).tag(hide)
                     }
                 } label: {
                     SettingsRowTitle(.calendarMenuBar, "Hide Current Event")
-                    Text("Once it has started.")
+                    Text(String(localized: "Once it has started."))
                 }
                 .settingsEnabled(settings.calendarMenuBarDisplay != .disabled)
             } header: {
@@ -163,14 +163,14 @@ private struct MeetingBrowserPicker: View {
 
     var body: some View {
         Picker(selection: installedSelection) {
-            Text("Default Browser").tag(String?.none)
+            Text(String(localized: "Default Browser")).tag(String?.none)
             Divider()
             ForEach(browsers) { browser in
                 Text(browser.name).tag(Optional(browser.id))
             }
         } label: {
             SettingsRowTitle(.calendarJoining, "Open Meeting Links In")
-            Text("When no meeting app handles the link.")
+            Text(String(localized: "When no meeting app handles the link."))
         }
         .onAppear { browsers = MeetingLauncher.installedBrowsers() }
     }
@@ -199,7 +199,7 @@ private struct CalendarPickerSection: View {
 
     var body: some View {
         Section {
-            SettingsFilterField(prompt: "Search calendars…", query: $query)
+            SettingsFilterField(prompt: String(localized: "Search calendars…"), query: $query)
 
             if calendars.isEmpty {
                 Text(emptyMessage)
@@ -216,8 +216,12 @@ private struct CalendarPickerSection: View {
     }
 
     private var emptyMessage: String {
-        if !query.isEmpty { return "No matches for “\(query)”." }
-        return store.access == .granted ? "No calendars on this Mac." : "Nothing to show yet."
+        if !query.isEmpty { return String(localized: "No matches for “\(query)”.") }
+        return store.access == .granted ? String(
+            localized: "No calendars on this Mac."
+        ) : String(
+            localized: "Nothing to show yet."
+        )
     }
 }
 
@@ -230,7 +234,7 @@ private struct CalendarRow: View {
             Toggle("", isOn: binding)
                 .labelsHidden()
                 .toggleStyle(.checkbox)
-                .accessibilityLabel("Include \(calendar.title) in meetings")
+                .accessibilityLabel(String(localized: "Include \(calendar.title) in meetings"))
         }
     }
 

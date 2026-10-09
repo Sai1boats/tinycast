@@ -50,9 +50,9 @@ struct CommandOutputView: View {
         HStack(spacing: Theme.Spacing.xs) {
             CopyLogButton(log: run.log)
             if run.isRunning {
-                iconButton("stop.fill", help: "Stop") { presenter.stopRunning() }
+                iconButton("stop.fill", help: String(localized: "Stop")) { presenter.stopRunning() }
             } else {
-                iconButton("arrow.clockwise", help: "Run Again") { presenter.runAgain() }
+                iconButton("arrow.clockwise", help: String(localized: "Run Again")) { presenter.runAgain() }
             }
         }
     }
@@ -81,7 +81,7 @@ struct CommandOutputView: View {
                     .foregroundStyle(Theme.Colors.textTertiary)
                 Text(CommandDuration.text(from: run.startedAt, to: outcome.finishedAt))
             } else {
-                Text("Running")
+                Text(String(localized: "Running"))
                 Text("·")
                     .foregroundStyle(Theme.Colors.textTertiary)
                 elapsed(from: run.startedAt)
@@ -114,7 +114,7 @@ struct CommandOutputView: View {
         if let hint = run.outcome?.hint {
             HStack(spacing: Theme.Spacing.sm) {
                 Text(hint)
-                Button("Open Settings") { presenter.showCommandSettings() }
+                Button(String(localized: "Open Settings")) { presenter.showCommandSettings() }
                     .buttonStyle(.link)
             }
             .font(.callout)
@@ -147,7 +147,7 @@ private struct CopyLogButton: View {
                 .font(Theme.Typography.bar)
                 .foregroundStyle(copiedAt == nil ? Theme.Colors.textSecondary : Theme.Colors.success)
         }
-        .tooltip("Copy Output")
+        .tooltip(String(localized: "Copy Output"))
         .task(id: copiedAt) {
             guard copiedAt != nil else { return }
             try? await Task.sleep(for: .seconds(Theme.Duration.copyFeedback))

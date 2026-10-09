@@ -87,12 +87,12 @@ final class QuickActionCoordinator {
         Task {
             guard
                 await core.confirm(
-                    title: "Enable Quick Actions?",
+                    title: String(localized: "Enable Quick Actions?"),
                     message:
-                        "Tinycast needs the Accessibility permission to read the text you have "
-                        + "selected in other apps and replace it. Nothing is read until you press "
-                        + "a shortcut.",
-                    symbol: "wand.and.sparkles", confirmTitle: "Continue", tone: .neutral,
+                        String(localized: "Tinycast needs the Accessibility permission to read the text you have ")
+                        + String(localized: "selected in other apps and replace it. Nothing is read until you press ")
+                        + String(localized: "a shortcut."),
+                    symbol: "wand.and.sparkles", confirmTitle: String(localized: "Continue"), tone: .neutral,
                     confirmRole: .standard)
             else { return }
             settings.quickActionsEnabled = true
@@ -135,9 +135,9 @@ final class QuickActionCoordinator {
         guard let action = customActions.action(id: id) else { return }
         guard
             await core.confirm(
-                title: "Delete “\(action.name)”?",
-                message: "Its instructions, shortcut and learned ranking go with it.",
-                symbol: action.symbol, confirmTitle: "Delete")
+                title: String(localized: "Delete “\(action.name)”?"),
+                message: String(localized: "Its instructions, shortcut and learned ranking go with it."),
+                symbol: action.symbol, confirmTitle: String(localized: "Delete"))
         else { return }
         // Unwound only once the row is gone, so a kept record never loses its shortcut.
         do {
@@ -151,7 +151,9 @@ final class QuickActionCoordinator {
     private func report(_ error: CustomQuickActionError) {
         Task {
             await core.showNotice(
-                title: "Couldn’t Save the Change", message: error.localizedDescription,
+                title: String(
+                    localized: "Couldn’t Save the Change"
+                ), message: NSLocalizedString(error.localizedDescription, comment: "Error message"),
                 symbol: CustomQuickAction.sfSymbol, tone: .danger)
         }
     }
@@ -247,12 +249,12 @@ final class QuickActionCoordinator {
         Task {
             guard
                 await core.reportFailure(
-                    title: "Quick Actions can't read your selection",
+                    title: String(localized: "Quick Actions can't read your selection"),
                     message:
-                        "Tinycast needs the Accessibility permission to read the text you have "
-                        + "selected and replace it. If Tinycast is already listed, switch it off "
-                        + "and on again — a rebuilt app keeps a stale entry.",
-                    symbol: "wand.and.sparkles", recovery: "Open System Settings")
+                        String(localized: "Tinycast needs the Accessibility permission to read the text you have ")
+                        + String(localized: "selected and replace it. If Tinycast is already listed, switch it off ")
+                        + String(localized: "and on again — a rebuilt app keeps a stale entry."),
+                    symbol: "wand.and.sparkles", recovery: String(localized: "Open System Settings"))
             else { return }
             Permissions.openAccessibilitySettings()
         }
@@ -285,7 +287,7 @@ final class QuickActionCoordinator {
         guard !previewing else { return try await generate(state, streaming: true) }
         let mine = generation
         progressOwner = mine
-        core.showProgress(state.action.progressTitle, onCancel: { [weak self] in self?.cancel() })
+        core.showProgress(state.action.localizedProgressTitle, onCancel: { [weak self] in self?.cancel() })
         defer { hideProgress(ownedBy: mine) }
         return try await generate(state, streaming: false)
     }
@@ -315,12 +317,12 @@ final class QuickActionCoordinator {
     /// A replacement that never lands would otherwise lose the reply, so the clipboard keeps it.
     private func deliver(_ text: String, to target: Target, action: QuickAction) {
         let onDelivered: @MainActor @Sendable () -> Void = { [weak self] in
-            self?.core.showMessage("\(action.title) applied")
+            self?.core.showMessage(String(localized: "\(action.localizedTitle) applied"))
         }
         let onFailed: @MainActor @Sendable () -> Void = { [weak self] in
             Paster.copyPlainText(text)
             self?.core.showMessage(
-                "\(action.title) couldn't replace the selection — copied instead",
+                String(localized: "\(action.localizedTitle) couldn't replace the selection — copied instead"),
                 tone: .danger)
         }
         switch target {

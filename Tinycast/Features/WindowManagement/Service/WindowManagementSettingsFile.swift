@@ -165,8 +165,8 @@ struct WindowManagementSettingsFile {
         var issues = decoded.problems.map { SettingsFileIssue.invalidEntry(key, $0) }
         let skipped = decoded.records.count - kept
         if skipped > 0 {
-            let noun = skipped == 1 ? "1 \(kind) was" : "\(skipped) \(kind)s were"
-            issues.append(.invalidEntry(key, "\(noun) skipped: \(rule)"))
+            let noun = skipped == 1 ? String(localized: "1 \(kind) was") : String(localized: "\(skipped) \(kind)s were")
+            issues.append(.invalidEntry(key, String(localized: "\(noun) skipped: \(rule)")))
         }
         return issues
     }

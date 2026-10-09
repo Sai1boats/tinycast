@@ -12,7 +12,7 @@ enum PopToRootTimeout: Int, CaseIterable, Identifiable, Sendable {
     var id: Int { rawValue }
 
     var title: String {
-        self == .immediately ? "Immediately" : "After \(rawValue) seconds"
+        self == .immediately ? String(localized: "Immediately") : String(localized: "After \(rawValue) seconds")
     }
 
     var interval: TimeInterval { TimeInterval(rawValue) }
@@ -28,7 +28,7 @@ enum JoinWindow: Int, CaseIterable, Identifiable, Sendable {
 
     var id: Int { rawValue }
 
-    var title: String { rawValue == 1 ? "1 minute" : "\(rawValue) minutes" }
+    var title: String { rawValue == 1 ? String(localized: "1 minute") : String(localized: "\(rawValue) minutes") }
 }
 
 /// How early the calendar item picks the next event up. Zero, which `integer(forKey:)` also
@@ -42,7 +42,7 @@ enum MenuBarEvents: Int, CaseIterable, Identifiable, Sendable {
 
     var id: Int { rawValue }
 
-    var title: String { self == .today ? "Today" : "\(rawValue) minutes before" }
+    var title: String { self == .today ? String(localized: "Today") : String(localized: "\(rawValue) minutes before") }
 }
 
 /// The calendar's independent menu-bar presence. Zero matches an unset preference.
@@ -55,9 +55,9 @@ enum CalendarMenuBarDisplay: Int, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .disabled: "Disabled"
-        case .meetingIcon: "Meeting Icon"
-        case .meetingTitle: "Meeting Title"
+        case .disabled: String(localized: "Disabled")
+        case .meetingIcon: String(localized: "Meeting Icon")
+        case .meetingTitle: String(localized: "Meeting Title")
         }
     }
 }
@@ -73,10 +73,10 @@ enum CalendarLauncherLimit: Int, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .one: "1 next"
-        case .three: "3 next"
-        case .five: "5 next"
-        case .all: "All"
+        case .one: String(localized: "1 next")
+        case .three: String(localized: "3 next")
+        case .five: String(localized: "5 next")
+        case .all: String(localized: "All")
         }
     }
 
@@ -95,9 +95,9 @@ enum HideCurrentEvent: Int, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .dontHide: "Keep visible — show time left"
-        case .automatically: "Automatically"
-        default: "After \(rawValue) minutes"
+        case .dontHide: String(localized: "Keep visible — show time left")
+        case .automatically: String(localized: "Automatically")
+        default: String(localized: "After \(rawValue) minutes")
         }
     }
 
@@ -209,7 +209,13 @@ final class AppSettings {
         didSet { defaults.set(escapeKeyBehavior.rawValue, forKey: Key.escapeKeyBehavior.rawValue) }
     }
 
-    /// Follow macOS, or pin Tinycast to one appearance. Applied by `AppCore.applyAppearance()`.
+    var language: AppLanguage {
+        didSet {
+            defaults.set(language.rawValue, forKey: Key.language.rawValue)
+            language.apply(to: defaults)
+        }
+    }
+
     var appearance: AppAppearance {
         didSet { defaults.set(appearance.rawValue, forKey: Key.appearance.rawValue) }
     }
@@ -668,6 +674,8 @@ final class AppSettings {
         escapeKeyBehavior =
             defaults.string(forKey: Key.escapeKeyBehavior.rawValue).flatMap(EscapeKeyBehavior.init)
             ?? .navigateBackOrClose
+        language = defaults.string(forKey: Key.language.rawValue)
+            .flatMap(AppLanguage.init(rawValue:)) ?? .system
         appearance =
             defaults.string(forKey: Key.appearance.rawValue).flatMap(AppAppearance.init) ?? .system
         calcNumberStyle =

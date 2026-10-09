@@ -15,7 +15,7 @@ struct DictationSettingsView: View {
                 Toggle(isOn: enabledBinding) {
                     SettingsFeatureToggleLabel(
                         anchor: .dictationDictation, title: "Enable Dictation",
-                        subtitle: "Transcribe speech on your Mac with a local model.")
+                        subtitle: String(localized: "Transcribe speech on your Mac with a local model."))
                 }
                 if microphoneAccess != .authorized {
                     HStack(alignment: .center, spacing: Theme.Spacing.lg) {
@@ -23,16 +23,16 @@ struct DictationSettingsView: View {
                             .foregroundStyle(.orange)
                             .frame(width: SettingsListMetrics.iconSize)
                         VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
-                            Text("Microphone access required")
+                            Text(String(localized: "Microphone access required"))
                                 .foregroundStyle(.orange)
-                            Text("Needed to record your dictation.")
+                            Text(String(localized: "Needed to record your dictation."))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                         Spacer(minLength: Theme.Spacing.lg)
                         Button(
                             microphoneAccess == .notDetermined
-                                ? "Grant Access…" : "Open System Settings"
+                                ? String(localized: "Grant Access…") : String(localized: "Open System Settings")
                         ) {
                             if microphoneAccess == .notDetermined {
                                 Task {
@@ -52,7 +52,7 @@ struct DictationSettingsView: View {
                 Section {
                     Picker(selection: $settings.dictationMode) {
                         ForEach(DictationMode.allCases) { mode in
-                            Text(mode.title).tag(mode)
+                            Text(LocalizedStringKey(mode.title)).tag(mode)
                         }
                     } label: {
                         SettingsRowTitle(.dictationCommands, "Shortcut behavior")
@@ -65,8 +65,8 @@ struct DictationSettingsView: View {
                     if settings.dictationMode == .pushToTalk {
                         let issue = coordinator.holdShortcutIssue
                         Text(
-                            issue ?? "Hold a key combination or a single modifier; release it to transcribe. "
-                                + "Double taps work in toggle mode."
+                            issue ?? String(localized: "Hold a key combination or a single modifier; release it to transcribe. ")
+                                + String(localized: "Double taps work in toggle mode.")
                         )
                         .font(.caption)
                         .foregroundStyle(issue == nil ? Color.secondary : Color.orange)
@@ -100,13 +100,13 @@ struct DictationSettingsView: View {
                     let downloading = coordinator.models.downloading == settings.dictationModel
                     LabeledContent {
                         if downloading {
-                            Button("Cancel") { coordinator.models.cancelDownload() }
+                            Button(String(localized: "Cancel")) { coordinator.models.cancelDownload() }
                         } else if installed {
-                            Button("Remove") { removeModel(settings.dictationModel) }
+                            Button(String(localized: "Remove")) { removeModel(settings.dictationModel) }
                                 .disabled(
                                     coordinator.models.transcribing || coordinator.models.removing != nil)
                         } else {
-                            Button("Download") { downloadModel(settings.dictationModel) }
+                            Button(String(localized: "Download")) { downloadModel(settings.dictationModel) }
                                 .disabled(
                                     coordinator.models.downloading != nil
                                         || coordinator.models.removing == settings.dictationModel)
@@ -114,8 +114,8 @@ struct DictationSettingsView: View {
                     } label: {
                         Text(
                             downloading
-                                ? "Downloading…"
-                                : installed ? "Installed" : "Not installed")
+                                ? String(localized: "Downloading…")
+                                : installed ? String(localized: "Installed") : String(localized: "Not installed"))
                         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                             Text(modelDescription)
                             if downloading {
@@ -123,9 +123,9 @@ struct DictationSettingsView: View {
                                     ProgressView(
                                         value: Double(progress.received), total: Double(progress.total)
                                     )
-                                    .accessibilityLabel("Download progress")
+                                    .accessibilityLabel(String(localized: "Download progress"))
                                     Text(
-                                        "\(progress.received / 1_000_000) of \(progress.total / 1_000_000) MB"
+                                        String(localized: "\(progress.received / 1_000_000) of \(progress.total / 1_000_000) MB")
                                     )
                                     .monospacedDigit()
                                 } else {
@@ -137,7 +137,7 @@ struct DictationSettingsView: View {
                     }
                     if settings.dictationModel.isQwen, installed {
                         Picker(selection: languageBinding) {
-                            Text("Auto").tag("")
+                            Text(String(localized: "Auto")).tag("")
                             Divider()
                             ForEach(DictationLanguage.allCases) { language in
                                 Text(language.rawValue).tag(language.rawValue)
@@ -153,7 +153,7 @@ struct DictationSettingsView: View {
                 Section {
                     Picker(selection: $settings.dictationIdleRelease) {
                         ForEach(DictationIdleRelease.allCases) { option in
-                            Text(option.title).tag(option)
+                            Text(LocalizedStringKey(option.title)).tag(option)
                         }
                     } label: {
                         SettingsRowTitle(.dictationMemory, "Release model from memory")
@@ -161,12 +161,16 @@ struct DictationSettingsView: View {
                 } header: {
                     SettingsSectionHeader(.dictationMemory)
                 } footer: {
-                    Text("Releasing it when idle frees memory. The next dictation takes a moment longer.")
+                    Text(String(localized: "Releasing it when idle frees memory. The next dictation takes a moment longer."))
                 }
 
                 Section {
                     Picker(selection: microphoneBinding) {
-                        Text(microphones.isEmpty ? "No microphone available" : "System default")
+                        Text(microphones.isEmpty ? String(
+                            localized: "No microphone available"
+                        ) : String(
+                            localized: "System default"
+                        ))
                             .tag("")
                         if !microphones.isEmpty { Divider() }
                         ForEach(microphones, id: \.uniqueID) { microphone in
@@ -177,20 +181,22 @@ struct DictationSettingsView: View {
                     }
                     Picker(selection: $settings.dictationDestination) {
                         ForEach(DictationDestination.allCases) { destination in
-                            Text(destination.title).tag(destination)
+                            Text(LocalizedStringKey(destination.title)).tag(destination)
                         }
                     } label: {
                         SettingsRowTitle(.dictationOutput, "When finished")
                     }
                     Toggle(isOn: $settings.dictationAdaptsCapitalization) {
                         SettingsRowTitle(.dictationOutput, "Adapt capitalization")
-                        Text("Match the first letter to the text before the cursor.")
+                        Text(String(localized: "Match the first letter to the text before the cursor."))
                     }
                 } header: {
                     SettingsSectionHeader(.dictationOutput)
                 } footer: {
                     Text(
-                        "Press Return to finish dictating or Escape to cancel. Protected fields may refuse insertion."
+                        String(
+                            localized: "Press Return to finish dictating or Escape to cancel. Protected fields may refuse insertion."
+                        )
                     )
                 }
 
@@ -250,8 +256,8 @@ struct DictationSettingsView: View {
     }
 
     private var modelDescription: String {
-        modelSize.map { "\(ByteCountFormatter.string(fromByteCount: $0, countStyle: .file)) on disk" }
-            ?? "about \(settings.dictationModel.approximateInstalledMegabytes) MB installed"
+        modelSize.map { String(localized: "\(ByteCountFormatter.string(fromByteCount: $0, countStyle: .file)) on disk") }
+            ?? String(localized: "about \(settings.dictationModel.approximateInstalledMegabytes) MB installed")
     }
 
     private func refreshModelSize(_ model: DictationModel) async {

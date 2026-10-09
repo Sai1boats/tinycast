@@ -47,27 +47,27 @@ struct CustomCommandEditorPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
             SettingsEditorHeader(
-                title: command == nil ? "Add Custom Command" : "Edit Custom Command")
+                title: command == nil ? String(localized: "Add Custom Command") : String(localized: "Edit Custom Command"))
 
             HStack(alignment: .bottom, spacing: Theme.Spacing.lg) {
                 VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                    Text("Name")
+                    Text(String(localized: "Name"))
                         .font(.callout.weight(.medium))
-                    TextField("Sleep Displays", text: $name)
+                    TextField(String(localized: "Sleep Displays"), text: $name)
                         .settingsEditorTextField()
                 }
                 iconField
             }
 
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Text("Command")
+                Text(String(localized: "Command"))
                     .font(.callout.weight(.medium))
                 TextEditor(text: $shellCommand)
                     .font(.body.monospaced())
                     .settingsEditorTextArea(height: Theme.Size.editorTextHeight)
             }
 
-            Text("Example: /usr/bin/pmset displaysleepnow")
+            Text(String(localized: "Example: /usr/bin/pmset displaysleepnow"))
                 .font(.caption.monospaced())
                 .foregroundStyle(.secondary)
 
@@ -77,20 +77,20 @@ struct CustomCommandEditorPanel: View {
 
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 optionToggle(
-                    "Show in root search", isOn: $showsInRootSearch,
-                    detail: "List this command alongside apps and other commands.")
+                    String(localized: "Show in root search"), isOn: $showsInRootSearch,
+                    detail: String(localized: "List this command alongside apps and other commands."))
                 optionToggle(
-                    "Load shell environment", isOn: $loadsShellEnvironment,
-                    detail: "Sources ~/.zshrc for aliases, functions and PATH. Slower to start.")
+                    String(localized: "Load shell environment"), isOn: $loadsShellEnvironment,
+                    detail: String(localized: "Sources ~/.zshrc for aliases, functions and PATH. Slower to start."))
                 optionToggle(
-                    "Needs confirmation", isOn: $requiresConfirmation,
-                    detail: "Ask before running this command.")
+                    String(localized: "Needs confirmation"), isOn: $requiresConfirmation,
+                    detail: String(localized: "Ask before running this command."))
                 optionToggle(
-                    "Show confirmation", isOn: $showsConfirmation,
-                    detail: "Confirm on screen after the command succeeds.")
+                    String(localized: "Show confirmation"), isOn: $showsConfirmation,
+                    detail: String(localized: "Confirm on screen after the command succeeds."))
                 optionToggle(
-                    "Show output", isOn: $showsOutput,
-                    detail: "Open a window with everything the command printed when it finishes.")
+                    String(localized: "Show output"), isOn: $showsOutput,
+                    detail: String(localized: "Open a window with everything the command printed when it finishes."))
             }
 
             if let errorMessage {
@@ -100,10 +100,10 @@ struct CustomCommandEditorPanel: View {
             }
 
             HStack(spacing: Theme.Spacing.md) {
-                Button("Cancel") { dismiss() }
+                Button(String(localized: "Cancel")) { dismiss() }
                     .buttonStyle(.modalAction(.cancel))
                     .keyboardShortcut(.cancelAction)
-                Button("Save", action: save)
+                Button(String(localized: "Save"), action: save)
                     .buttonStyle(.modalAction(.primary))
                     .keyboardShortcut(.defaultAction)
                     .disabled(
@@ -127,14 +127,14 @@ struct CustomCommandEditorPanel: View {
 
     private var iconField: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            Text("Icon")
+            Text(String(localized: "Icon"))
                 .font(.callout.weight(.medium))
             Button {
                 showingIconPicker = true
             } label: {
                 HStack(spacing: Theme.Spacing.sm) {
                     SymbolImage(name: iconSymbol ?? CustomCommand.sfSymbol, size: 14)
-                    Text(iconSymbol == nil ? "Automatic" : "Custom")
+                    Text(iconSymbol == nil ? String(localized: "Automatic") : String(localized: "Custom"))
                         .lineLimit(1)
                     Spacer(minLength: 0)
                 }
@@ -155,14 +155,14 @@ struct CustomCommandEditorPanel: View {
 
     private var workingDirectoryField: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            Text("Run In")
+            Text(String(localized: "Run In"))
                 .font(.callout.weight(.medium))
             HStack(spacing: Theme.Spacing.sm) {
-                TextField("Home folder", text: $workingDirectory)
+                TextField(String(localized: "Home folder"), text: $workingDirectory)
                     .settingsEditorTextField()
-                Button("Choose…", action: chooseWorkingDirectory)
+                Button(String(localized: "Choose…"), action: chooseWorkingDirectory)
             }
-            Text("The folder the command starts in. Leave empty for your home folder.")
+            Text(String(localized: "The folder the command starts in. Leave empty for your home folder."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -173,8 +173,8 @@ struct CustomCommandEditorPanel: View {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.allowsMultipleSelection = false
-        panel.prompt = "Choose"
-        panel.message = "Choose the folder this command runs in."
+        panel.prompt = String(localized: "Choose")
+        panel.message = String(localized: "Choose the folder this command runs in.")
         if !workingDirectory.isEmpty {
             panel.directoryURL = URL(
                 fileURLWithPath: (workingDirectory as NSString).expandingTildeInPath)
@@ -188,10 +188,10 @@ struct CustomCommandEditorPanel: View {
     private var argumentsSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             HStack {
-                Text("Arguments")
+                Text(String(localized: "Arguments"))
                     .font(.callout.weight(.medium))
                 Spacer()
-                Button("Add") { arguments.append(ArgumentDraft(name: "", isOptional: false)) }
+                Button(String(localized: "Add")) { arguments.append(ArgumentDraft(name: "", isOptional: false)) }
                     .controlSize(.small)
                     .disabled(arguments.count >= CustomCommandArgument.limit)
             }
@@ -200,8 +200,8 @@ struct CustomCommandEditorPanel: View {
             }
             Text(
                 arguments.isEmpty
-                    ? "Add up to three, filled in beside the search field before the command runs."
-                    : "Passed to the command in order as $1, $2 …"
+                    ? String(localized: "Add up to three, filled in beside the search field before the command runs.")
+                    : String(localized: "Passed to the command in order as $1, $2 …")
             )
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -215,9 +215,9 @@ struct CustomCommandEditorPanel: View {
                 .font(.callout.monospaced())
                 .foregroundStyle(.secondary)
                 .frame(width: Self.positionWidth, alignment: .leading)
-            TextField("Argument name", text: argument.name)
+            TextField(String(localized: "Argument name"), text: argument.name)
                 .settingsEditorTextField()
-            Toggle("Optional", isOn: argument.isOptional)
+            Toggle(String(localized: "Optional"), isOn: argument.isOptional)
                 .toggleStyle(.checkbox)
             Button {
                 arguments.removeAll { $0.id == id }
@@ -225,7 +225,7 @@ struct CustomCommandEditorPanel: View {
                 Image(systemName: "minus.circle")
             }
             .buttonStyle(.borderless)
-            .help("Remove this argument")
+            .help(String(localized: "Remove this argument"))
         }
     }
 
@@ -273,7 +273,7 @@ struct CustomCommandEditorPanel: View {
             }
             dismiss()
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = NSLocalizedString(error.localizedDescription, comment: "Validation error")
         }
     }
 }

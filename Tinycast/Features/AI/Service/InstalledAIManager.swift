@@ -167,10 +167,18 @@ final class InstalledAIManager {
         }
         let status = status(for: kind)
         guard status.phase != .notInstalled else {
-            throw AIProviderError.unavailable("Install " + kind.title + " before using this model.")
+            throw AIProviderError.unavailable(String(
+                localized: "Install "
+            ) + kind.title + String(
+                localized: " before using this model."
+            ))
         }
         guard status.phase != .signInRequired else {
-            throw AIProviderError.unavailable("Sign in with `" + kind.signInCommand + "` first.")
+            throw AIProviderError.unavailable(String(
+                localized: "Sign in with `"
+            ) + kind.signInCommand + String(
+                localized: "` first."
+            ))
         }
         return InstalledCLIProvider(
             kind: kind, executable: status.executable, model: model, effort: effort,
@@ -213,7 +221,7 @@ final class InstalledAIManager {
             return (
                 kind,
                 InstalledAIStatus(
-                    phase: .failed("The installed command could not run."),
+                    phase: .failed(String(localized: "The installed command could not run.")),
                     executable: executable)
             )
         }
@@ -243,7 +251,7 @@ final class InstalledAIManager {
                 kind,
                 InstalledAIStatus(
                     phase: models.isEmpty
-                        ? .failed("Claude listed no models. Update Claude Code, then Check Again.")
+                        ? .failed(String(localized: "Claude listed no models. Update Claude Code, then Check Again."))
                         : .ready,
                     version: version, executable: executable, models: models,
                     account: InstalledAIModel.claudeAccount(catalog.output))
@@ -293,7 +301,7 @@ final class InstalledAIManager {
                     phase: models.status == 0 && !catalog.isEmpty
                         ? .ready
                         : .failed(
-                            "Cursor returned no models."),
+                            String(localized: "Cursor returned no models.")),
                     version: version, executable: executable, models: catalog)
             )
         case .codex:

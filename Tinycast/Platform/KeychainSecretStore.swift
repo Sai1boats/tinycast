@@ -11,6 +11,7 @@ struct KeychainSecretStore: Sendable {
     private let service: String
 
     /// Every scope the app stores under, named here so the whole keychain surface is one list.
+    static let baiduTranslation = KeychainSecretStore(scope: "baidu-translation")
     static let aiAPIKeys = KeychainSecretStore(scope: "ai-api-keys")
     static let mcpSecrets = KeychainSecretStore(scope: "mcp-secrets")
     static let installedAIEnvironment = KeychainSecretStore(scope: "installed-ai-environment")

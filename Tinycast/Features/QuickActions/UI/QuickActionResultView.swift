@@ -93,7 +93,7 @@ struct QuickActionResultView: View {
             HStack(spacing: metrics.spacing.sm) {
                 SymbolImage(name: state.action.symbol, size: metrics.size.quickActionHeaderIcon)
                     .foregroundStyle(Theme.Colors.textSecondary)
-                Text(state.action.title)
+                Text(state.action.localizedTitle)
                     .font(metrics.typography.panelTitle)
                 Spacer(minLength: metrics.spacing.md)
             }
@@ -111,7 +111,7 @@ struct QuickActionResultView: View {
         case .running where state.output.isEmpty:
             HStack(spacing: metrics.spacing.md) {
                 ProgressView().controlSize(.small)
-                Text("Working…").foregroundStyle(Theme.Colors.textSecondary)
+                Text(String(localized: "Working…")).foregroundStyle(Theme.Colors.textSecondary)
             }
             .font(metrics.typography.rowTitle)
         case .running, .finished:
@@ -169,14 +169,14 @@ struct QuickActionResultView: View {
         let language = TextTranslator.displayName(of: state.targetLanguage)
         return VStack(alignment: .leading, spacing: metrics.spacing.lg) {
             VStack(alignment: .leading, spacing: metrics.spacing.xs) {
-                Text("\(language) hasn't been downloaded yet.")
+                Text(String(localized: "\(language) hasn't been downloaded yet."))
                     .font(metrics.typography.rowTitle)
                     .foregroundStyle(Theme.Colors.textSecondary)
-                Text("Click **Translation Languages…** in Language & Region, then download it.")
+                Text(String(localized: "Click **Translation Languages…** in Language & Region, then download it."))
                     .font(metrics.typography.rowTrailing)
                     .foregroundStyle(Theme.Colors.textTertiary)
             }
-            Button("Open Language & Region", action: onOpenLanguageSettings)
+            Button(String(localized: "Open Language & Region"), action: onOpenLanguageSettings)
                 .buttonStyle(.modalAction(.standard, fillsWidth: false))
         }
     }
@@ -195,16 +195,36 @@ struct QuickActionResultView: View {
     private var footer: some View {
         HStack(spacing: metrics.spacing.md) {
             Spacer(minLength: metrics.spacing.md)
-            Button("Dismiss", action: onCancel)
+            Button(String(localized: "Dismiss"), action: onCancel)
                 .buttonStyle(.modalAction(.cancel, fillsWidth: false))
-            Button("Copy", action: onCopy)
+            Button(String(localized: "Copy"), action: onCopy)
                 .buttonStyle(.modalAction(.standard, fillsWidth: false))
                 .disabled(!state.canReplace)
-            Button("Replace", action: onReplace)
+            Button(String(localized: "Replace"), action: onReplace)
                 .buttonStyle(.modalAction(.primary, fillsWidth: false))
                 .disabled(!state.canReplace)
         }
         .padding(.horizontal, metrics.spacing.xxl)
         .padding(.vertical, metrics.spacing.xl)
     }
+}
+
+extension QuickAction {
+    var localizedTitle: String {
+        switch self {
+        case .builtIn(let action): action.localizedTitle
+        case .custom(let action): action.name
+        }
+    }
+
+    var localizedProgressTitle: String {
+        switch self {
+        case .builtIn(let action): NSLocalizedString(action.progressTitle, comment: "Quick action progress")
+        case .custom(let action): action.name + "…"
+        }
+    }
+}
+
+extension BuiltInQuickAction {
+    var localizedTitle: String { NSLocalizedString(title, comment: "Built-in quick action") }
 }

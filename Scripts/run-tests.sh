@@ -164,6 +164,8 @@ run launcher-settings-file-test \
                            Tinycast/Features/WindowManagement/Model/WindowCommand.swift \
                            Tinycast/Features/Snippets/Model/Snippet.swift
 run apple-shortcut-test    Tinycast/Features/AppleShortcuts/Model/*.swift
+run utilities-test         Tinycast/Features/Utilities/Model/*.swift \
+                           Tinycast/Features/Calculator/Model/*.swift
 run calc-test              Tinycast/Features/Calculator/Model/*.swift
 run index calc-performance Tinycast/Features/Calculator/Model/*.swift
 run calendar-test          Tinycast/Features/Calendar/Model/*.swift
@@ -219,6 +221,8 @@ run index emoji-search-performance \
                            Tinycast/Platform/AppPaths.swift Tinycast/Platform/Memo.swift
 run palette-selection-test Tinycast/Features/PaletteRowIndex.swift \
                            Tinycast/Features/Emoji/Model/EmojiGridGeometry.swift
+run terminal-block-test    Tinycast/Features/CustomCommands/UI/TerminalBlockLayoutManager.swift
+run localization-test      Tinycast/Features/Settings/AppLanguage.swift
 run appearance-test        Tinycast/Platform/Appearance.swift \
                            Tinycast/DesignSystem/Theme.swift \
                            Tinycast/DesignSystem/InterfaceMetrics.swift \
@@ -704,6 +708,11 @@ run mcp-test               Tinycast/Features/Settings/AppSettingsKey.swift \
                            Tinycast/Features/MCP/Settings/MCPSettingsStore.swift
 run -O text-diff-test      Tinycast/Features/QuickActions/Model/TextDiffEngine.swift
 run index text-diff-performance Tinycast/Features/QuickActions/Model/TextDiffEngine.swift
+run translation-session-test Tinycast/Features/Translation/Model/*.swift \
+                           Tinycast/Features/Translation/UI/TranslationCoordinator.swift
+run translation-test      Tinycast/Features/Translation/Model/*.swift \
+                           Tinycast/Features/Translation/Service/BaiduTranslationService.swift \
+                           Tinycast/Platform/KeychainSecretStore.swift
 run quick-action-test      Tinycast/Features/Settings/AppSettingsKey.swift \
                            Tinycast/Features/AI/Model/AIConnection.swift \
                            Tinycast/Features/AI/Model/AppleIntelligence.swift \

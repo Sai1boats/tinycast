@@ -13,6 +13,14 @@ the signing identity itself is in [signing.md](signing.md).
 It builds a Release `Tinycast.app` signed with `Tinycast Self-Signed` and packs it with an
 `/Applications` symlink. Official per-channel releases are built by CI, below.
 
+## App icon
+
+`Tinycast/tinycast.icon` is an Icon Composer package. `project.yml` declares `.icon` as a file
+resource so XcodeGen passes the entire package to the asset compiler. Treating it as a group copies
+its JSON and SVG separately and leaves the installed app without an icon. Keep the asset compiler's
+app-icon name set to `tinycast`, and verify the built bundle contains `tinycast.icns` and its
+`CFBundleIconFile` entry before packaging.
+
 ## Signing & Gatekeeper
 
 Both local builds and CI releases sign with the same stable `Tinycast Self-Signed` identity, not an

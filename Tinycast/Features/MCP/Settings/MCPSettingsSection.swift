@@ -17,7 +17,7 @@ struct MCPSettingsSection: View {
             }
             Group {
                 if store.servers.isEmpty {
-                    Text("No MCP servers yet.")
+                    Text(String(localized: "No MCP servers yet."))
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(store.servers) { server in
@@ -46,7 +46,7 @@ struct MCPSettingsSection: View {
         } header: {
             SettingsSectionHeader(.aiMCPServers)
         } footer: {
-            Text("Type @slug to address one server. A chat asks before its first tool call.")
+            Text(String(localized: "Type @slug to address one server. A chat asks before its first tool call."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -54,12 +54,12 @@ struct MCPSettingsSection: View {
             MCPServerEditor(target: target, onSave: save, onCancel: { editor = nil })
         }
         .confirmationDialog(
-            "Remove \(pendingRemoval?.title ?? "this server")?", isPresented: removalBinding,
+            String(localized: "Remove \(pendingRemoval?.title ?? "this server")?"), isPresented: removalBinding,
             presenting: pendingRemoval
         ) { server in
-            Button("Remove", role: .destructive) { remove(server) }
+            Button(String(localized: "Remove"), role: .destructive) { remove(server) }
         } message: { _ in
-            Text("Its tools stop being offered, and its stored credentials are deleted.")
+            Text(String(localized: "Its tools stop being offered, and its stored credentials are deleted."))
         }
     }
 
@@ -72,7 +72,7 @@ struct MCPSettingsSection: View {
         do {
             try coordinator.save(server, secrets: secrets)
         } catch {
-            return "The credentials could not be saved to your login Keychain."
+            return String(localized: "The credentials could not be saved to your login Keychain.")
         }
         editor = nil
         return nil
@@ -85,7 +85,7 @@ struct MCPSettingsSection: View {
             removalError = nil
         } catch {
             removalError =
-                "\(server.title) was kept: its credentials could not be removed from your login Keychain."
+                String(localized: "\(server.title) was kept: its credentials could not be removed from your login Keychain.")
         }
     }
 }
@@ -103,20 +103,20 @@ private struct MCPServerRow: View {
         } trailing: {
             Button(action: onEdit) { Image(systemName: "pencil") }
                 .buttonStyle(.plain)
-                .help("Edit \(server.title)")
-                .accessibilityLabel("Edit \(server.title)")
+                .help(String(localized: "Edit \(server.title)"))
+                .accessibilityLabel(String(localized: "Edit \(server.title)"))
             Button(action: onRemove) {
                 Image(systemName: "trash").foregroundStyle(.red)
             }
             .buttonStyle(.plain)
-            .help("Remove \(server.title)")
-            .accessibilityLabel("Remove \(server.title)")
+            .help(String(localized: "Remove \(server.title)"))
+            .accessibilityLabel(String(localized: "Remove \(server.title)"))
         }
     }
 
     /// The slug leads, because it is the half a reader has to type into the composer.
     private var subtitle: String {
-        let state = server.isEnabled ? status.label : "Disabled"
+        let state = server.isEnabled ? status.label : String(localized: "Disabled")
         return "@\(server.slug) · \(state) · \(server.transport.summary)"
     }
 }

@@ -88,6 +88,7 @@ because the app rewrites the file.
 ```json
 {
   "general": {
+    "language": "system",
     "showInMenuBar": true,
     "automaticallyCheckForUpdates": true,
     "popToRootSeconds": 0,
@@ -112,6 +113,7 @@ Where a number has a special case, the case is a word:
 
 | Key | Values |
 | --- | --- |
+| `general.language` | `"system"`, `"en"`, `"zh-Hans"`; takes effect after restarting Tinycast |
 | `clipboard.retentionDays` | 1, 7, 30, 90, 180, 365, `"forever"` |
 | `ai.retentionDays` | 7, 30, 90, `"forever"` |
 | `ai.newChatAfterMinutes` | 2, 5, 10, 30, `"never"` |

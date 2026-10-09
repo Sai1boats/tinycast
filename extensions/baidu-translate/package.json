@@ -1,0 +1,29 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "baidu-translate",
+  "title": "百度翻译",
+  "description": "使用百度通用翻译 API 翻译选中文本或自定义内容，切换语言并复制、粘贴译文。",
+  "icon": "icon.png",
+  "author": "tinycast",
+  "license": "MIT",
+  "platforms": ["macOS"],
+  "categories": ["Productivity"],
+  "commands": [
+    {"name": "translate", "title": "百度翻译", "description": "输入或粘贴文本并翻译", "mode": "view"},
+    {"name": "translate-selection", "title": "百度翻译选中文本", "description": "读取当前应用选中文本并翻译", "mode": "view"}
+  ],
+  "preferences": [
+    {"name": "appid", "title": "百度 APP ID", "description": "百度翻译开放平台的 APP ID", "type": "textfield", "required": true},
+    {"name": "secret", "title": "百度密钥", "description": "百度通用翻译 API 密钥", "type": "password", "required": true},
+    {"name": "target", "title": "默认目标语言", "description": "打开命令时使用的目标语言", "type": "dropdown", "required": true, "default": "zh", "data": [{"title": "简体中文", "value": "zh"}, {"title": "英语", "value": "en"}, {"title": "日语", "value": "jp"}, {"title": "韩语", "value": "kor"}, {"title": "繁体中文", "value": "cht"}]}
+  ],
+  "scripts": {
+    "dev": "ray develop",
+    "build": "ray build",
+    "build:tinycast": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts"
+  },
+  "dependencies": {"@raycast/api": "^2.0.3", "react": "^19.2.0"},
+  "devDependencies": {"@types/node": "^22.0.0", "@types/react": "^19.0.0", "esbuild": "^0.25.0", "tsx": "^4.20.0", "typescript": "^5.9.0"}
+}

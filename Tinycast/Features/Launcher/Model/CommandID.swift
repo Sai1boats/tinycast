@@ -8,6 +8,11 @@ enum CommandID: String, CaseIterable, Sendable {
     case fixGrammar = "command:fix-grammar"
     case rewrite = "command:rewrite"
     case translate = "command:translate"
+    case jsonTools = "command:json-tools"
+    case timestampConverter = "command:timestamp-converter"
+    case currencyConverter = "command:currency-converter"
+    case quickTranslate = "command:quick-translate"
+    case translateSelection = "command:translate-selection"
     case summarize = "command:summarize"
     case calculatorHistory = "command:calculator-history"
     case clipboardHistory = "command:clipboard-history"
@@ -54,6 +59,11 @@ enum CommandID: String, CaseIterable, Sendable {
         case .fixGrammar: return BuiltInQuickAction.fixGrammar.title
         case .rewrite: return BuiltInQuickAction.rewrite.title
         case .translate: return BuiltInQuickAction.translate.title
+        case .jsonTools: return "JSON Tools"
+        case .timestampConverter: return "Timestamp Converter"
+        case .currencyConverter: return "Currency Converter"
+        case .quickTranslate: return "Quick Translate"
+        case .translateSelection: return "Translate Selected Text"
         case .summarize: return BuiltInQuickAction.summarize.title
         case .calculatorHistory: return "Calculator History"
         case .clipboardHistory: return "Clipboard History"
@@ -102,6 +112,10 @@ enum CommandID: String, CaseIterable, Sendable {
         case .fixGrammar: return BuiltInQuickAction.fixGrammar.symbol
         case .rewrite: return BuiltInQuickAction.rewrite.symbol
         case .translate: return BuiltInQuickAction.translate.symbol
+        case .jsonTools: return "curlybraces"
+        case .timestampConverter: return "clock.arrow.2.circlepath"
+        case .currencyConverter: return "dollarsign.arrow.circlepath"
+        case .quickTranslate, .translateSelection: return "translate"
         case .summarize: return BuiltInQuickAction.summarize.symbol
         case .calculatorHistory: return "plus.forwardslash.minus"
         case .clipboardHistory: return "doc.on.clipboard"

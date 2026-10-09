@@ -49,7 +49,7 @@ struct BackupCategorySelection: View {
                     .toggleStyle(.checkbox)
                 }
             }
-            Button(selection.isEmpty ? "Select All" : "Deselect All") {
+            Button(selection.isEmpty ? String(localized: "Select All") : String(localized: "Deselect All")) {
                 selection = selection.isEmpty ? Set(offered) : []
             }
             .buttonStyle(.link)

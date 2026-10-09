@@ -481,7 +481,7 @@ final class ExtensionNodeShims: @unchecked Sendable {
         do {
             exit = try task.runObservingExit()
         } catch {
-            throw ShimError.failed("Could not run '\(command)': \(error.localizedDescription)", "ENOENT")
+            throw ShimError.failed(String(localized: "Could not run '\(command)': \(error.localizedDescription)"), "ENOENT")
         }
         if let input, let stdin { feed(input, to: stdin) }
         return ExtensionAsyncProcess.Child(task: task, exit: exit, stdout: stdout, stderr: stderr)

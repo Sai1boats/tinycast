@@ -13,7 +13,7 @@ struct ClipboardSettingsView: View {
                 Toggle(isOn: $settings.clipboardEnabled) {
                     SettingsFeatureToggleLabel(
                         anchor: .clipboardClipboard, title: "Enable Clipboard History",
-                        subtitle: "Keep copied items ready to reuse.")
+                        subtitle: String(localized: "Keep copied items ready to reuse."))
                 }
             }
             .settingsAnchor(.clipboardClipboard)
@@ -24,22 +24,22 @@ struct ClipboardSettingsView: View {
             Section {
                 Picker(selection: $settings.clipboardRetention) {
                     ForEach(ClipboardRetention.allCases) { retention in
-                        Text(retention.title).tag(retention)
+                        Text(LocalizedStringKey(retention.title)).tag(retention)
                     }
                 } label: {
                     SettingsRowTitle(.clipboardHistory, "Keep history for")
                 }
                 Toggle(isOn: $settings.clipboardTextSearchEnabled) {
                     SettingsRowTitle(.clipboardHistory, "Search text in images and PDFs")
-                    Text("Recognized on this Mac while idle.")
+                    Text(String(localized: "Recognized on this Mac while idle."))
                 }
                 Picker(selection: $settings.clipboardDefaultAction) {
                     ForEach(ClipboardDefaultAction.allCases) { action in
-                        Text(action.title).tag(action)
+                        Text(LocalizedStringKey(action.title)).tag(action)
                     }
                 } label: {
                     SettingsRowTitle(.clipboardHistory, "Default action")
-                    Text("↵ does this, and Paste takes its shortcut.")
+                    Text(String(localized: "↵ does this, and Paste takes its shortcut."))
                 }
             } header: {
                 SettingsSectionHeader(.clipboardHistory)
@@ -49,32 +49,32 @@ struct ClipboardSettingsView: View {
             DisabledApplicationsSection(
                 bundleIDs: $settings.clipboardDisabledApps,
                 anchor: .clipboardDisabledApplications,
-                footer: "Copies from these apps aren't recorded."
+                footer: String(localized: "Copies from these apps aren't recorded.")
             )
             .settingsEnabled(settings.clipboardEnabled)
 
             Section {
                 LabeledContent {
-                    Button("Clear…", role: .destructive) { confirmingClear = true }
+                    Button(String(localized: "Clear…"), role: .destructive) { confirmingClear = true }
                 } label: {
                     SettingsRowTitle(.clipboardDisabledApplications, "Clear history")
-                    Text("Removes every clip and image.")
+                    Text(String(localized: "Removes every clip and image."))
                 }
             }
         }
         .formStyle(.grouped)
         .settingsScrollTarget(.clipboard)
         .confirmationDialog(
-            "Clear clipboard history?",
+            String(localized: "Clear clipboard history?"),
             isPresented: $confirmingClear,
             titleVisibility: .visible
         ) {
-            Button("Clear History", role: .destructive) {
+            Button(String(localized: "Clear History"), role: .destructive) {
                 core.clipboardCoordinator.clearHistory()
             }
-            Button("Cancel", role: .cancel) {}
+            Button(String(localized: "Cancel"), role: .cancel) {}
         } message: {
-            Text("This can't be undone.")
+            Text(String(localized: "This can't be undone."))
         }
     }
 }

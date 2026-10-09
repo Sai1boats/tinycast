@@ -114,7 +114,7 @@ final class LauncherSettingsFile {
                 }
                 guard let decoded = read else { return [.invalidValue(key)] }
                 let unknown = decoded.records.keys.filter { byName[$0] == nil }.sorted().map {
-                    SettingsFileIssue.invalidEntry(key, "no \(noun) in this section is called “\($0)”")
+                    SettingsFileIssue.invalidEntry(key, String(localized: "no \(noun) in this section is called “\($0)”"))
                 }
                 return decoded.problems.map { .invalidEntry(key, $0) } + unknown
                     + apply(decoded.records, to: items, noun: noun, key: key)
@@ -197,7 +197,7 @@ final class LauncherSettingsFile {
             if let action = item.action {
                 wanted.append(HotKeySettingsFile.Wanted(action: action, text: record.shortcut, label: label))
             } else if record.shortcut != nil {
-                issues.append(.invalidEntry(key, "\(label) can't have a shortcut"))
+                issues.append(.invalidEntry(key, String(localized: "\(label) can't have a shortcut")))
             }
         }
         return issues + shortcuts.apply(wanted, key: key)

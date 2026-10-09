@@ -58,7 +58,7 @@ struct ChatTranscriptView: View {
                         .id(message.id)
                     }
                     if let total = usage?.totalTokens {
-                        Text("\(total.formatted()) tokens")
+                        Text(String(localized: "\(total.formatted()) tokens"))
                             .font(metrics.typography.rowTrailing)
                             .foregroundStyle(Theme.Colors.textTertiary)
                             .frame(maxWidth: .infinity, alignment: .trailing)
@@ -154,7 +154,7 @@ private struct ResumeFollowingButton: View {
 
     var body: some View {
         Button(action: action) {
-            Label("Jump to Latest", systemImage: "arrow.down")
+            Label(String(localized: "Jump to Latest"), systemImage: "arrow.down")
                 .font(metrics.typography.rowTrailing)
                 .foregroundStyle(Theme.Colors.textSecondary)
                 .padding(.horizontal, metrics.spacing.lg)
@@ -333,7 +333,7 @@ private struct ChatSourcesView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: metrics.spacing.sm) {
-            Text("Sources")
+            Text(String(localized: "Sources"))
                 .font(metrics.typography.rowTrailing.weight(.semibold))
                 .foregroundStyle(Theme.Colors.textTertiary)
             ChatFlowLayout(spacing: metrics.spacing.sm) {
@@ -376,7 +376,7 @@ private struct ChatSourceChip: View {
         }
         .buttonStyle(.glass)
         .help(reference.url.absoluteString)
-        .accessibilityLabel("Source \(index): \(reference.title), \(reference.host)")
+        .accessibilityLabel(String(localized: "Source \(index): \(reference.title), \(reference.host)"))
     }
 }
 
@@ -393,8 +393,8 @@ private struct RegenerateButton: View {
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .help("Regenerate Response")
-        .accessibilityLabel("Regenerate Response")
+        .help(String(localized: "Regenerate Response"))
+        .accessibilityLabel(String(localized: "Regenerate Response"))
     }
 }
 
@@ -408,9 +408,9 @@ private struct ChatReasoningBlock: View {
     @State private var expanded = false
 
     private var title: String {
-        if isThinking { return "Thinking…" }
-        guard let duration = block.duration else { return "Thoughts" }
-        return "Thought for \(max(1, Int(duration.rounded())))s"
+        if isThinking { return String(localized: "Thinking…") }
+        guard let duration = block.duration else { return String(localized: "Thoughts") }
+        return String(localized: "Thought for \(max(1, Int(duration.rounded())))s")
     }
 
     /// A match inside a folded block would be found and then invisible, so find unfolds it.
@@ -444,7 +444,7 @@ private struct ChatReasoningBlock: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(isOpen ? "Hide reasoning" : "Show reasoning")
+            .accessibilityLabel(isOpen ? String(localized: "Hide reasoning") : String(localized: "Show reasoning"))
             if isOpen {
                 Text(highlight?.attributed(block.text, leaf: path) ?? AttributedString(block.text))
                     .findAnchor(highlight, leaf: path)
@@ -484,7 +484,7 @@ private struct ChatDocumentChip: View {
         .padding(.horizontal, metrics.spacing.sm)
         .padding(.vertical, metrics.spacing.xxs)
         .background(Capsule().fill(Theme.Colors.controlSurface))
-        .accessibilityLabel("Attached file \(document.name)")
+        .accessibilityLabel(String(localized: "Attached file \(document.name)"))
     }
 }
 
@@ -553,7 +553,7 @@ private struct ChatToolRun: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(uses.completedLabel)
-                    .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
+                    .accessibilityValue(isExpanded ? String(localized: "Expanded") : String(localized: "Collapsed"))
                     if isExpanded {
                         VStack(alignment: .leading, spacing: metrics.spacing.sm) {
                             ForEach(uses, id: \.callID) { use in
@@ -619,7 +619,7 @@ private struct ChatSearchRow: View {
             } else {
                 ProgressView().controlSize(.small)
             }
-            Text(search.isComplete ? "Searched web" : "Searching web")
+            Text(search.isComplete ? String(localized: "Searched web") : String(localized: "Searching web"))
                 .font(metrics.typography.rowTrailing)
             if let query = search.query, !query.isEmpty {
                 Text("· \(query)")

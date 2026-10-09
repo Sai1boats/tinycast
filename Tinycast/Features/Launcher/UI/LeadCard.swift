@@ -57,7 +57,7 @@ private struct LeadCardBadge: View {
     let text: String
 
     var body: some View {
-        Text(text)
+        Text(LocalizedStringKey(text))
             .font(metrics.typography.keyCap)
             .lineLimit(1)
             .minimumScaleFactor(0.6)

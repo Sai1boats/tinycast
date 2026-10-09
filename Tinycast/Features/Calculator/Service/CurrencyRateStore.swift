@@ -17,9 +17,12 @@ final class CurrencyRateStore {
 
     /// The newest snapshot, nil until the first one lands.
     private(set) var rates: CurrencyRates?
+    private(set) var isRefreshing = false
 
     private let fileURL: URL
     @ObservationIgnored private var pump: Task<Void, Never>?
+    @ObservationIgnored private var refreshTask: Task<Bool, Never>?
+    @ObservationIgnored private var refreshIdentity = UUID()
     /// Drives the schedule: a partial snapshot answers, but only a whole one resets the clock.
     @ObservationIgnored private var completedAt: Date?
 
@@ -44,14 +47,38 @@ final class CurrencyRateStore {
                     try? await Task.sleep(for: .seconds(Self.refreshInterval - age))
                     continue
                 }
-                let ok = await self.fetchAndStore()
+                let ok = await self.refresh()
                 try? await Task.sleep(for: .seconds(ok ? Self.refreshInterval : Self.retryInterval))
             }
         }
     }
 
+    func refresh() async -> Bool {
+        if let refreshTask { return await refreshTask.value }
+        let identity = UUID()
+        refreshIdentity = identity
+        isRefreshing = true
+        let task = Task { [weak self] in await self?.fetchAndStore() ?? false }
+        refreshTask = task
+        let result = await task.value
+        if refreshIdentity == identity {
+            refreshTask = nil
+            isRefreshing = false
+        }
+        return result
+    }
+
+    func stop() {
+        pump?.cancel()
+        pump = nil
+        refreshIdentity = UUID()
+        refreshTask?.cancel()
+        refreshTask = nil
+        isRefreshing = false
+    }
+
     private func fetchAndStore() async -> Bool {
-        guard let result = await Self.fetch() else { return false }
+        guard let result = await Self.fetch(), !Task.isCancelled else { return false }
         rates = result.rates
         // Never persist a coin-less run: `pricesCoins` reads the cache as whole by definition.
         guard result.complete, let data = try? JSONEncoder().encode(result.rates) else { return false }

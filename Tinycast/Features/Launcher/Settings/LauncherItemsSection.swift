@@ -17,7 +17,7 @@ struct LauncherCategorySwitchSection: View {
             ) {
                 SettingsFeatureToggleLabel(
                     anchor: anchor, title: "Enable \(anchor.title)",
-                    subtitle: "Off hides all of them and stops their shortcuts.")
+                    subtitle: String(localized: "Off hides all of them and stops their shortcuts."))
             }
         }
     }
@@ -66,7 +66,7 @@ struct LauncherItemsList: View {
 
     var body: some View {
         if entries.isEmpty {
-            Text(query.isEmpty ? "Nothing here yet." : "No matches for “\(query)”.")
+            Text(query.isEmpty ? String(localized: "Nothing here yet.") : String(localized: "No matches for “\(query)”."))
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .center)
         } else if entries.first?.kind != .application && entries.first?.kind != .appleShortcut {
@@ -102,7 +102,7 @@ struct LauncherItemRow: View {
 
     var body: some View {
         SettingsRow(
-            title: entry.name,
+            title: entry.localizedName,
             labelOpacity: visibility.isItemVisible(entry) ? 1 : 0.45
         ) {
             // Keyed so a reused cell seeds the new entry's icon on its first frame.
@@ -118,7 +118,7 @@ struct LauncherItemRow: View {
                 .labelsHidden()
                 .toggleStyle(.checkbox)
                 .launcherVisibilityHelp()
-                .accessibilityLabel("Show \(entry.name) in launcher")
+                .accessibilityLabel(String(localized: "Show \(entry.name) in launcher"))
         }
     }
 
