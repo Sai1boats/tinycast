@@ -17,7 +17,7 @@ struct DisabledApplicationsList: View {
         Button(String(localized: "Add Application…")) { picking = true }
             .popover(isPresented: $picking, arrowEdge: .bottom) {
                 AppPickerPopover(excluded: Set(bundleIDs)) { bundleID in
-                    if let bundleID { bundleIDs.append(bundleID) }
+                    bundleIDs.append(bundleID)
                     picking = false
                 }
             }

@@ -43,7 +43,8 @@ Independently of the folder tree, every mature subsystem has converged on the sa
 │ IconCache · WindowMover · UninstallScanner · UninstallRunner ·             │
 │ SystemActionRunner · QuicklinkLauncher · TextInjector ·             │
 │ SnippetKeywordListener · NotesRepository · CurrencyRateStore · Paster ·    │
-│ HotKeyCenter · HyperKeyTap · ModifierTapMonitor · RunningAppsMonitor ·     │
+│ HotKeyCenter · HyperKeyTap · KeyboardRemapper · ModifierTapMonitor ·       │
+│ SecureInputMonitor · RunningAppsMonitor ·                                  │
 │ CalendarStore · MeetingLauncher · MeetingClock · CameraSession ·           │
 │ SupportReminderStore · AXMenuAccess · WindowZOrder · WindowSwitchSweep ·   │
 │ AppleShortcutRunner · SettingsFileRepository · SettingsFileMonitor ·       │
@@ -92,7 +93,7 @@ app: the stores (`AppIndex`, `ClipboardStore`, `SnippetsStore`, `QuicklinkStore`
 `FavoritesStore`, `VisibilityStore`, `AliasStore`, `LauncherRankingStore`, `CalculatorHistoryStore`,
 `CurrencyRateStore`, `FrequentEmojiStore`, `CalendarStore`), the managers, monitors and clocks
 (`ClipboardManager`, the opt-in `ClipboardTextIndexer`, the opt-in `SettingsFileRepository`,
-`HotKeyManager`, `HyperKeyTap`, `RunningAppsMonitor`, `SnippetKeywordListener`), the shared state
+`HotKeyManager`, `HyperKeyManager`, `RunningAppsMonitor`, `SnippetKeywordListener`), the shared state
 (`AppSettings`, `PaletteState`, `FileSearchSession`, `MenuSearchSession`, `UninstallSession`,
 `MeetingClock`), `NotesStore`, the twenty-one feature coordinators, and the
 window controllers.
@@ -158,7 +159,7 @@ driven imperatively from AppKit. Extension menu extras are dynamic `NSStatusItem
   actor, and the presenter refuses a second dialog while one is up — that, not a flag, is what stops a
   held hotkey stacking dialogs.
 - **Support** — a titled `AppWindowController` window owned by `SupportCoordinator`, sized to the
-  height its content measured. Every route into it — the palette's menu circle, Settings → About, the
+  height its content measured. Every route into it — Settings → About, the
   menu bar, the launcher, and the 30-day reminder — lands on `showSupport()`, which is what moves the
   reminder's anchor. See [features/support.md](features/support.md).
 - **The camera surfaces** — a borderless, non-activating `CameraPanel` at `.floating`, in two
@@ -235,7 +236,7 @@ Tinycast/
     PaletteRowIndex.swift   the flat selection index — palette-owned, so it sits at the top
     Launcher/ Clipboard/ Calculator/ Calendar/ Emoji/ FileSearch/ MenuSearch/ Notes/
     Quicklinks/ Snippets/ Uninstall/ SystemActions/ CustomCommands/ HotKeys/ Backup/
-    WindowManagement/ Onboarding/ Updates/ Support/ AI/ Settings/
+    WindowManagement/ Onboarding/ Support/ AI/ Settings/
     Extensions/
         Model/      pure — the harness inputs
         Service/    effects — stores, monitors, runners, AppKit glue

@@ -32,9 +32,9 @@ feature is enabled in Settings.
 - **The shipped ignore rules are compiled in and never persisted.** `fileSearchIgnorePatterns` stores
   only what the user added, so changing `FileSearchIgnoreList.defaults` reaches installs that already
   ran. The consequence is that the shipped six cannot be switched off.
-- **File Search is off by default, and off means no entry point or Spotlight work.** A nonempty query
-  on that screen is the first operation that searches, and the global shortcut no-ops while the
-  feature switch is off.
+- **File Search is off by default, and off means no entry point or Spotlight work.** When enabled,
+  the dedicated screen searches on open; Mixed Search also searches typed root queries. The global
+  shortcut no-ops while the feature switch is off.
 - **Tinycast asks for no file permission.** Hidden metadata items and application bundles are filtered,
   and Spotlight or TCC omissions produce a thinner result set rather than a prompt for Full Disk Access.
 - **A superseded query never publishes.** The session cancels its pending task and checks cancellation

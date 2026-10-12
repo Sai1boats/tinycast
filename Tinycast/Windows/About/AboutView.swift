@@ -67,13 +67,6 @@ struct AboutView: View {
                     .overlay(
                         Capsule().strokeBorder(Theme.Colors.cardStroke, lineWidth: 1)
                     )
-                Button {
-                    core.updateCoordinator.checkForUpdates()
-                } label: {
-                    SettingsRowTitle(.aboutAbout, "Check for Updates")
-                }
-                .buttonStyle(.link)
-                .font(.caption)
             }
 
             Text(String(localized: "A tiny, native macOS launcher."))

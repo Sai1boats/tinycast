@@ -146,12 +146,15 @@ struct SettingsHistoryTests {
     }
 
     static func catalogFindsKnownRows() {
+        expect(
+            !SettingsSearchCatalog.entries.contains {
+                $0.title == "Check for Updates" || $0.title == "Automatically check for updates"
+            }, "removed update controls are not searchable")
         let cases: [(String, SettingsTab)] = [
             ("hyper", .general),
             ("caps lock", .general),
             ("launch at login", .general),
-            ("automatically check for updates", .general),
-            ("popup", .general),
+            ("mixed search", .general),
             ("paste history", .clipboard),
             ("window manage", .windowManagement),
             ("skin tone", .emoji),

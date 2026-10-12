@@ -17,6 +17,7 @@ final class FileSearchSession {
     private(set) var state: State = .idle
     /// The published search: the filter belongs to it, so narrowing re-runs the same words.
     private var request: Request?
+    private var publishedRequest: Request?
     private var revision = 0
     @ObservationIgnored private var pendingSearch: PendingSearch?
     @ObservationIgnored private var workerTask: Task<Void, Never>?
@@ -89,10 +90,17 @@ final class FileSearchSession {
         }
     }
 
+    func results(matching rawQuery: String) -> [FileSearchResult] {
+        let query = rawQuery.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard publishedRequest == Request(query: query, filter: .all) else { return [] }
+        return results
+    }
+
     func cancel() {
         revision &+= 1
         pendingSearch = nil
         request = nil
+        publishedRequest = nil
         results = []
         state = .idle
     }
@@ -112,6 +120,7 @@ final class FileSearchSession {
             do {
                 let candidates = try await searchOperation(request.query, request.filter, policy)
                 guard revision == pending.revision, self.request == request else { continue }
+                publishedRequest = request
                 results = candidates
                 state = .ready
             } catch {

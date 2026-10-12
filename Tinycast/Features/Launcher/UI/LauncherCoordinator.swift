@@ -246,6 +246,10 @@ final class LauncherCoordinator {
             core.roomCoordinator.createRoom()
         case .createQuicklink:
             quicklinkCoordinator.editQuicklink(nil)
+        case .createCustomCommand:
+            customCommandCoordinator.editCustomCommand(nil)
+        case .searchCustomCommands:
+            customCommandCoordinator.showCustomCommands()
         case .importQuicklinks:
             dismissPalette()
             Task { await quicklinkCoordinator.importQuicklinks() }
@@ -261,9 +265,6 @@ final class LauncherCoordinator {
         case .importFromRaycast:
             dismissPalette()
             settingsCoordinator.showBackupSettings()
-        case .checkForUpdates:
-            dismissPalette()
-            core.updateCoordinator.checkForUpdates()
         case .settings:
             dismissPalette()
             settingsCoordinator.showSettings()

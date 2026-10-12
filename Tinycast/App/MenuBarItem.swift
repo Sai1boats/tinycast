@@ -24,7 +24,6 @@ struct MenuBarMenu: View {
             }
         }
         Divider()
-        Button(String(localized: "Check for Updates...")) { AppCore.shared.updateCoordinator.checkForUpdates() }
         Button(String(localized: "Support \(appName)...")) { AppCore.shared.supportCoordinator.showSupport() }
         Button(String(localized: "Settings...")) { AppCore.shared.settingsCoordinator.showSettings() }
             .keyboardShortcut(",")

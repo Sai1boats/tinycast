@@ -10,8 +10,12 @@ the signing identity itself is in [signing.md](signing.md).
 ./Scripts/build-dmg.sh 0.5.7      # -> build/Tinycast-0.5.7.dmg
 ```
 
-It builds a Release `Tinycast.app` signed with `Tinycast Self-Signed` and packs it with an
-`/Applications` symlink. Official per-channel releases are built by CI, below.
+It builds a Release `Tinycast.app`, verifies the nested signatures and runtime entitlements, and packs
+it with an `/Applications` symlink. Signing defaults to `Tinycast Self-Signed`. To update an existing
+local installation signed with another identity, set `CODE_SIGN_IDENTITY` to that identity and
+`TINYCAST_BUNDLE_IDENTIFIER` to the installed bundle identifier. `TINYCAST_DERIVED_DATA_PATH` optionally
+selects a separate build directory. These overrides apply to the build invocation and preserve the
+project defaults. Official per-channel releases are built by CI, below.
 
 ## App icon
 
@@ -28,32 +32,14 @@ Apple Developer ID — so macOS quarantines a directly-downloaded DMG. The Homeb
 automatically; direct downloaders run `xattr -dr com.apple.quarantine "…/Tinycast.app"` once. Full
 details in [signing.md](signing.md).
 
-## How the in-app updater consumes a release
+## Manual installation
 
-Every release publishes two assets from one build: `Tinycast-<version>.dmg`, which people download by
-hand and which the cask installs, and `Tinycast-<version>.zip`, which the in-app updater installs. The
-zip is produced with `ditto -c -k --keepParent --sequesterRsrc` — the only zip that leaves the code
-signature verifiable, which matters because the updater refuses any bundle whose signature does not
-prove it is ours.
+This build has no in-app updater. Package the signed app as a DMG, quit the running app, then replace
+its bundle in Applications and reopen it. Preserve its bundle identifier and signing identity when
+replacing a local installation so its channel and permissions remain consistent.
 
-A stable release publishes two more from the `universal` job, `Tinycast-Universal-<version>.dmg` and
-`.zip`, built from the same commit at the same version and bundle id but with both slices. They are
-uploaded *after* the thin pair, which keeps the thin zip first in the asset list so builds predating
-architecture-aware selection keep choosing it.
-
-Three things a release must keep true, or the updater skips it:
-
-- **It carries a `.zip` asset this Mac can run.** A DMG-only release is not installable and is not
-  offered, and an Intel build is offered nothing rather than a thin arm64 zip.
-- **The tag parses as `vMAJOR.MINOR.PATCH` or `vMAJOR.MINOR.PATCH-beta.N`,** and agrees with the
-  `prerelease` flag. A tag of any other shape is treated as mis-published and skipped.
-- **It is not a draft.**
-
-**Both casks declare `auto_updates true`.** That is Homebrew's flag for an app that manages its own
-version, and it is what keeps `brew update && brew upgrade` from fighting an app that updated itself:
-brew never reports Tinycast outdated, never re-downloads it, and never rolls a self-updated copy back.
-Removing that line would reintroduce exactly those three problems. See
-[features/updates.md](features/updates.md).
+The upstream release workflow below also produces ZIP assets for external distribution. Those assets
+are not discovered, downloaded or installed by this app.
 
 ## Pull request review
 
@@ -112,9 +98,8 @@ Two details the script exists for:
   commit can carry both — so "the previous release" is only ever right within one channel. A stable
   release therefore spans every beta since the last stable.
 - **The body is split by `<!-- tinycast:install -->`.** Everything above it is the changelog;
-  everything below is the Homebrew and quarantine text, which only a download page needs. The update
-  window cuts at that marker — see [features/updates.md](features/updates.md). Full PR URLs are
-  shortened to `#304`, which still autolinks on the web and fits a 460pt window.
+  everything below is the Homebrew and quarantine text for manual installation. Full PR URLs are
+  shortened to `#304`, which still autolinks on the web.
 
 The Discord announcement carries the same changelog, truncated to fit Discord's component limit, and
 pings `@everyone`.

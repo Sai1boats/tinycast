@@ -453,11 +453,11 @@ function summarize(value) {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [dir, command] = process.argv.slice(2);
-  if (dir) {
-    await runExtension(dir, command);
-  } else {
-    await runFixtures();
-  }
+  const run = dir ? runExtension(dir, command) : runFixtures();
+  run.catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
 }
 
 /// Mirrors the Swift-side resolution: a manifest default can be platform-keyed
@@ -501,7 +501,7 @@ async function runExtension(dir, commandName) {
       },
     }),
   );
-  harness.start("s1", readFileSync(file, "utf8"), file, dir, target.mode === "view" ? "view" : "no-view", {});
+  harness.start("s1", readFileSync(file, "utf8"), file, dir, target.mode, {});
 
   await new Promise((resolve) => setTimeout(resolve, Number(process.env.EXT_TEST_SETTLE_MS ?? 1500)));
   if (harness.state.failures.length) {
@@ -517,5 +517,5 @@ async function runExtension(dir, commandName) {
 
 async function runFixtures() {
   const { runFixtures: run } = await import("./fixtures.mjs");
-  await run();
+  process.exitCode = (await run()) === 0 ? 0 : 1;
 }

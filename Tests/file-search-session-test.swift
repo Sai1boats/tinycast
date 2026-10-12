@@ -78,6 +78,7 @@ struct FileSearchSessionTests {
         await unchangedPolicyKeepsResults()
         await blankQueryLoadsRecents()
         await filterChangeRerunsTheQuery()
+        await rootResultsMatchTheirQuery()
 
         print(failures == 0 ? "File search session tests passed" : "\(failures) tests failed")
         exit(failures == 0 ? 0 : 1)
@@ -182,6 +183,22 @@ struct FileSearchSessionTests {
         expect(
             snapshot.calls == ["report", "report [Images]"],
             "narrowing the filter re-runs the same words, and re-stating it runs nothing")
+    }
+
+    static func rootResultsMatchTheirQuery() async {
+        let session = makeSession(probe: FileSearchProbe(), debounce: .milliseconds(10))
+        session.search("report")
+        await waitUntil { session.state == .ready }
+        expect(session.results(matching: " report ").count == 1, "root matches normalize whitespace")
+        session.search("invoice")
+        expect(session.results(matching: "invoice").isEmpty, "a new query never shows old root matches")
+        await waitUntil { session.state == .ready }
+        expect(session.results(matching: "invoice").count == 1, "completed root matches become visible")
+        session.search("invoice", filter: .images)
+        await waitUntil { session.state == .ready }
+        expect(session.results(matching: "invoice").isEmpty, "filtered file results do not leak into root")
+        session.cancel()
+        expect(session.results(matching: "invoice").isEmpty, "closing clears root matches")
     }
 
     static func makeSession(probe: FileSearchProbe, debounce: Duration) -> FileSearchSession {

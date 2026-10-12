@@ -20,6 +20,7 @@ struct LauncherScreen: PaletteScreen {
 
     /// The one ordered result list; an empty query pins favorites above the ranked matches.
     private let results: [AppEntry]
+    private let files: [FileSearchResult]
     private let calc: CalcResult?
     /// The colour the query itself spells, if it spells one; nil for every other query.
     private let color: ColorValue?
@@ -78,7 +79,12 @@ struct LauncherScreen: PaletteScreen {
         // After the calculator: `#FF5733` is never arithmetic, so the two can't both answer.
         let color = calc == nil && pinned == nil ? ColorValue.parse(vm.query) : nil
         let fallbacks = core.fallbackCoordinator.entries(for: vm.query)
-        let entries = results.map(Row.entry) + fallbacks.map { Row.fallback($0.fallback, $0.entry) }
+        let files = core.settings.mixedSearch && core.settings.fileSearchEnabled && pinned == nil
+            && !vm.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? core.fileSearch.results(matching: vm.query) : []
+        self.files = files
+        let entries = results.map(Row.entry) + files.map(Row.file)
+            + fallbacks.map { Row.fallback($0.fallback, $0.entry) }
         let pinsFavorites = vm.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         // At most one of them leads, so the flat index keeps a single-row offset.
         let meeting = pinsFavorites ? meeting : nil
@@ -109,6 +115,7 @@ struct LauncherScreen: PaletteScreen {
         case meeting(MeetingEvent)
         case color(ColorValue)
         case entry(AppEntry)
+        case file(FileSearchResult)
         /// Prefixed, because the same command can also be a ranked hit above its own fallback row.
         case fallback(Fallback, AppEntry)
 
@@ -118,6 +125,7 @@ struct LauncherScreen: PaletteScreen {
             case .meeting: return "meeting-card"
             case .color: return "color-card"
             case .entry(let app): return app.id
+            case .file(let file): return "file-" + file.id
             case .fallback(let fallback, _): return "fallback-" + fallback.id
             }
         }
@@ -136,6 +144,7 @@ struct LauncherScreen: PaletteScreen {
         case .meeting(let meeting):
             return meeting.link == nil ? String(localized: "Open in Calendar") : String(localized: "Join Meeting")
         case .entry(let app): return app.kind.descriptor.openVerb
+        case .file(let file): return file.isDirectory ? String(localized: "Open Folder") : String(localized: "Open File")
         case .fallback(let fallback, _): return fallback.openVerb
         case nil: return String(localized: "Open Application")
         }
@@ -181,7 +190,7 @@ struct LauncherScreen: PaletteScreen {
     private func argumentValues(for entry: AppEntry) -> [String: String] {
         if entry.kind == .quicklink {
             guard let quicklink = quicklink(for: entry) else { return [:] }
-            return QuicklinkArgumentsAccessory.values(for: quicklink, core: core, vm: vm)
+            return QuicklinkArgumentsAccessory.values(for: quicklink, vm: vm)
         }
         if entry.kind == .customCommand {
             guard let command = core.customCommands.command(entryID: entry.id) else { return [:] }
@@ -207,7 +216,7 @@ struct LauncherScreen: PaletteScreen {
     private func isCardSelected(_ selection: Int) -> Bool {
         switch row(at: selection) {
         case .calc, .meeting, .color: return true
-        case .entry, .fallback, nil: return false
+        case .entry, .file, .fallback, nil: return false
         }
     }
 
@@ -242,6 +251,8 @@ struct LauncherScreen: PaletteScreen {
                     if let index = rows.firstIndex(of: .entry(app)) { vm.selection = index }
                 },
                 onHideFromSearch: { _ = hideFromSearch(at: selection) })
+        case .file(let file):
+            return FileSearchActionsMenu.content(result: file, core: core, vm: vm, target: vm.pasteTarget)
         case .fallback(let fallback, let app):
             return FallbackActionsMenu.content(
                 fallback: fallback, entry: app, query: vm.query, core: core)
@@ -260,6 +271,7 @@ struct LauncherScreen: PaletteScreen {
         case .entry(let app):
             core.launcherCoordinator.launch(
                 app, searchQuery: vm.query, arguments: argumentValues(for: app))
+        case .file(let file): core.fileSearchCoordinator.open(file)
         case .fallback(let fallback, _):
             core.fallbackCoordinator.run(fallback, query: vm.query)
         case nil: break
@@ -278,6 +290,10 @@ struct LauncherScreen: PaletteScreen {
 
     /// ⌘↵ — a meeting copies its link, an answer becomes the query, an entry on disk is revealed.
     func secondary(at selection: Int) -> Bool {
+        if case .file(let file) = row(at: selection) {
+            core.fileSearchCoordinator.showInFinder(file)
+            return true
+        }
         if let meeting = meeting(at: selection) {
             return MeetingActionsMenu.secondary(meeting: meeting, core: core)
         }
@@ -298,12 +314,19 @@ struct LauncherScreen: PaletteScreen {
     }
 
     func perform(_ shortcut: PaletteShortcut, at selection: Int) -> Bool {
+        if case .file(let file) = row(at: selection),
+            let index = core.fileSearch.results.firstIndex(of: file)
+        {
+            return FileSearchScreen(session: core.fileSearch, core: core, vm: vm, openActions: openActions)
+                .perform(shortcut, at: index)
+        }
         switch shortcut {
         case .toggleFavorite: return toggleFavorite(at: selection)
         case .hideFromSearch: return hideFromSearch(at: selection)
         case .quit, .forceQuit: return quit(at: selection, force: shortcut == .forceQuit)
         case .restart: return restart(at: selection)
-        case .edit: return editQuicklink(at: selection)
+        case .edit: return editItem(at: selection)
+        case .copyPath: return copyQuicklink(at: selection)
         case .favoriteSlot(let index): return launchFavorite(at: index)
         case .copyCalculation: return copyCalculation(at: selection)
         case .openInApp, .showDetails:
@@ -311,6 +334,14 @@ struct LauncherScreen: PaletteScreen {
             return MeetingActionsMenu.perform(shortcut, meeting: meeting, core: core)
         default: return false
         }
+    }
+
+    private func copyQuicklink(at selection: Int) -> Bool {
+        guard let app = entry(at: selection), app.kind == .quicklink,
+            let quicklink = quicklink(for: app)
+        else { return false }
+        core.quicklinkCoordinator.copyQuicklink(id: quicklink.id)
+        return true
     }
 
     private func copyCalculation(at selection: Int) -> Bool {
@@ -333,9 +364,22 @@ struct LauncherScreen: PaletteScreen {
         return true
     }
 
-    private func editQuicklink(at selection: Int) -> Bool {
-        guard let quicklink = entry(at: selection).flatMap(quicklink(for:)) else { return false }
-        core.quicklinkCoordinator.editQuicklink(quicklink)
+    private func editItem(at selection: Int) -> Bool {
+        guard let entry = entry(at: selection) else { return false }
+        switch entry.kind {
+        case .quicklink:
+            guard let quicklink = quicklink(for: entry) else { return false }
+            core.quicklinkCoordinator.editQuicklink(quicklink)
+        case .snippet:
+            guard let id = StoredSnippet.id(fromEntryID: entry.id),
+                let record = core.snippetsStore.record(id: id)
+            else { return false }
+            core.snippetCoordinator.editSnippet(record)
+        case .customCommand:
+            guard let command = core.customCommands.command(entryID: entry.id) else { return false }
+            core.customCommandCoordinator.editCustomCommand(command)
+        default: return false
+        }
         return true
     }
 
@@ -479,8 +523,20 @@ struct LauncherScreen: PaletteScreen {
                 openActions()
             },
             onDropped: { core.paletteCoordinator.dragLanded() },
-            fallbacks: fallbackSection
+            fallbacks: fallbackSection,
+            files: files,
+            onActivateFile: core.fileSearchCoordinator.open,
+            onFileActions: { file in
+                if let index = rows.firstIndex(of: .file(file)) { vm.selection = index }
+                openActions()
+            }
         )
+        .overlay {
+            if vm.fileSearchQuickLook, case .file(let file) = row(at: selection) {
+                FileSearchQuickLook(result: file) { vm.fileSearchQuickLook = false }
+            }
+        }
+        .onDisappear { IconCache.purgeFitted() }
     }
 
     /// Nil when nothing is typed, which is the one state the section has no input for.

@@ -28,10 +28,10 @@ struct SettingsBackup: Codable {
         var hyperKey: String?
         var hyperKeyIncludesShift: Bool?
         var hyperKeyQuickPress: String?
+        var hyperKeySecureInputCompatibility: Bool?
         var emojiSkinTone: String?
         var emojiGridColumns: Int?
         var showInMenuBar: Bool?
-        var automaticallyCheckForUpdates: Bool?
         var popToRootSeconds: Int?
         var escapeKeyBehavior: String?
         var language: String?
@@ -41,6 +41,7 @@ struct SettingsBackup: Codable {
         var compactMode: Bool?
         var showFavoritesInCompactMode: Bool?
         var searchScopes: [String]?
+        var mixedSearch: Bool?
         var launcherShowsSuggestions: Bool?
         var rootSearchSensitivity: String?
         var openOnCursorScreen: Bool?
@@ -71,7 +72,7 @@ struct SettingsBackup: Codable {
         var quicklinksShowInLauncher: Bool?
         var extensionsShowInLauncher: Bool?
         var quicklinkOpensNewWindow: Bool?
-        var quicklinkSelectionFallback: String?
+        var quicklinkPassesSelectedText: Bool?
         var quicklinkConfirmsBeforeDelete: Bool?
         // Carried like quicklinks: running a shortcut the user built grants no permission class.
         var appleShortcutsEnabled: Bool?
@@ -141,10 +142,10 @@ extension SettingsBackup {
             hyperKey: s.hyperKey.rawValue,
             hyperKeyIncludesShift: s.hyperKeyIncludesShift,
             hyperKeyQuickPress: s.hyperKeyQuickPress.rawValue,
+            hyperKeySecureInputCompatibility: s.hyperKeySecureInputCompatibility,
             emojiSkinTone: s.emojiSkinTone.rawValue,
             emojiGridColumns: s.emojiGridColumns.rawValue,
             showInMenuBar: s.showInMenuBar,
-            automaticallyCheckForUpdates: s.automaticallyCheckForUpdates,
             popToRootSeconds: s.popToRootTimeout.rawValue,
             escapeKeyBehavior: s.escapeKeyBehavior.rawValue,
             language: s.language.rawValue,
@@ -154,6 +155,7 @@ extension SettingsBackup {
             compactMode: s.compactMode,
             showFavoritesInCompactMode: s.showFavoritesInCompactMode,
             searchScopes: s.searchScopes,
+            mixedSearch: s.mixedSearch,
             launcherShowsSuggestions: s.launcherShowsSuggestions,
             rootSearchSensitivity: s.rootSearchSensitivity.rawValue,
             openOnCursorScreen: s.openOnCursorScreen,
@@ -180,7 +182,7 @@ extension SettingsBackup {
             quicklinksShowInLauncher: s.quicklinksShowInLauncher,
             extensionsShowInLauncher: s.extensionsShowInLauncher,
             quicklinkOpensNewWindow: s.quicklinkOpensNewWindow,
-            quicklinkSelectionFallback: s.quicklinkSelectionFallback.rawValue,
+            quicklinkPassesSelectedText: s.quicklinkPassesSelectedText,
             quicklinkConfirmsBeforeDelete: s.quicklinkConfirmsBeforeDelete,
             appleShortcutsEnabled: s.appleShortcutsEnabled,
             calendarShowInLauncher: s.calendarShowInLauncher,
@@ -335,6 +337,10 @@ extension SettingsBackup {
             settings.hyperKeyQuickPress = quick
             count += 1
         }
+        if let flag = s.hyperKeySecureInputCompatibility {
+            settings.hyperKeySecureInputCompatibility = flag
+            count += 1
+        }
         if let raw = s.emojiSkinTone, let tone = EmojiSkinTone(rawValue: raw) {
             settings.emojiSkinTone = tone
             count += 1
@@ -345,10 +351,6 @@ extension SettingsBackup {
         }
         if let show = s.showInMenuBar {
             settings.showInMenuBar = show
-            count += 1
-        }
-        if let automaticallyCheck = s.automaticallyCheckForUpdates {
-            settings.automaticallyCheckForUpdates = automaticallyCheck
             count += 1
         }
         if let secs = s.popToRootSeconds, let timeout = PopToRootTimeout(rawValue: secs) {
@@ -386,6 +388,7 @@ extension SettingsBackup {
             settings.searchScopes = SearchScopes.normalize(scopes)
             count += 1
         }
+        if let flag = s.mixedSearch { settings.mixedSearch = flag }
         if let flag = s.launcherShowsSuggestions {
             settings.launcherShowsSuggestions = flag
             count += 1
@@ -495,10 +498,8 @@ extension SettingsBackup {
             settings.quicklinkOpensNewWindow = flag
             count += 1
         }
-        if let raw = s.quicklinkSelectionFallback,
-            let fallback = QuicklinkSelectionFallback(rawValue: raw)
-        {
-            settings.quicklinkSelectionFallback = fallback
+        if let flag = s.quicklinkPassesSelectedText {
+            settings.quicklinkPassesSelectedText = flag
             count += 1
         }
         if let flag = s.quicklinkConfirmsBeforeDelete {

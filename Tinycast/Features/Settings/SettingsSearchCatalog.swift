@@ -129,9 +129,6 @@ enum SettingsSearchCatalog {
             .generalGeneral, "Show in menu bar",
             keywords: ["menubar", "status item", "icon", "hide"]),
         .init(
-            .generalGeneral, "Automatically check for updates",
-            keywords: ["software", "update", "automatic", "disable", "popup"]),
-        .init(
             .generalGeneral, "Pop to Root Search",
             keywords: ["reset", "timeout", "back"]),
         .init(
@@ -168,8 +165,14 @@ enum SettingsSearchCatalog {
             .generalHyperKey, "Include Shift (⇧)",
             keywords: ["modifier", "chord"]),
         .init(
+            .generalHyperKey, "Secure Input Compatibility",
+            keywords: ["password", "secure input", "right control"]),
+        .init(
             .generalCalculator, "Number format",
             keywords: ["decimal", "comma", "separator", "locale", "region", "thousands"]),
+        .init(
+            .generalSearch, "Search mode",
+            keywords: ["mixed", "separate", "apps", "commands", "files", "混合", "分开", "搜索"]),
         .init(
             .generalSearch, "Show suggestions",
             keywords: ["frequent", "recent", "recommended", "empty", "root search"]),
@@ -245,8 +248,8 @@ enum SettingsSearchCatalog {
             .quicklinksBehaviour, "Open in a new window",
             keywords: ["browser", "tab"]),
         .init(
-            .quicklinksBehaviour, "When there's no selected text",
-            keywords: ["selection", "fallback", "placeholder"]),
+            .quicklinksBehaviour, "Pass selected text as argument",
+            keywords: ["selection", "hotkey", "shortcut", "argument"]),
         .init(
             .quicklinksBehaviour, "Confirm before deleting",
             keywords: ["ask", "delete", "prompt"]),
@@ -644,9 +647,6 @@ enum SettingsSearchCatalog {
         .init(
             pane: .about,
             keywords: ["version", "licence", "license", "credits"]),
-        .init(
-            .aboutAbout, "Check for Updates",
-            keywords: ["version", "upgrade", "release"]),
         .init(
             group: .aboutLinks, "Links",
             keywords: ["github", "source", "issues", "website"]),

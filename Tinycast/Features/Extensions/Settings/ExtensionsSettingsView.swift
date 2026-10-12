@@ -11,7 +11,6 @@ struct ExtensionsSettingsView: View {
     @State private var storeInstall: ExtensionDeepLink.StoreInstall?
     @State private var installingFromGitHub = false
     @State private var error: String?
-    @State private var updateError: String?
     /// Extensions Raycast has built that aren't here yet, refreshed whenever the pane appears.
     @State private var pending: [RaycastImportCandidate] = []
     /// What a bulk import is doing, so a thirty-item batch reports rather than going quiet.
@@ -84,7 +83,6 @@ struct ExtensionsSettingsView: View {
             await core.extensions.refresh()
             await measureReclaimable()
             await findPending()
-            await core.extensions.checkForUpdates()
         }
     }
 
@@ -120,9 +118,6 @@ struct ExtensionsSettingsView: View {
 
     private var library: some View {
         Section {
-            if !core.extensions.updates.isEmpty {
-                updatesRow
-            }
             if core.extensions.installed.isEmpty {
                 Text(String(localized: "Nothing installed yet."))
                     .foregroundStyle(.secondary)
@@ -140,9 +135,7 @@ struct ExtensionsSettingsView: View {
                         ExtensionDisclosure(
                             installed: installed,
                             isExpanded: expanded == name,
-                            isUpdating: core.extensions.updating.contains(name),
                             onToggle: { expanded = expanded == name ? nil : name },
-                            onUpdate: core.extensions.updates[name] == nil ? nil : { update([name]) },
                             onUninstall: {
                                 core.extensionCoordinator.confirmUninstall(installed)
                             })
@@ -155,36 +148,6 @@ struct ExtensionsSettingsView: View {
                     core.extensions.installed.isEmpty
                         ? String(localized: "Installed") : String(localized: "Installed (\(core.extensions.installed.count))"))
             }
-        } footer: {
-            if let updateError {
-                Label(updateError, systemImage: "exclamationmark.triangle")
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-            }
-        }
-    }
-
-    /// Above the list as well as on each row, so a batch is one press.
-    private var updatesRow: some View {
-        SettingsRow(
-            title: String(localized: "Updates available"),
-            subtitle: listed(core.extensions.updates.values.map(\.title)) + "."
-        ) {
-            ExtensionSettingsIcon(systemName: "arrow.down.circle")
-        } trailing: {
-            if core.extensions.updating.isEmpty {
-                Button(String(localized: "Update All")) { update(core.extensions.updates.keys.sorted()) }
-            } else {
-                ProgressView().controlSize(.small)
-            }
-        }
-    }
-
-    private func update(_ names: [String]) {
-        updateError = nil
-        Task {
-            let failed = await core.extensions.update(names)
-            if !failed.isEmpty { updateError = String(localized: "Couldn't update \(failed.joined(separator: ", ")).") }
         }
     }
 
@@ -393,10 +356,7 @@ private struct ExtensionSettingsIcon: View {
 private struct ExtensionDisclosure: View {
     let installed: InstalledExtension
     let isExpanded: Bool
-    let isUpdating: Bool
     let onToggle: () -> Void
-    /// Nil unless the store has a newer version.
-    let onUpdate: (() -> Void)?
     let onUninstall: () -> Void
 
     var body: some View {
@@ -415,11 +375,6 @@ private struct ExtensionDisclosure: View {
                 resolved: installed.iconPath.map { ExtensionImage.Resolved(source: .file($0)) },
                 size: Theme.Size.rowIcon)
         } trailing: {
-            if isUpdating {
-                ProgressView().controlSize(.small)
-            } else if let onUpdate {
-                Button(String(localized: "Update"), action: onUpdate)
-            }
             Button(action: onUninstall) {
                 Image(systemName: "trash")
                     .foregroundStyle(Theme.Colors.destructive)

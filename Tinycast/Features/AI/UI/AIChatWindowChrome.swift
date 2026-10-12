@@ -25,7 +25,7 @@ final class AIChatWindowChrome: NSObject, WindowChrome, NSToolbarDelegate, NSSea
         self.find = find
         searchItem = NSSearchToolbarItem(itemIdentifier: Self.search)
         actionsButton = NSButton(
-            image: NSImage(systemSymbolName: "slider.horizontal.3", accessibilityDescription: "Actions")
+            image: NSImage(systemSymbolName: "slider.horizontal.3", accessibilityDescription: String(localized: "Actions"))
                 ?? NSImage(),
             target: nil, action: nil)
         super.init()
@@ -88,11 +88,8 @@ final class AIChatWindowChrome: NSObject, WindowChrome, NSToolbarDelegate, NSSea
         switch identifier {
         case Self.sidebar:
             return button(
-                identifier, symbol: "sidebar.left", label: String(
-                    localized: "Sidebar"
-                ), toolTip: String(
-                    localized: "Show or Hide Sidebar"
-                ),
+                identifier, symbol: "sidebar.left", label: String(localized: "Sidebar"),
+                toolTip: String(localized: "Show or Hide Sidebar  ⌘B"),
                 action: #selector(toggleSidebar))
         case Self.newChat:
             return button(
@@ -191,6 +188,10 @@ final class AIChatWindowChrome: NSObject, WindowChrome, NSToolbarDelegate, NSSea
         let key = (ASCIIKeyboardLayout.character(for: event) ?? event.charactersIgnoringModifiers)?
             .lowercased()
         switch (modifiers, key) {
+        case ([.command], "b"):
+            toggleSidebar()
+        case ([.control], "\t"), ([.control, .shift], "\t"):
+            coordinator.openAdjacentChat(step: modifiers.contains(.shift) ? -1 : 1)
         case ([.command], "f"):
             searchItem.beginSearchInteraction()
         case ([.command], "g"), ([.command, .shift], "g"):

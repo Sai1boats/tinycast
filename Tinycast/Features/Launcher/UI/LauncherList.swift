@@ -22,6 +22,9 @@ struct LauncherList: View {
     let onDropped: () -> Void
     /// The `Use "…" with` section, always last; nil when nothing is typed.
     var fallbacks: FallbackSection?
+    var files: [FileSearchResult] = []
+    var onActivateFile: (FileSearchResult) -> Void = { _ in }
+    var onFileActions: (FileSearchResult) -> Void = { _ in }
     @Environment(RunningAppsMonitor.self) private var runningApps
 
     /// What the fallback section draws and where its rows go, addressed by position.
@@ -64,11 +67,13 @@ struct LauncherList: View {
         /// `slot` is the row's ⌘-digit, carried from the section build rather than searched.
         case app(AppEntry, slot: Character?)
         case fallback(AppEntry, index: Int)
+        case file(FileSearchResult)
         var id: String {
             switch self {
             case .header(let title): return "header-" + title
             case .fallbackHeader: return "fallback-header"
             case .card(let card): return card.rowID
+            case .file(let file): return "file-" + file.id
             case .app(let app, _): return app.id
             case .fallback(let app, _): return "fallback-" + app.id
             }
@@ -77,7 +82,9 @@ struct LauncherList: View {
 
     /// Whether the selection sits on flat index 0: the card, else the first result.
     private var firstRowSelected: Bool {
-        card != nil ? cardSelected : selectedRowID != nil && selectedRowID == results.first?.id
+        if card != nil { return cardSelected }
+        let firstID = results.first?.id ?? files.first.map { "file-" + $0.id }
+        return selectedRowID != nil && selectedRowID == firstID
     }
 
     /// Every row the fallback section contributes, always after the results.
@@ -133,13 +140,17 @@ struct LauncherList: View {
             grouped.keys.allSatisfy(kinds.contains),
             "kind missing from the launcher's section order: "
                 + grouped.keys.filter { !kinds.contains($0) }.map(\.rawValue).joined(separator: ", "))
+        if !files.isEmpty {
+            rows.append(.header(String(localized: "Files")))
+            rows.append(contentsOf: files.map(Row.file))
+        }
         return rows + fallbackRows
     }
 
     var body: some View {
         let rows = rows
         return Group {
-            if results.isEmpty && card == nil && fallbacks == nil {
+            if results.isEmpty && files.isEmpty && card == nil && fallbacks == nil {
                 EmptyResults(text: String(localized: "No apps found"))
             } else {
                 ScrollViewReader { proxy in
@@ -172,6 +183,15 @@ struct LauncherList: View {
                                     .onRowTap(drag: drag(for: app)) { onActivate(app) }
                                     .onRightClick { onActions(app) }
                                     .selectionFrame(app.id == selectedRowID)
+                                case .file(let file):
+                                    FileSearchRow(result: file, selected: row.id == selectedRowID)
+                                        .contentShape(Rectangle())
+                                        .onRowTap(drag: RowDrag(
+                                            item: { .file(file.url, image: IconCache.cachedFitted(forFile: file.id)) },
+                                            dropped: onDropped)
+                                        ) { onActivateFile(file) }
+                                        .onRightClick { onFileActions(file) }
+                                        .selectionFrame(row.id == selectedRowID)
                                 case .fallback(let app, let index):
                                     AppRow(
                                         app: app, selected: row.id == selectedRowID, running: false,

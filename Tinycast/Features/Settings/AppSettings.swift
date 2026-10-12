@@ -116,6 +116,10 @@ final class AppSettings {
         didSet { defaults.set(searchScopes, forKey: Key.searchScopes.rawValue) }
     }
 
+    var mixedSearch: Bool {
+        didSet { defaults.set(mixedSearch, forKey: Key.mixedSearch.rawValue) }
+    }
+
     var launcherShowsSuggestions: Bool {
         didSet {
             defaults.set(launcherShowsSuggestions, forKey: Key.launcherShowsSuggestions.rawValue)
@@ -166,14 +170,7 @@ final class AppSettings {
         didSet { defaults.set(showInMenuBar, forKey: Key.showInMenuBar.rawValue) }
     }
 
-    var automaticallyCheckForUpdates: Bool {
-        didSet {
-            defaults.set(
-                automaticallyCheckForUpdates, forKey: Key.automaticallyCheckForUpdates.rawValue)
-        }
-    }
-
-    /// The physical key remapped to the Hyper chord; `HyperKeyTap` reacts via its observer.
+    /// The physical key remapped to the Hyper chord; `HyperKeyManager` reacts via its observer.
     var hyperKey: HyperKeyPhysicalKey {
         didSet { defaults.set(hyperKey.rawValue, forKey: Key.hyperKey.rawValue) }
     }
@@ -186,6 +183,14 @@ final class AppSettings {
     var hyperKeyQuickPress: HyperKeyQuickPress {
         didSet {
             defaults.set(hyperKeyQuickPress.rawValue, forKey: Key.hyperKeyQuickPress.rawValue)
+        }
+    }
+
+    var hyperKeySecureInputCompatibility: Bool {
+        didSet {
+            defaults.set(
+                hyperKeySecureInputCompatibility,
+                forKey: Key.hyperKeySecureInputCompatibility.rawValue)
         }
     }
 
@@ -602,12 +607,10 @@ final class AppSettings {
         }
     }
 
-    /// What `{selection}` does when there is no readable selection to pass.
-    var quicklinkSelectionFallback: QuicklinkSelectionFallback {
+    var quicklinkPassesSelectedText: Bool {
         didSet {
             defaults.set(
-                quicklinkSelectionFallback.rawValue,
-                forKey: Key.quicklinkSelectionFallback.rawValue)
+                quicklinkPassesSelectedText, forKey: Key.quicklinkPassesSelectedText.rawValue)
         }
     }
 
@@ -649,9 +652,6 @@ final class AppSettings {
         showInMenuBar =
             defaults.object(forKey: Key.showInMenuBar.rawValue) == nil
             || defaults.bool(forKey: Key.showInMenuBar.rawValue)
-        automaticallyCheckForUpdates =
-            defaults.object(forKey: Key.automaticallyCheckForUpdates.rawValue) == nil
-            || defaults.bool(forKey: Key.automaticallyCheckForUpdates.rawValue)
         hyperKey =
             defaults.string(forKey: Key.hyperKey.rawValue).flatMap(HyperKeyPhysicalKey.init)
             ?? .none
@@ -663,6 +663,8 @@ final class AppSettings {
             defaults.string(forKey: Key.hyperKeyQuickPress.rawValue)
             .flatMap(HyperKeyQuickPress.init)
             ?? .none
+        hyperKeySecureInputCompatibility = defaults.bool(
+            forKey: Key.hyperKeySecureInputCompatibility.rawValue)
         emojiSkinTone =
             defaults.string(forKey: Key.emojiSkinTone.rawValue).flatMap(EmojiSkinTone.init) ?? .none
         emojiGridColumns =
@@ -692,6 +694,9 @@ final class AppSettings {
         // Unset seeds the defaults; a stored empty array is a deliberately cleared list.
         searchScopes =
             defaults.stringArray(forKey: Key.searchScopes.rawValue) ?? SearchScopes.defaults
+        mixedSearch =
+            defaults.object(forKey: Key.mixedSearch.rawValue) == nil
+            || defaults.bool(forKey: Key.mixedSearch.rawValue)
         launcherShowsSuggestions =
             defaults.object(forKey: Key.launcherShowsSuggestions.rawValue) == nil
             || defaults.bool(forKey: Key.launcherShowsSuggestions.rawValue)
@@ -829,9 +834,8 @@ final class AppSettings {
             || defaults.bool(forKey: Key.quicklinksShowInLauncher.rawValue)
         appleShortcutsEnabled = defaults.bool(forKey: Key.appleShortcutsEnabled.rawValue)
         quicklinkOpensNewWindow = defaults.bool(forKey: Key.quicklinkOpensNewWindow.rawValue)
-        quicklinkSelectionFallback =
-            defaults.string(forKey: Key.quicklinkSelectionFallback.rawValue)
-            .flatMap(QuicklinkSelectionFallback.init) ?? .ask
+        quicklinkPassesSelectedText = defaults.bool(
+            forKey: Key.quicklinkPassesSelectedText.rawValue)
         quicklinkConfirmsBeforeDelete =
             defaults.object(forKey: Key.quicklinkConfirmsBeforeDelete.rawValue) == nil
             || defaults.bool(forKey: Key.quicklinkConfirmsBeforeDelete.rawValue)

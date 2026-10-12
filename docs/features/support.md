@@ -8,7 +8,7 @@ hero shares the checkout page's brief offer copy from `website/src/data/support.
 ## Invariants
 
 - **Showing the window is what moves the anchor.** `SupportCoordinator.showSupport()` calls
-  `markAsked()` on every route into the window — the palette's app menu, Settings → About, the menu
+  `markAsked()` on every route into the window — Settings → About, the menu
   bar, the launcher command and the reminder itself. Someone who has just read the pitch is not asked
   again next week, however they came to it, and one call site is what keeps that true.
 - **The reminder never takes focus from something the user started.** `presentIfDue()` returns without
@@ -64,13 +64,7 @@ the button and the reminder switch. Nothing carries a keyboard shortcut —
 with a custom button style there is no focus ring to advertise one, and ↵ silently opening a payment
 page is a surprise rather than a convenience.
 
-Only the mechanism is shared with the Software Update window — `AppWindowController`, the
-content-measured height and the `sheen` gradient. The layout deliberately is not: that window reports
-and closes, so its actions belong in a trailing row; this one asks, so the ask is the centrepiece.
-
 ## Where it is reachable from
 
-The palette's bottom-left menu circle (between About and Settings), Settings → About, the menu bar
-menu, and the launcher as `CommandID.support`. All four land on `showSupport()`. The launcher arm
-hides the palette first, the way `.about` does; the menu-circle row does not, because the panel
-dismisses itself on `windowDidResignKey`.
+Settings → About, the menu bar menu, and the launcher as `CommandID.support` all land on
+`showSupport()`. The launcher hides the palette first, the way `.about` does.

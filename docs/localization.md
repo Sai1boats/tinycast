@@ -14,6 +14,11 @@ values `system`, `en`, and `zh-Hans`. File imports use the same setter and also 
 
 English source text is the resource key. Both languages live under `Tinycast/Resources/{en,zh-Hans}.lproj`:
 `Localizable.strings` for interface copy, `InfoPlist.strings` for system permission explanations.
+Launcher editor forms, the custom command library, Hyper Key diagnostics and dictation download
+progress follow the same language selection. Native form inputs receive localized labels and
+placeholders; templates, script arguments and folder names stay canonical. AI refusal headers are
+localized at the HTTP service boundary while the provider's own message remains unchanged.
+
 Use `String(localized:)` for app-owned literals, including complete interpolated sentences, before
 passing them into custom controls. Keep format argument types and positions identical in translations.
 `SWIFT_EMIT_LOC_STRINGS` is enabled so Xcode also records compiler-extracted localization keys.

@@ -95,7 +95,14 @@ enum AppActionsMenu {
         if app.kind == .quicklink, let quicklink = core.quicklinks.quicklink(entryID: app.id) {
             items.append(
                 PopoverMenuItem(
-                    title: String(localized: "Edit Quicklink"), systemImage: "pencil", startsSection: true, shortcut: "⌘E"
+                    title: String(localized: "Copy Link"), systemImage: "doc.on.clipboard", startsSection: true,
+                    shortcut: "⌃⌘C"
+                ) {
+                    core.quicklinkCoordinator.copyQuicklink(id: quicklink.id)
+                })
+            items.append(
+                PopoverMenuItem(
+                    title: String(localized: "Edit Quicklink"), systemImage: "pencil", shortcut: "⌘E"
                 ) {
                     core.quicklinkCoordinator.editQuicklink(quicklink)
                 })
@@ -142,6 +149,13 @@ enum AppActionsMenu {
         if app.kind == .meeting, let meeting = core.calendarCoordinator.meeting(entryID: app.id) {
             return MeetingActionsMenu.content(meeting: meeting, core: core).items
         }
+        if app.kind == .customCommand, let command = core.customCommands.command(entryID: app.id) {
+            return CustomCommandActionsMenu.leadingItems(
+                command: command, coordinator: core.customCommandCoordinator
+            ) {
+                core.launcherCoordinator.launch(app, searchQuery: searchQuery)
+            }
+        }
         let primarySymbol =
             switch app.kind {
             case .application, .command, .extensionCommand: "list.dash.header.rectangle"
@@ -153,6 +167,14 @@ enum AppActionsMenu {
                 shortcut: "↵"
             ) { core.launcherCoordinator.launch(app, searchQuery: searchQuery) }
         ]
+        if app.kind == .snippet, let id = StoredSnippet.id(fromEntryID: app.id),
+            let record = core.snippetsStore.record(id: id)
+        {
+            items.append(
+                PopoverMenuItem(title: String(localized: "Edit Snippet"), systemImage: "pencil", shortcut: "⌘E") {
+                    core.snippetCoordinator.editSnippet(record)
+                })
+        }
         if app.canRevealInFinder {
             items.append(
                 PopoverMenuItem(title: String(localized: "Show in Finder"), systemImage: "folder", shortcut: "⌘↵") {

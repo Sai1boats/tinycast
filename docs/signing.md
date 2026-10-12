@@ -4,8 +4,8 @@ Tinycast is signed with a **stable self-signed identity** called `Tinycast Self-
 _same_ identity on every build is what makes macOS remember the Accessibility permission across
 rebuilds and updates — ad-hoc signing changes every build and macOS forgets the grant.
 
-An Apple Developer ID certificate now exists, but nothing is signed with it yet. Why that switch is
-staged rather than immediate is [below](#the-developer-id-migration).
+Local installation replacements must preserve the existing identity; see
+[signing identity continuity](#signing-identity-continuity).
 
 You create this identity **once**. The same identity is used for:
 
@@ -113,26 +113,11 @@ entitlement for every usage string `Info.plist` declares. Both release jobs run 
 a nested binary missing the runtime flag is the most common notarization rejection, and a usage string
 missing its entitlement ships a permission that can never be granted.
 
-## The Developer ID migration
+## Signing identity continuity
 
-`BundleSignature` already accepts a bundle signed by the Tinycast team under Apple's Developer ID
-chain, even though releases are still signed with `Tinycast Self-Signed`. That is deliberate and
-staged: the updater compares signatures before it installs, so the code that trusts the new identity
-has to reach users *before* the first build carrying it. Until the switch it also accepts the running
-app's own leaf, which is the only thing a copy installed earlier knows how to check.
-
-The requirement pins the team rather than the certificate, so a Developer ID renewal strands nobody.
-It deliberately omits the `notarized` keyword — that resolves a ticket through `syspolicyd` or the
-network, and the updater verifies in a cache directory Gatekeeper has never assessed, so an offline
-Mac would refuse a bundle the chain already proves is ours.
-
-**The Developer ID identity stays a CI-only fact.** When the switch happens it is named on the
-release workflow's `xcodebuild` line and nowhere else: `project.yml` keeps signing with
-`Tinycast Self-Signed`, so a contributor keeps building with the one they created in §1 — same name,
-their own key, never shared. Nothing about local development changes.
-
-**Keep `Tinycast Self-Signed` in the login keychain after the switch.** It is the only way to ship a
-build that a copy predating the migration could still install.
+This build has no in-app updater or downloaded-bundle trust policy. When replacing a local installation,
+use its existing signing identity and bundle identifier to preserve its designated requirement.
+Keep local signing configuration in the build invocation rather than changing the project's defaults.
 
 ## Quarantine (separate from signing)
 

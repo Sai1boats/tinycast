@@ -98,7 +98,7 @@ final class PaletteCoordinator {
         // Before the show: `targetApp` must still name the app in front, and no row may pop in.
         onScreenOpening?(palette.mode)
         windowController.show()
-        if palette.mode == .fileSearch { fileSearch.search(palette.query) }
+        refreshFileSearch()
         if palette.mode == .menuSearch { menuSearch.filter(palette.query) }
         if palette.mode == .switchWindows { windowSwitch.filter(palette.query) }
         // Re-scan on open so an app uninstalled since the last scan drops out of the launcher.
@@ -117,6 +117,23 @@ final class PaletteCoordinator {
             palette.commandArguments[PaletteState.argumentKey(entry.id, field)] = value
         }
         palette.pendingArgumentEntryID = entry.id
+    }
+
+    func refreshFileSearch() {
+        guard palette.isVisible, settings.fileSearchEnabled else {
+            fileSearch.cancel()
+            return
+        }
+        if palette.mode == .fileSearch {
+            fileSearch.search(palette.query, filter: palette.fileSearchFilter)
+        } else if palette.mode == .launcher, settings.mixedSearch,
+            palette.argumentEntryID == nil,
+            !palette.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        {
+            fileSearch.search(palette.query)
+        } else {
+            fileSearch.cancel()
+        }
     }
 
     func hidePalette(restoreFocus: Bool = true) {
