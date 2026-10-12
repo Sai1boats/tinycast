@@ -11,7 +11,8 @@ enum FallbackActionsMenu {
             header: entry.localizedName,
             items: [
                 PopoverMenuItem(
-                    title: fallback.openVerb, systemImage: "list.bullet.rectangle", shortcut: "↵"
+                    title: NSLocalizedString(fallback.openVerb, comment: "Fallback action"),
+                    systemImage: "list.bullet.rectangle", shortcut: "↵"
                 ) { core.fallbackCoordinator.run(fallback, query: query) },
                 PopoverMenuItem(
                     title: String(localized: "Configure Fallbacks…"), systemImage: "slider.horizontal.3", startsSection: true

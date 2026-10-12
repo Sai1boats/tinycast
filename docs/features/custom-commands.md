@@ -249,6 +249,10 @@ the success pill is skipped for the same reason.
 
 #### The ad-hoc run
 
+The launcher also selects **Run Shell Command** when a root query starts with `# `; Return runs the
+text after that prefix. The empty prefix never starts a process. This explicit route uses the same
+shell environment, working directory and output window as the fallback.
+
 The launcher's **Run Shell Command** fallback (see [launcher.md](launcher.md#fallbacks)) is a
 `CustomCommand` that is built, run and thrown away — same `streamOutput`, same window, same Stop
 button. It is not gated on `customCommandsEnabled`: that switch governs a library of saved commands,

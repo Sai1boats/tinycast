@@ -21,6 +21,19 @@ struct CustomCommandTests {
             }
         }
 
+        let shellQuery = ShellCommandQuery("# printf '%s' \"hello # world\"")
+        check("hash-space selects a shell command", shellQuery?.canRun == true)
+        check("shell input removes only the prefix", shellQuery?.command == "printf '%s' \"hello # world\"")
+        check("a prefix alone cannot run", ShellCommandQuery("# ")?.canRun == false)
+        check("a whitespace-only command cannot run", ShellCommandQuery("#   \t ")?.canRun == false)
+        check("extra command padding is trimmed", ShellCommandQuery("#   echo hello  ")?.command == "echo hello")
+        check("a bare hash stays ordinary search", ShellCommandQuery("#") == nil)
+        check("hex colors stay ordinary search", ShellCommandQuery("#FF5733") == nil)
+        check("a hash inside text stays ordinary search", ShellCommandQuery("hello # world") == nil)
+        check("the prefix must start the query", ShellCommandQuery(" # echo hello") == nil)
+        check("a tab is not the space prefix", ShellCommandQuery("#\techo hello") == nil)
+        check("an interpreter directive is not the prefix", ShellCommandQuery("#!/bin/zsh") == nil)
+
         // MARK: Editor
 
         let editor = CustomCommandEditorSession(command: nil)

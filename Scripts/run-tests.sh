@@ -451,6 +451,7 @@ run window-file-test       Tinycast/Features/WindowManagement/Model/WindowComman
 run custom-command-test    Tinycast/Platform/PseudoTerminal.swift \
                            Tinycast/Platform/ProcessExit.swift \
                            Tinycast/Features/CustomCommands/Model/CustomCommand.swift \
+                           Tinycast/Features/CustomCommands/Model/ShellCommandQuery.swift \
                            Tinycast/Features/CustomCommands/Model/RaycastScriptImport.swift \
                            Tinycast/Features/CustomCommands/UI/CustomCommandEditorSession.swift \
                            Tinycast/Features/CustomCommands/Service/ShellCommandRunner.swift

@@ -21,6 +21,7 @@ struct LauncherScreen: PaletteScreen {
     /// The one ordered result list; an empty query pins favorites above the ranked matches.
     private let results: [AppEntry]
     private let files: [FileSearchResult]
+    private let shellQuery: ShellCommandQuery?
     private let calc: CalcResult?
     /// The colour the query itself spells, if it spells one; nil for every other query.
     private let color: ColorValue?
@@ -56,17 +57,21 @@ struct LauncherScreen: PaletteScreen {
         self.openArgumentOptions = openArgumentOptions
         self.scrollToFollow = scrollToFollow
 
+        let shellQuery = ShellCommandQuery(vm.query)
+        self.shellQuery = shellQuery
+
         // Listed even when hidden from search: the shortcut that opened it still has to be answered.
         let pinned = vm.argumentEntryID.flatMap(core.customCommands.command(entryID:))
             .map(AppEntry.init).flatMap { $0.name == vm.query ? $0 : nil }
         let ordered =
-            pinned.map { AppIndex.Results(entries: [$0], matchCount: 1) }
+            shellQuery.map { _ in AppIndex.Results(entries: []) }
+            ?? pinned.map { AppIndex.Results(entries: [$0], matchCount: 1) }
             ?? appIndex.orderedResults(
                 query: vm.query, visibility: visibility, favorites: favorites, hotKeys: core.hotKeys)
         var results = ordered.entries
         var matchCount = ordered.matchCount
         // A typed web address leads: nothing the index holds answers it better.
-        if pinned == nil, let browser = CommandCatalog.openInBrowser(for: vm.query),
+        if shellQuery == nil, pinned == nil, let browser = CommandCatalog.openInBrowser(for: vm.query),
             visibility.isVisible(browser)
         {
             results.insert(browser, at: 0)
@@ -74,12 +79,12 @@ struct LauncherScreen: PaletteScreen {
         }
         // No card over a pinned row: its fields hang off the selection, which must start on it.
         let calc =
-            pinned == nil
+            pinned == nil && shellQuery == nil
             ? CalcMemo.evaluate(vm.query, rates: currencyRates.rates, format: core.calcNumberFormat) : nil
         // After the calculator: `#FF5733` is never arithmetic, so the two can't both answer.
-        let color = calc == nil && pinned == nil ? ColorValue.parse(vm.query) : nil
+        let color = calc == nil && pinned == nil && shellQuery == nil ? ColorValue.parse(vm.query) : nil
         let fallbacks = core.fallbackCoordinator.entries(for: vm.query)
-        let files = core.settings.mixedSearch && core.settings.fileSearchEnabled && pinned == nil
+        let files = core.settings.mixedSearch && core.settings.fileSearchEnabled && pinned == nil && shellQuery == nil
             && !vm.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? core.fileSearch.results(matching: vm.query) : []
         self.files = files
@@ -145,7 +150,7 @@ struct LauncherScreen: PaletteScreen {
             return meeting.link == nil ? String(localized: "Open in Calendar") : String(localized: "Join Meeting")
         case .entry(let app): return app.kind.descriptor.openVerb
         case .file(let file): return file.isDirectory ? String(localized: "Open Folder") : String(localized: "Open File")
-        case .fallback(let fallback, _): return fallback.openVerb
+        case .fallback(let fallback, _): return NSLocalizedString(fallback.openVerb, comment: "Fallback action")
         case nil: return String(localized: "Open Application")
         }
     }
@@ -233,7 +238,12 @@ struct LauncherScreen: PaletteScreen {
         return result.isActionable
     }
 
+    func isPrimaryActionEnabled(at selection: Int) -> Bool {
+        shellQuery?.canRun ?? true
+    }
+
     func actions(at selection: Int) -> PopoverMenuContent? {
+        guard shellQuery?.canRun != false else { return nil }
         switch row(at: selection) {
         case .calc(let result):
             return result.isActionable ? CalcActionsMenu.content(result: result, core: core) : nil
@@ -543,7 +553,7 @@ struct LauncherScreen: PaletteScreen {
     private var fallbackSection: LauncherList.FallbackSection? {
         guard !fallbacks.isEmpty else { return nil }
         return LauncherList.FallbackSection(
-            title: Fallback.sectionTitle(query: vm.query),
+            title: shellQuery == nil ? Fallback.sectionTitle(query: vm.query) : String(localized: "Run Shell Command"),
             entries: fallbacks.map(\.entry),
             onActivate: { activate(at: fallbackRow(at: $0)) },
             onActions: {

@@ -128,6 +128,7 @@ final class PaletteCoordinator {
             fileSearch.search(palette.query, filter: palette.fileSearchFilter)
         } else if palette.mode == .launcher, settings.mixedSearch,
             palette.argumentEntryID == nil,
+            ShellCommandQuery(palette.query) == nil,
             !palette.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         {
             fileSearch.search(palette.query)

@@ -298,6 +298,15 @@ would then carry.
 The row prints `AppEntry.subtitle` beside its name — the one field for an entry whose name alone
 can't say what it acts on.
 
+### Shell command prefix
+
+A root search beginning with `# ` selects **Run Shell Command** directly. For example, typing
+`# echo hello` and pressing Return runs `echo hello` in the existing Command Output window. The prefix
+is removed before execution; quoting, pipes and other shell syntax in the command stay intact.
+The explicit prefix works even when the ordinary Shell fallback checkbox is off. It bypasses app,
+file, calculator and color search for that query. An empty `# ` shows the row with its Run action
+disabled. A bare `#`, a hash inside text and hex colors such as `#FF5733` keep ordinary search behavior.
+
 ### Fallbacks
 
 A **fallback** is the other half of the query-driven idea: a command the query is the input for,

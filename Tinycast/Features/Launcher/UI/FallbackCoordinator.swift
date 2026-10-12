@@ -26,6 +26,9 @@ final class FallbackCoordinator {
 
     /// The launcher's rows. An empty query is nobody's input, so it earns no section at all.
     func entries(for query: String) -> [(fallback: Fallback, entry: AppEntry)] {
+        if let shell = ShellCommandQuery(query) {
+            return [(.builtin(.runShellCommand), CommandCatalog.makeEntry(.runShellCommand, subtitle: shell.command))]
+        }
         guard !query.trimmingCharacters(in: .whitespaces).isEmpty else { return [] }
         return available.filter(store.isEnabled).compactMap { fallback in
             entry(for: fallback).map { (fallback, $0) }
@@ -45,7 +48,8 @@ final class FallbackCoordinator {
         switch fallback {
         case .builtin(.quickAI): core.quickAICoordinator.ask(query)
         case .builtin(.searchFiles): core.fileSearchCoordinator.show(query: query)
-        case .builtin(.runShellCommand): core.customCommandCoordinator.runShellCommand(query)
+        case .builtin(.runShellCommand):
+            core.customCommandCoordinator.runShellCommand(ShellCommandQuery(query)?.command ?? query)
         case .builtin(.define): core.dictionaryCoordinator.show(term: query)
         case .quicklink(let id): core.quicklinkCoordinator.openQuicklink(id: id, filling: query)
         }
