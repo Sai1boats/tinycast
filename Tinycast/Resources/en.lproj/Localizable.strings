@@ -2784,3 +2784,16 @@
 "%@ (optional)" = "%@ (optional)";
 "Left Shift (⇧)" = "Left Shift (⇧)";
 "Search Custom Commands" = "Search Custom Commands";
+"Tinycast (Internal)" = "Tinycast (Internal)";
+"Terminal" = "Terminal";
+"iTerm" = "iTerm";
+"cmux" = "cmux";
+"Execute in" = "Execute in";
+"%@ (Not installed)" = "%@ (Not installed)";
+"Applies to Run Shell Command and # followed by a space." = "Applies to Run Shell Command and # followed by a space.";
+"Choose a new window or tab in iTerm’s command confirmation page." = "Choose a new window or tab in iTerm’s command confirmation page.";
+"%@ is not installed. Choose another terminal in Settings → Commands." = "%@ is not installed. Choose another terminal in Settings → Commands.";
+"Allow Tinycast to control this terminal in System Settings → Privacy & Security → Automation." = "Allow Tinycast to control this terminal in System Settings → Privacy & Security → Automation.";
+"The terminal command could not be sent.\n\n%@" = "The terminal command could not be sent.\n\n%@";
+"The command URL could not be prepared." = "The command URL could not be prepared.";
+"Terminal sessions stay open for further commands." = "Terminal sessions stay open for further commands.";

@@ -16,6 +16,8 @@ struct CommandsSettingsView: View {
                 anchor: .commandsCommands,
                 searchPrompt: String(localized: "Search commands…"))
 
+            ShellCommandSettingsSection()
+
             FeatureSwitchSection(
                 anchor: .commandsCustomCommands,
                 enableTitle: "Enable custom commands",

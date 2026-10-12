@@ -223,6 +223,9 @@ enum SettingsSearchCatalog {
             .commandsCommands, "Enable Commands",
             keywords: ["hide", "visibility"]),
         .init(
+            .commandsShellCommand, "Execute in",
+            keywords: ["shell", "terminal", "internal", "iterm", "cmux", "执行", "终端", "内部"]),
+        .init(
             .commandsCustomCommands, "Enable custom commands",
             keywords: ["script", "shell"]),
         .init(

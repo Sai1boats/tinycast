@@ -384,6 +384,10 @@ final class AppSettings {
         didSet { defaults.set(aiEnabled, forKey: Key.aiEnabled.rawValue) }
     }
 
+    var shellCommandDestination: ShellCommandDestination {
+        didSet { defaults.set(shellCommandDestination.rawValue, forKey: Key.shellCommandDestination.rawValue) }
+    }
+
     var customCommandsEnabled: Bool {
         didSet { defaults.set(customCommandsEnabled, forKey: Key.customCommandsEnabled.rawValue) }
     }
@@ -751,6 +755,8 @@ final class AppSettings {
         notesFolder = defaults.string(forKey: Key.notesFolder.rawValue)
         aiEnabled = defaults.bool(forKey: Key.aiEnabled.rawValue)
         mcpEnabled = defaults.bool(forKey: Key.mcpEnabled.rawValue)
+        shellCommandDestination = ShellCommandDestination(
+            rawValue: defaults.string(forKey: Key.shellCommandDestination.rawValue) ?? "") ?? .tinycast
         customCommandsEnabled = defaults.bool(forKey: Key.customCommandsEnabled.rawValue)
         // These default on, so absence must be distinguished from a stored `false`.
         customCommandsShowInLauncher =

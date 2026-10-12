@@ -2784,3 +2784,16 @@
 "%@ (optional)" = "%@（可选）";
 "Left Shift (⇧)" = "左 Shift (⇧)";
 "Search Custom Commands" = "搜索自定义命令";
+"Tinycast (Internal)" = "Tinycast 内部窗口";
+"Terminal" = "终端";
+"iTerm" = "iTerm";
+"cmux" = "cmux";
+"Execute in" = "执行方式";
+"%@ (Not installed)" = "%@（未安装）";
+"Applies to Run Shell Command and # followed by a space." = "适用于“运行 Shell 命令”和以 # 加空格开头的搜索。";
+"Choose a new window or tab in iTerm’s command confirmation page." = "在 iTerm 的命令确认页中选择新窗口或新标签页。";
+"%@ is not installed. Choose another terminal in Settings → Commands." = "%@ 未安装。请在“设置 → 命令”中选择其他终端。";
+"Allow Tinycast to control this terminal in System Settings → Privacy & Security → Automation." = "请在“系统设置 → 隐私与安全性 → 自动化”中允许 Tinycast 控制此终端。";
+"The terminal command could not be sent.\n\n%@" = "无法向终端发送命令。\n\n%@";
+"The command URL could not be prepared." = "无法准备命令链接。";
+"Terminal sessions stay open for further commands." = "终端会话保持打开，方便继续输入命令。";

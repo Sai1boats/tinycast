@@ -251,13 +251,27 @@ final class CustomCommandCoordinator {
         perform(command, arguments: arguments)
     }
 
-    /// The launcher fallback: a one-off shell line, streamed into the window every run uses.
     func runShellCommand(_ text: String) {
         let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         if paletteCoordinator.isVisible { paletteCoordinator.hidePalette(restoreFocus: false) }
-        // Its shell config is sourced: someone typing `ll` in the launcher means their own alias.
-        // No working directory, which the runner reads as home — the only sane cwd for a launcher.
+        let destination = settings.shellCommandDestination
+        if destination != .tinycast {
+            Task {
+                do {
+                    try await TerminalCommandRunner.run(text, in: destination)
+                } catch is CancellationError {
+                    return
+                } catch {
+                    if await core.reportFailure(
+                        title: String(localized: "Run Shell Command"), message: error.localizedDescription,
+                        symbol: "terminal", recovery: String(localized: "Open Settings…")) {
+                        settingsCoordinator.showSettings(tab: .commands)
+                    }
+                }
+            }
+            return
+        }
         let command = CustomCommand(
             name: CommandID.runShellCommand.name, command: text, loadsShellEnvironment: true,
             showsOutput: true)

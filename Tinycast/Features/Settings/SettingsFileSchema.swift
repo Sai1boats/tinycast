@@ -60,6 +60,7 @@ enum SettingsFileSchema {
         case .systemActions: return launcher.systemActionsBinding(for: key)
         case .builtInCommandsEnabled: return launcher.kindBinding(for: key, kind: .command)
         case .builtInCommands: return launcher.commandsBinding(for: key, owner: nil)
+        case .shellCommandDestination: return bind(settings, \.shellCommandDestination)
         case .customCommandsEnabled: return bind(settings, \.customCommandsEnabled)
         case .customCommandsShowInLauncher: return bind(settings, \.customCommandsShowInLauncher)
         case .quicklinksEnabled: return bind(settings, \.quicklinksEnabled)
@@ -158,6 +159,7 @@ enum SettingsFileSchema {
     }
 }
 
+extension ShellCommandDestination: SettingsFileRawValue {}
 extension PopToRootTimeout: SettingsFileRawValue {}
 extension EscapeKeyBehavior: SettingsFileRawValue {}
 extension AppLanguage: SettingsFileRawValue {}

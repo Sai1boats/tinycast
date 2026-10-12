@@ -249,16 +249,36 @@ the success pill is skipped for the same reason.
 
 #### The ad-hoc run
 
-The launcher also selects **Run Shell Command** when a root query starts with `# `; Return runs the
-text after that prefix. The empty prefix never starts a process. This explicit route uses the same
-shell environment, working directory and output window as the fallback.
+The launcher selects **Run Shell Command** when a root query starts with `# `; Return runs the
+text after that prefix. The empty prefix never starts a process. The ordinary fallback and the
+explicit prefix share **Settings → Commands → Run Shell Command → Execute in**.
 
-The launcher's **Run Shell Command** fallback (see [launcher.md](launcher.md#fallbacks)) is a
-`CustomCommand` that is built, run and thrown away — same `streamOutput`, same window, same Stop
-button. It is not gated on `customCommandsEnabled`: that switch governs a library of saved commands,
-not a line someone types on purpose, and the fallback's own checkbox is its switch. Because it has no
-library entry, `rerunOutput` checks `lastShellCommand` before falling through to `runCustomCommand`,
-or the window's Rerun would look up an id the store has never held and do nothing.
+The default **Tinycast (Internal)** builds a temporary `CustomCommand`, sources the interactive zsh
+configuration, starts in the home directory, and streams into the existing output window with Stop
+and Rerun. It is not gated on `customCommandsEnabled`, which governs the saved-command library.
+`rerunOutput` checks `lastShellCommand` because this temporary command has no library entry.
+
+External choices include installed **Terminal**, **iTerm**, and **cmux** applications discovered by
+bundle identifier. Each run opens a separate interactive session starting in the home directory;
+commands use that terminal's configured shell. The shell remains available afterward, including
+changes such as `cd`, so another command can continue the session. Saved custom commands retain
+their own execution and output options.
+
+Terminal uses `do script` to create a window. cmux creates a window, pastes into that window's focused
+terminal and submits Return through its public scripting action. The system `osascript` process gets
+command text as an argument, never interpolated into AppleScript source; the home-directory prefix
+quotes its shell word. Execution runs off-main, captures a bounded automation response, and reaps its
+process on cancellation. Missing applications and Automation denial report through Tinycast's own
+dialog without executing the command elsewhere.
+
+[iTerm's current command URL](https://iterm2.com/documentation-url-scheme.html) opens its own review
+page, where the user selects a new window or tab. Command and directory are encoded as distinct URL
+query items; its deprecated AppleScript interface is not used.
+
+`shellCommandDestination` defaults to `tinycast`; `settings.json` mirrors it as
+`commands.shellDestination` with values `tinycast`, `terminal`, `iterm`, or `cmux`. Native settings
+backups exclude it because it names applications installed on this Mac. A stored missing app remains
+visible as unavailable in the picker until another destination is chosen.
 
 ### Run In
 

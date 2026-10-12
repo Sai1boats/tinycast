@@ -107,6 +107,9 @@ because the app rewrites the file.
 }
 ```
 
+`commands.shellDestination` selects the ad-hoc Shell destination: `tinycast` (default), `terminal`,
+`iterm`, or `cmux`. Unknown values are rejected; a missing selected app is reported on execution.
+
 An enum is its raw value, an unset optional is `null`, and a number with a unit names it in the key.
 Where a number has a special case, the case is a word:
 

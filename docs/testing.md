@@ -143,6 +143,7 @@ If a change touches anything in the right column, the harness on the left is man
 | `window-command-test` | `WindowManagement/WindowCommand.swift`, `WindowPlacementEngine.swift`, `WindowActionMemory.swift` |
 | `window-layout-test` | `WindowManagement/Model/WindowLayout*.swift` and `CustomWindowSize*.swift` — the layout record, its geometry and its inverse, the plan and the store; custom sizes' units, frames and store |
 | `window-room-test` | `WindowManagement/Model/Room*.swift` — every room layout and its minimum sizes, the grid, arrangement reading, window matching, parking, the plan, Tab's choices and the three stores |
+| `terminal-command-test` | Literal automation arguments, shell directory quoting, iTerm URL encoding, cancellation and Automation denial |
 | `custom-command-test` | Command storage and execution, editor drafts, argument identities and dynamic keyboard focus |
 | `custom-command-list-test` | Browser result snapshots, observation, row actions and empty-library messages |
 | `uninstall-test` | all five pure files in `Uninstall/Model/` |
@@ -402,8 +403,12 @@ caches, TCC grants and login item, so this cannot disturb an installed copy.
 - The highlight always sits on the row the footer pill describes
 - With a calculation typed, the calculator card is first and is selected first
 - `# printf '%s' shell-prefix-check` selects Run Shell Command; Return and its Actions menu both
-  show `shell-prefix-check` in Command Output. The `# ` prefix alone has a disabled Run action;
+  show `shell-prefix-check` in Command Output with Execute in set to Tinycast (Internal). The `# ` prefix alone has a disabled Run action;
   `#FF5733` still shows the color card. The prefix works with the Shell fallback checkbox off
+- Settings → Commands → Run Shell Command lists internal mode and installed Terminal, iTerm and cmux.
+  External runs open a separate session; `cd` changes its directory and the shell stays usable afterward.
+  iTerm first offers its own command review page. Switching back restores Tinycast’s output window.
+  Missing apps and denied Automation report a failure without silently running in another destination.
 - ⌘↵ on a number, unit or money card puts the answer in the search bar with the caret after it, so
   ` * 2` typed straight away extends it — from ⌘K too; a date or time card offers neither
 - With macOS set to a decimal-comma region (Italian), `2,3 + 1,5` answers `3,8`, `max(2,5; 3)`

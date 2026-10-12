@@ -114,6 +114,9 @@ capability-granting key — `snippetsEnabled`, `extensionsEnabled`, `calendarEna
 duplication between `AppSettings` and this file is the point: it forces a decision about every new
 setting rather than defaulting it into a backup.
 
+The ad-hoc shell destination stays local: it names a terminal installed on this Mac, so importing
+a native backup leaves the current choice alone. The opt-in settings file can explicitly select it.
+
 ## Importing
 
 Applying an import writes through `AppSettings` like any other change, so feature switches reproject into

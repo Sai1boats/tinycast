@@ -24,6 +24,7 @@ extension SettingsAnchor {
 
     static let commandsCommands = Self(tab: .commands, title: "Commands")
     static let commandsCustomCommands = Self(tab: .commands, title: "Custom Commands")
+    static let commandsShellCommand = Self(tab: .commands, title: "Run Shell Command")
 
     static let quicklinksQuicklinks = Self(tab: .quicklinks, title: "Quicklinks")
     static let quicklinksCommands = Self(tab: .quicklinks, title: "Commands")

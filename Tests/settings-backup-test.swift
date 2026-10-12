@@ -76,6 +76,10 @@ struct SettingsBackupTest {
                 excluded[key.rawValue] != nil && mirrored.values.allSatisfy { $0 != key })
         }
 
+        check(
+            "shell destination stays local to installed terminal apps",
+            excluded[AppSettingsKey.shellCommandDestination.rawValue] != nil)
+
         // A reason that only echoes the key name explains nothing, so it fails like a missing one.
         let emptyReasons = excluded.filter { key, reason in
             let trimmed = reason.trimmingCharacters(in: .whitespaces)

@@ -301,8 +301,8 @@ can't say what it acts on.
 ### Shell command prefix
 
 A root search beginning with `# ` selects **Run Shell Command** directly. For example, typing
-`# echo hello` and pressing Return runs `echo hello` in the existing Command Output window. The prefix
-is removed before execution; quoting, pipes and other shell syntax in the command stay intact.
+`# echo hello` and pressing Return runs `echo hello` in the destination chosen in
+Settings → Commands → Run Shell Command. The prefix is removed before execution; quoting, pipes and other shell syntax in the command stay intact.
 The explicit prefix works even when the ordinary Shell fallback checkbox is off. It bypasses app,
 file, calculator and color search for that query. An empty `# ` shows the row with its Run action
 disabled. A bare `#`, a hash inside text and hex colors such as `#FF5733` keep ordinary search behavior.
@@ -323,7 +323,7 @@ order name a live row across a rename or a reinstall.
 | --- | --- | --- |
 | Quick AI | a fresh Quick AI chat, question already sent (`QuickAICoordinator.ask`) | `aiEnabled` |
 | Search Files | the file-search screen, already narrowed | `fileSearchEnabled` |
-| Run Shell Command | `/bin/zsh`, streamed into the Command Output window | always |
+| Run Shell Command | the internal output window or the selected installed terminal app | always |
 | Define Word | the dictionary screen, already showing the entry (see [dictionary.md](dictionary.md)) | the Define Word command is visible in Settings › Commands |
 | a quicklink | its first `{argument}` | `quicklinksEnabled`, and the link has a placeholder |
 
@@ -337,10 +337,10 @@ would silently do nothing.
 
 **Run Shell Command carries its own switch, not the custom-command library's.** Turning off Custom
 Commands hides a library of saved commands; it says nothing about a shell line someone types
-deliberately. The fallback's checkbox is the switch. The run is an ad-hoc `CustomCommand` that is
-never stored — same streaming window, same Stop button — so `CustomCommandCoordinator` keeps
-`lastShellCommand` for the window's Rerun, which has no library entry to look up. It sources the
-shell config (`ll` should mean the reader's own alias) and takes the runner's default home directory.
+deliberately. The fallback's checkbox is the switch. Internal runs build an ad-hoc `CustomCommand`
+that is never stored; external runs open the terminal chosen in the Commands pane. Both routes start
+in the home directory. See [custom-commands.md](custom-commands.md#the-ad-hoc-run) for the destination
+setting, interactive-session behavior and error handling.
 
 **The order and the checkboxes are not in a settings backup.** The fallback list is where an import
 could arm shell execution from the launcher, which is the line `snippetsEnabled` already draws:
