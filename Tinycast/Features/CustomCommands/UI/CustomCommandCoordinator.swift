@@ -8,6 +8,7 @@ final class CustomCommandCoordinator {
     private(set) var editor: CustomCommandEditorSession?
     private let store: CustomCommandStore
     private let shellHistory: ShellCommandHistoryStore
+    private let shell: ShellSession
     private let settings: AppSettings
     private let appIndex: AppIndex
     private let paletteCoordinator: PaletteCoordinator
@@ -34,6 +35,7 @@ final class CustomCommandCoordinator {
     init(
         store: CustomCommandStore,
         shellHistory: ShellCommandHistoryStore,
+        shell: ShellSession,
         settings: AppSettings,
         appIndex: AppIndex,
         paletteCoordinator: PaletteCoordinator,
@@ -48,6 +50,7 @@ final class CustomCommandCoordinator {
     ) {
         self.store = store
         self.shellHistory = shellHistory
+        self.shell = shell
         self.settings = settings
         self.appIndex = appIndex
         self.paletteCoordinator = paletteCoordinator
@@ -286,16 +289,53 @@ final class CustomCommandCoordinator {
         core.palette.followToken = UUID()
     }
 
+    var shellDirectory: String { shell.displayDirectory }
+
+    func shellCompletions(for query: String) -> [ShellCompletion.Candidate] {
+        shell.candidates(for: query)
+    }
+
+    func completeShellCommand(_ query: ShellCommandQuery) {
+        shell.complete(query, in: core.palette)
+    }
+
+    func applyShellCompletion(_ candidate: ShellCompletion.Candidate) {
+        shell.clearCompletions()
+        core.palette.rewriteQuery("# " + candidate.line)
+        core.palette.selection = 0
+    }
+
+    func useFinderFolder() {
+        Task {
+            do {
+                guard let path = try await ShellCompletionSource.finderFolder() else { return }
+                finishDirectoryChange(shell.changeDirectory(to: path))
+            } catch {
+                core.showMessage(error.localizedDescription, tone: .danger)
+            }
+        }
+    }
+
     func runShellCommand(_ text: String) {
         let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         shellHistory.record(text)
+        shell.clearCompletions()
+        switch ShellBuiltin(text) {
+        case .changeDirectory(let argument):
+            return finishDirectoryChange(shell.changeDirectory(to: argument))
+        case .changeToFinderFolder:
+            return useFinderFolder()
+        case nil:
+            break
+        }
         if paletteCoordinator.isVisible { paletteCoordinator.hidePalette(restoreFocus: false) }
         let destination = settings.shellCommandDestination
+        let directory = shell.directory
         if destination != .tinycast {
             Task {
                 do {
-                    try await TerminalCommandRunner.run(text, in: destination)
+                    try await TerminalCommandRunner.run(text, in: destination, directory: directory)
                 } catch is CancellationError {
                     return
                 } catch {
@@ -310,9 +350,19 @@ final class CustomCommandCoordinator {
         }
         let command = CustomCommand(
             name: CommandID.runShellCommand.name, command: text, loadsShellEnvironment: true,
-            showsOutput: true)
+            showsOutput: true, workingDirectory: directory)
         lastShellCommand = (command.id, text)
         Task { await streamOutput(of: command, arguments: []) }
+    }
+
+    /// A `cd` keeps the palette on the shell, ready for the next line, as a prompt would.
+    private func finishDirectoryChange(_ failure: String?) {
+        if let failure {
+            core.showMessage(failure, tone: .danger)
+            return
+        }
+        core.showMessage(String(localized: "Working Directory: \(shell.displayDirectory)"))
+        if paletteCoordinator.isVisible { core.palette.rewriteQuery("# ") }
     }
 
     /// The window's Rerun. An ad-hoc shell line is not in the store, so it is repeated from here.

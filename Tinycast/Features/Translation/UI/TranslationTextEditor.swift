@@ -3,6 +3,7 @@ import SwiftUI
 
 struct TranslationTextEditor: NSViewRepresentable {
     @Binding var text: String
+    let fontSize: CGFloat
     let onSubmit: () -> Void
     let onHistory: (Bool) -> Void
 
@@ -16,7 +17,6 @@ struct TranslationTextEditor: NSViewRepresentable {
         let editor = Editor()
         editor.isRichText = false
         editor.drawsBackground = false
-        editor.font = .preferredFont(forTextStyle: .title3)
         editor.textColor = .labelColor
         editor.insertionPointColor = .labelColor
         editor.textContainerInset = NSSize(width: 0, height: Theme.Spacing.sm)
@@ -28,6 +28,7 @@ struct TranslationTextEditor: NSViewRepresentable {
         editor.delegate = context.coordinator
         editor.onHistory = onHistory
         editor.setAccessibilityLabel(String(localized: "Source text"))
+        editor.apply(fontSize: fontSize)
         scroll.documentView = editor
         return scroll
     }
@@ -36,6 +37,7 @@ struct TranslationTextEditor: NSViewRepresentable {
         context.coordinator.parent = self
         guard let editor = scroll.documentView as? Editor else { return }
         if editor.string != text { editor.string = text }
+        if editor.font?.pointSize != fontSize { editor.apply(fontSize: fontSize) }
         editor.onHistory = onHistory
     }
 
@@ -61,6 +63,19 @@ struct TranslationTextEditor: NSViewRepresentable {
 
     private final class Editor: NSTextView {
         var onHistory: ((Bool) -> Void)?
+
+        func apply(fontSize: CGFloat) {
+            let font = NSFont.systemFont(ofSize: fontSize)
+            let style = NSMutableParagraphStyle()
+            style.lineHeightMultiple = Theme.Size.translationLineHeight
+            self.font = font
+            defaultParagraphStyle = style
+            typingAttributes = [.font: font, .paragraphStyle: style, .foregroundColor: NSColor.labelColor]
+            guard let storage = textStorage, storage.length > 0 else { return }
+            let range = NSRange(location: 0, length: storage.length)
+            storage.addAttributes([.font: font, .paragraphStyle: style], range: range)
+        }
+
         override func keyDown(with event: NSEvent) {
             if !hasMarkedText(), event.modifierFlags.intersection([.command, .option, .control, .shift]) == .option,
                 event.keyCode == 126 || event.keyCode == 125 {

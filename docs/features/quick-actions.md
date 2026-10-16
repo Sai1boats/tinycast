@@ -162,6 +162,10 @@ loads asynchronously, so the coordinator holds it as observed state rather than 
 Names come from `minimalIdentifier` — the maximal form carries the script, and `es` would read
 "Spanish (Latin, Spain)" in a menu that should say "Spanish".
 
+`TextTranslator.translate(_:from:to:)` takes a batch of paragraphs and an optional source, so Quick
+Translate's Apple fallback can keep paragraph breaks and honour an explicit source language; the Quick
+Action passes its whole selection as one paragraph.
+
 A pair that is supported but not downloaded **opens the panel**, whatever the action's usual result,
 so a shortcut never silently does nothing. **The download happens in System Settings.**
 `prepareTranslation` never showed its sheet over this non-activating panel, so the prompt says where

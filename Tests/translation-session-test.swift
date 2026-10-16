@@ -49,6 +49,7 @@ struct TranslationSessionTests {
         QuickActionRunner.pending = nil
         await waitUntil { !coordinator.isReadingSelection }
         precondition(coordinator.text == "typed while reading" && !coordinator.isReadingSelection)
+        await testFallback(coordinator)
         coordinator.appID = "new fixture"
         coordinator.secret = "new fixture"
         coordinator.saveCredentials()
@@ -61,6 +62,50 @@ struct TranslationSessionTests {
         precondition(!coordinator.showsSettings)
         coordinator.close()
         print("Translation cancellation, late completion, language changes, session identity and selection races passed")
+    }
+
+    static func testFallback(_ coordinator: TranslationCoordinator) async {
+        coordinator.show(selection: false)
+        await waitUntil { !coordinator.isLoading }
+        BaiduTranslationService.failure = BaiduTranslation.Failure.unavailable
+        coordinator.text = "network down"
+        coordinator.translate()
+        await waitUntil { AppleTranslationService.pending != nil }
+        precondition(coordinator.isTranslating && coordinator.result == nil)
+        AppleTranslationService.finish(text: "苹果")
+        await waitUntil { !coordinator.isTranslating }
+        precondition(coordinator.result?.provider == .apple && coordinator.result?.text == "苹果")
+        precondition(!coordinator.fallbackReason.isEmpty, "a fallback says why Baidu did not answer")
+        BaiduTranslationService.failure = BaiduTranslation.Failure.unavailable
+        coordinator.text = "edited during fallback"
+        coordinator.translate()
+        await waitUntil { AppleTranslationService.pending != nil }
+        coordinator.text = "newer"
+        AppleTranslationService.finish(text: "stale apple")
+        await Task.yield()
+        precondition(coordinator.result == nil && coordinator.fallbackReason.isEmpty,
+                     "a late Apple result never lands on edited text")
+        BaiduTranslationService.failure = nil
+        coordinator.close()
+        BaiduTranslationService.stored = nil
+        coordinator.show(selection: false)
+        await waitUntil { !coordinator.isLoading }
+        precondition(!coordinator.showsSettings && !coordinator.hasCredentials,
+                     "missing credentials no longer block the panel")
+        let baiduCalls = BaiduTranslationService.pending.count
+        coordinator.text = "no credentials"
+        coordinator.translate()
+        await waitUntil { AppleTranslationService.pending != nil }
+        precondition(BaiduTranslationService.pending.count == baiduCalls, "Baidu is skipped without credentials")
+        AppleTranslationService.finish(text: "无凭据")
+        await waitUntil { !coordinator.isTranslating }
+        precondition(coordinator.result?.provider == .apple)
+        coordinator.text = " "
+        coordinator.translate()
+        precondition(AppleTranslationService.pending == nil && !coordinator.message.isEmpty,
+                     "empty input is reported, not handed to Apple")
+        coordinator.close()
+        BaiduTranslationService.stored = BaiduTranslationService.Credentials(appID: "fixture", secret: "fixture")
     }
 
     static func waitUntil(_ condition: () -> Bool) async {
@@ -95,6 +140,7 @@ final class TextInjector {
 @MainActor
 final class TranslationPanelController {
     func show(_ coordinator: TranslationCoordinator) {}
+    func setExpanded(_ expanded: Bool) -> Bool { expanded }
     func dismiss() {}
     func focus() {}
 }
@@ -122,21 +168,49 @@ enum BaiduTranslationService {
         let appID: String
         let secret: String
     }
-    static var pending: [CheckedContinuation<BaiduTranslation, any Error>] = []
+    static var pending: [CheckedContinuation<TranslationResult, any Error>] = []
     static var completed = 0
+    static var failure: (any Error)?
+    static var stored: Credentials? = Credentials(appID: "fixture", secret: "fixture")
     static var pendingSave: CheckedContinuation<Void, any Error>?
-    static func credentials() async throws -> Credentials? { Credentials(appID: "fixture", secret: "fixture") }
+    static func credentials() async throws -> Credentials? { stored }
     static func save(_ credentials: Credentials) async throws {
         try await withCheckedThrowingContinuation { pendingSave = $0 }
     }
     static func translate(
         text: String, source: String, target: String, credentials: Credentials
-    ) async throws -> BaiduTranslation {
+    ) async throws -> TranslationResult {
+        if let failure { throw failure }
         let result = try await withCheckedThrowingContinuation { pending.append($0) }
         completed += 1
         return result
     }
     static func finish(index: Int, text: String) {
-        pending[index].resume(returning: BaiduTranslation(original: "second", text: text, source: "en", target: "zh"))
+        pending[index].resume(returning: TranslationResult(
+            original: "second", paragraphs: [.init(source: "second", text: text)], source: "en", target: "zh",
+            provider: .baidu))
+    }
+}
+
+@MainActor
+enum AppleTranslationService {
+    enum Failure: String, Error { case unsupportedLanguage }
+    static var pending: CheckedContinuation<TranslationResult, any Error>?
+    static func translate(text: String, source: String, target: String) async throws -> TranslationResult {
+        try await withCheckedThrowingContinuation { pending = $0 }
+    }
+    static func finish(text: String) {
+        pending?.resume(returning: TranslationResult(
+            original: "apple", paragraphs: [.init(source: "apple", text: text)], source: "en", target: "zh",
+            provider: .apple))
+        pending = nil
+    }
+}
+
+enum Theme {
+    enum Size {
+        static let translationTextDefault: CGFloat = 15
+        static let translationTextMinimum: CGFloat = 12
+        static let translationTextMaximum: CGFloat = 26
     }
 }

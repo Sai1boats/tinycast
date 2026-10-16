@@ -1,6 +1,5 @@
 import CryptoKit
 import Foundation
-import NaturalLanguage
 
 struct BaiduTranslationService: Sendable {
     struct Credentials: Codable, Sendable {
@@ -55,17 +54,8 @@ struct BaiduTranslationService: Sendable {
 
     @concurrent static func translate(
         text: String, source: String, target: String, credentials: Credentials
-    ) async throws -> BaiduTranslation {
-        let resolvedTarget: String
-        if target == "auto" {
-            let recognizer = NLLanguageRecognizer()
-            recognizer.processString(text)
-            let detected = source == "auto" ? recognizer.dominantLanguage?.rawValue ?? "en" : source
-            resolvedTarget = TranslationLanguage.automaticTarget(
-                detectedSource: detected.hasPrefix("zh") ? "zh" : detected)
-        } else {
-            resolvedTarget = target
-        }
+    ) async throws -> TranslationResult {
+        let resolvedTarget = TranslationLanguageDetector.resolvedTarget(for: text, source: source, target: target)
         let request = try request(
             text: text, source: source, target: resolvedTarget, credentials: credentials, salt: UUID().uuidString)
         try Task.checkCancellation()

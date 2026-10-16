@@ -13,7 +13,7 @@ struct EncodingToolView: View {
 
     var body: some View {
         @Bindable var session = session
-        UtilityToolLayout(error: session.error, isBusy: session.isBusy) {
+        UtilityToolLayout(error: session.error, isBusy: session.isBusy, suggestionTool: tool) {
             VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
                 if tool == .urlCodec {
                     Picker("Encoding Mode", selection: $session.urlMode) {

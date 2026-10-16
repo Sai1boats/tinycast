@@ -180,6 +180,10 @@ tool. Developer sessions are created on first show and released through the wind
 synchronous `onClose` callback. The window owns the session's lifetime; view transitions leave its
 work and state intact, so minimizing or re-raising cannot retarget controls to fresh state.
 
+The ad-hoc shell's `ShellSession` lives on `AppCore` beside `ShellCommandHistoryStore` and is injected
+into `CustomCommandCoordinator`. It holds the working directory and Tab's completions in memory only;
+history persists, the directory deliberately does not.
+
 ## Observation
 
 State uses `@MainActor @Observable`. Nothing uses `ObservableObject` or `@Published`, and views read

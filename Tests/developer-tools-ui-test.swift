@@ -49,6 +49,7 @@ struct DeveloperToolsUITests {
             print("\(tool.title): \(expected) native editors fit the minimum window")
         }
         try await lifecycle(coordinator)
+        try await clipboardSuggestions(coordinator)
         print("Nine focused windows, aligned editors/fields, both appearances, lifecycle and diff colors passed")
     }
 
@@ -193,6 +194,58 @@ struct DeveloperToolsUITests {
         coordinator.close()
     }
 
+    static let token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.c2lnbmF0dXJl"
+
+    static func clipboardSuggestions(_ coordinator: UtilityCoordinator) async throws {
+        UtilityClipboard.stored = token
+        UtilityClipboard.changeCount += 1
+        coordinator.show(.jwt)
+        precondition(coordinator.clipboardSuggestions[.jwt] != nil, "a JWT on the clipboard is offered")
+        precondition(coordinator.developerSession(for: .jwt).input.isEmpty, "offering it reads nothing in")
+        coordinator.checkClipboard(for: .hash)
+        precondition(coordinator.clipboardSuggestions[.hash] == nil, "tools that take any text never suggest")
+        let title = NSLocalizedString(UtilityTool.jwt.title, comment: "Utility title")
+        guard let root = NSApp.windows.first(where: { $0.title == title })?.contentView else {
+            preconditionFailure("Missing JWT window")
+        }
+        try await Task.sleep(for: .milliseconds(30))
+        root.layoutSubtreeIfNeeded()
+        try snapshot(root, name: "jwt-clipboard-suggestion")
+        coordinator.acceptClipboardSuggestion(for: .jwt)
+        let session = coordinator.developerSession(for: .jwt)
+        try await settled(session)
+        precondition(session.input == token && session.jwt?.payload.contains("sub") == true, "Load inspects it")
+        precondition(coordinator.clipboardSuggestions[.jwt] == nil)
+        coordinator.checkClipboard(for: .jwt)
+        precondition(coordinator.clipboardSuggestions[.jwt] == nil, "an accepted copy is not offered again")
+        UtilityClipboard.stored = #"{"b": [1, 2]}"#
+        UtilityClipboard.changeCount += 1
+        coordinator.checkClipboard(for: .jwt)
+        precondition(coordinator.clipboardSuggestions[.jwt] == nil, "JSON is not offered to the JWT window")
+        coordinator.show(.json)
+        let previousInput = coordinator.jsonInput
+        precondition(coordinator.clipboardSuggestions[.json] != nil)
+        coordinator.declineClipboardSuggestion(for: .json)
+        coordinator.checkClipboard(for: .json)
+        precondition(coordinator.clipboardSuggestions[.json] == nil && coordinator.jsonInput == previousInput,
+                     "a dismissed copy stays dismissed until the clipboard changes")
+        UtilityClipboard.changeCount += 1
+        coordinator.checkClipboard(for: .json)
+        precondition(coordinator.clipboardSuggestions[.json] != nil, "a new copy is offered again")
+        UtilityClipboard.stored = nil
+        coordinator.acceptClipboardSuggestion(for: .json)
+        precondition(coordinator.jsonInput == previousInput, "a clipboard that changed since the offer loads nothing")
+        coordinator.close()
+        try await Task.sleep(for: .milliseconds(50))
+        coordinator.show(.json, input: #"{"a":1}"#)
+        let deadline = ContinuousClock.now.advanced(by: .seconds(5))
+        while coordinator.jsonBusy, ContinuousClock.now < deadline { try await Task.sleep(for: .milliseconds(1)) }
+        precondition(coordinator.jsonOutput == "{\n  \"a\": 1\n}",
+                     "launcher input opens already formatted, got \(coordinator.jsonOutput.debugDescription)")
+        coordinator.close()
+        print("Clipboard suggestions offer, load, dismiss and launcher input passed")
+    }
+
     static func settled(_ session: DeveloperToolSession) async throws {
         let deadline = ContinuousClock.now.advanced(by: .seconds(5))
         while session.isBusy, ContinuousClock.now < deadline { try await Task.sleep(for: .milliseconds(1)) }
@@ -225,6 +278,13 @@ final class CurrencyRateStore {
     var rates: CurrencyRates?
     var isRefreshing = false
     func refresh() async -> Bool { false }
+}
+
+@MainActor
+enum UtilityClipboard {
+    static var changeCount = 0
+    static var stored: String?
+    static func text() -> String? { stored }
 }
 
 @MainActor

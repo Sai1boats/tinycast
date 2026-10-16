@@ -5,6 +5,7 @@ import SwiftUI
 final class TranslationPanelController: NSObject, NSWindowDelegate {
     private var panel: TranslationPanel?
     private weak var coordinator: TranslationCoordinator?
+    private var collapsedFrame: NSRect?
 
     func show(_ coordinator: TranslationCoordinator) {
         if let panel { panel.makeKeyAndOrderFront(nil); return }
@@ -37,11 +38,30 @@ final class TranslationPanelController: NSObject, NSWindowDelegate {
 
     func focus() { panel?.makeKeyAndOrderFront(nil) }
 
+    /// Long text gets most of the screen; collapsing returns to wherever the reader left it.
+    func setExpanded(_ expanded: Bool) -> Bool {
+        guard let panel, let screen = panel.screen ?? NSScreen.main else { return false }
+        if expanded {
+            collapsedFrame = panel.frame
+            let visible = screen.visibleFrame
+            let size = NSSize(
+                width: max(visible.width * Theme.Size.translationExpandedFraction, panel.minSize.width),
+                height: max(visible.height * Theme.Size.translationExpandedFraction, panel.minSize.height))
+            let origin = NSPoint(x: visible.midX - size.width / 2, y: visible.midY - size.height / 2)
+            panel.setFrame(NSRect(origin: origin, size: size), display: true, animate: true)
+            return true
+        }
+        if let collapsedFrame { panel.setFrame(collapsedFrame, display: true, animate: true) }
+        collapsedFrame = nil
+        return false
+    }
+
     func dismiss() {
         panel?.delegate = nil
         panel?.close()
         panel = nil
         coordinator = nil
+        collapsedFrame = nil
     }
 
     func windowDidResignKey(_ notification: Notification) {

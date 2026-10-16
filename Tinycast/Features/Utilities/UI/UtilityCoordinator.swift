@@ -13,6 +13,9 @@ final class UtilityCoordinator {
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
     private var generation = 0
     private var presentation = UUID()
+    /// The clipboard change each window is offering to load; the text itself is never kept.
+    private(set) var clipboardSuggestions: [UtilityTool: Int] = [:]
+    @ObservationIgnored private var declinedClipboard: [UtilityTool: Int] = [:]
     var jsonInput = "" { didSet { if oldValue != jsonInput { cancelJSON() } } }
     private(set) var jsonOutput = ""
     private(set) var jsonError = ""
@@ -44,11 +47,83 @@ final class UtilityCoordinator {
             windows[tool]?.onClose = { [weak self] in
                 self?.disappear(tool)
                 self?.developerSessions.removeValue(forKey: tool)
+                self?.clipboardSuggestions[tool] = nil
             }
+            windows[tool]?.onBecomeKey = { [weak self] in self?.checkClipboard(for: tool) }
         }
         windows[tool]?.show(chrome: UtilityWindowChrome()) {
             UtilityWindowView(tool: tool, developerSession: session).environment(self)
         }
+        checkClipboard(for: tool)
+    }
+
+    /// Opens the tool already working on text the launcher recognised as its input.
+    func show(_ tool: UtilityTool, input: String) {
+        show(tool)
+        load(input, into: tool)
+        checkClipboard(for: tool)
+    }
+
+    func checkClipboard(for tool: UtilityTool) {
+        guard UtilityInputDetector.detectableTools.contains(tool) else { return }
+        let change = UtilityClipboard.changeCount
+        guard declinedClipboard[tool] != change, let text = UtilityClipboard.text(),
+            UtilityInputDetector.tool(for: text) == tool,
+            text.trimmingCharacters(in: .whitespacesAndNewlines) != input(of: tool)
+        else {
+            clipboardSuggestions[tool] = nil
+            return
+        }
+        clipboardSuggestions[tool] = change
+    }
+
+    func acceptClipboardSuggestion(for tool: UtilityTool) {
+        declinedClipboard[tool] = UtilityClipboard.changeCount
+        clipboardSuggestions[tool] = nil
+        guard let text = UtilityClipboard.text(), UtilityInputDetector.tool(for: text) == tool else {
+            core.showMessage(String(localized: "The clipboard changed. Nothing was loaded."), tone: .danger)
+            return
+        }
+        load(text, into: tool)
+    }
+
+    func declineClipboardSuggestion(for tool: UtilityTool) {
+        declinedClipboard[tool] = clipboardSuggestions[tool]
+        clipboardSuggestions[tool] = nil
+    }
+
+    private func load(_ text: String, into tool: UtilityTool) {
+        let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        switch tool {
+        case .json:
+            jsonInput = value
+            runJSON(.format)
+        case .timestamp:
+            timestampInput = value
+            convertTimestamp(fromDate: false)
+        case .jwt:
+            developerSession(for: .jwt).input = value
+            inspectJWT()
+        case .base64:
+            let session = developerSession(for: .base64)
+            if let alphabet = UtilityInputDetector.base64Alphabet(for: value) { session.base64Alphabet = alphabet }
+            session.input = value
+            runEncoding(.base64, decoding: true)
+        case .urlCodec:
+            developerSession(for: .urlCodec).input = value
+            runEncoding(.urlCodec, decoding: true)
+        case .currency, .uuid, .hash, .textDiff:
+            break
+        }
+    }
+
+    private func input(of tool: UtilityTool) -> String {
+        let text = switch tool {
+        case .json: jsonInput
+        case .timestamp: timestampInput
+        default: developerSessions[tool]?.input ?? ""
+        }
+        return text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     func disappear(_ tool: UtilityTool) {
@@ -113,6 +188,9 @@ final class UtilityCoordinator {
             return
         }
         if comparison { session.comparisonInput = text } else { session.input = text }
+        if let tool = developerSessions.first(where: { $0.value === session })?.key {
+            clipboardSuggestions[tool] = nil
+        }
     }
 
     func runJSON(_ operation: JSONTool.Operation) {
@@ -151,6 +229,7 @@ final class UtilityCoordinator {
             return
         }
         jsonInput = text
+        clipboardSuggestions[.json] = nil
     }
 
     func convertTimestamp(fromDate: Bool) {

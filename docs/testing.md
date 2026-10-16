@@ -121,7 +121,7 @@ If a change touches anything in the right column, the harness on the left is man
 | `calc-test` | all of `Calculator/Model/` |
 | `utilities-test` | JSON, timestamp and currency models, exact tokens, bounds and injected environment facts |
 | `developer-tools-test` | Local codecs, UUIDs, hashes, JWT contents, line comparisons and session cancellation |
-| `developer-tools-ui-test` | Nine native Focus Panel windows, shared editor and input-field edges, both appearances and sizes, diff colors and window/session lifetime; optional PNG fixtures through `TINYCAST_TOOL_PREVIEW_DIRECTORY` |
+| `developer-tools-ui-test` | Nine native Focus Panel windows, shared editor and input-field edges, both appearances and sizes, diff colors, window/session lifetime, clipboard suggestions and launcher input; optional PNG fixtures through `TINYCAST_TOOL_PREVIEW_DIRECTORY` |
 | `calendar-test` | all of `Calendar/Model/` plus `EventEditorSession` — links, join window, day buckets, draft and form focus |
 | `clipboard-search-test` | Ordinary and OCR result ordering, opt-in lifecycle, cancellation, pins and type filters |
 | `clipboard-text-test` | Apple Vision/PDF extraction, scheduling, retry backoff and recovery |
@@ -154,7 +154,8 @@ If a change touches anything in the right column, the harness on the left is man
 | `window-layout-test` | `WindowManagement/Model/WindowLayout*.swift` and `CustomWindowSize*.swift` — the layout record, its geometry and its inverse, the plan and the store; custom sizes' units, frames and store |
 | `window-room-test` | `WindowManagement/Model/Room*.swift` — every room layout and its minimum sizes, the grid, arrangement reading, window matching, parking, the plan, Tab's choices and the three stores |
 | `terminal-command-test` | Literal automation arguments, shell directory quoting, iTerm URL encoding, cancellation and Automation denial |
-| `shell-history-test` | Shell history search, capacity, pins, ordering, deletion, persistence and menu selection |
+| `shell-history-test` | Shell history search, capacity, pins, ordering, deletion, persistence, menu selection and the shell screen's Tab and completion rows |
+| `shell-completion-test` | `cd`/`cdf` built-ins, shell quoting, path resolution, command and file completion, and directory listing over a temporary folder |
 | `custom-command-test` | Command storage and execution, editor drafts, argument identities and dynamic keyboard focus |
 | `custom-command-list-test` | Browser result snapshots, observation, row actions and empty-library messages |
 | `uninstall-test` | all five pure files in `Uninstall/Model/` |

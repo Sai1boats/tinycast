@@ -35,9 +35,13 @@ enum TextTranslator {
     }
 
     /// Installed pairs only: a missing language is downloaded in System Settings, never from here.
-    static func translate(_ text: String, to target: Locale.Language) async throws -> String {
-        guard let source = sourceLanguage(of: text) else { throw Failure.undetectableSource }
-        guard !source.isEquivalent(to: target) else { return text }
+    static func translate(
+        _ paragraphs: [String], from source: Locale.Language? = nil, to target: Locale.Language
+    ) async throws -> [String] {
+        guard let source = source ?? sourceLanguage(of: paragraphs.joined(separator: "\n")) else {
+            throw Failure.undetectableSource
+        }
+        guard !source.isEquivalent(to: target) else { return paragraphs }
         switch await LanguageAvailability().status(from: source, to: target) {
         case .installed:
             break
@@ -48,12 +52,23 @@ enum TextTranslator {
         @unknown default:
             throw Failure.unsupported
         }
+        let requests = paragraphs.indices.filter { !paragraphs[$0].trimmingCharacters(in: .whitespaces).isEmpty }
+            .map { TranslationSession.Request(sourceText: paragraphs[$0], clientIdentifier: String($0)) }
+        guard !requests.isEmpty else { return paragraphs }
+        let responses: [TranslationSession.Response]
         do {
-            let session = TranslationSession(installedSource: source, target: target)
-            return try await session.translate(text).targetText
+            responses = try await TranslationSession(installedSource: source, target: target)
+                .translations(from: requests)
         } catch {
             throw Failure.failed
         }
+        var translated = paragraphs
+        for response in responses {
+            guard let index = response.clientIdentifier.flatMap(Int.init), translated.indices.contains(index)
+            else { continue }
+            translated[index] = response.targetText
+        }
+        return translated
     }
 
     /// Minimal, not maximal: the maximal form would spell `es` "Spanish (Latin, Spain)" in a menu.

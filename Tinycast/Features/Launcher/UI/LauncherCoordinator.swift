@@ -81,6 +81,10 @@ final class LauncherCoordinator {
                 AppLauncher.open(app.url)
                 return
             }
+            if id == .openInJWTViewer || id == .openInJSONTools {
+                core.utilityCoordinator.show(id == .openInJWTViewer ? .jwt : .json, input: searchQuery ?? "")
+                return
+            }
             runCommand(id)
             return
         }
@@ -219,7 +223,7 @@ final class LauncherCoordinator {
             Task { await core.cameraCoordinator.show() }
         case .define:
             core.dictionaryCoordinator.show()
-        case .openInBrowser, .runShellCommand:
+        case .openInBrowser, .runShellCommand, .openInJWTViewer, .openInJSONTools:
             break  // Query-driven: each runs where the typed text is, never through this funnel.
         case .joinNextMeeting:
             calendarCoordinator.joinNextMeeting()

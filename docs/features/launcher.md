@@ -294,9 +294,14 @@ category browsing cannot teach every window command the same search term.
 A **contextual** command is one the query itself supplies the target for, so it exists only while a
 query resolves and never sits in the index. `CommandCatalog.contextual` names them, `all` filters
 them out, and `LauncherScreen` offers the row per keystroke — ahead of the ranked matches, because
-nothing the index holds answers a typed address better. There is one today: typing a web address or
-a bare host puts **Open in Browser** on top, and activating it hands the URL to the system's default
-handler through `AppLauncher.open`.
+nothing the index holds answers a typed address better. Typing a web address or a bare host puts
+**Open in Browser** on top, and activating it hands the URL to the system's default handler through
+`AppLauncher.open`. Pasting a three-part JWT (a `Bearer ` prefix is fine) puts **Open in JWT Viewer**
+on top, and a JSON object or array puts **Open in JSON Tools** there; either opens the tool with the
+query as its input, already inspected or formatted. `CommandCatalog.openInUtility` asks
+`UtilityInputDetector.isJWT`/`isJSON` — each bails on the first character — and skips queries over
+256 KiB, because the row is re-derived on every keystroke. Each row answers to its tool's own
+visibility: hiding JWT Viewer or JSON Tools in Settings › Commands hides its row too.
 
 The shape a query has to have is `QuicklinkDestination.detect` returning `.web`, reused rather than
 re-written so `github.com` and `https://…` mean the same thing here as they do in a quicklink. The

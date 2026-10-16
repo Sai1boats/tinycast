@@ -150,8 +150,8 @@ struct ShellHistoryTests {
             vm: vm, openActions: {}, scrollToFollow: {})
         check(screen.landingSelection == 1, "an exact search selects its saved command below other matching pins")
         let menu = screen.actions(at: 1)!
-        check(menu.items.count == 5 && menu.items[2].title == "Pin Command",
-              "ordinary history offers pin, move to top, and delete")
+        check(menu.items.count == 6 && menu.items[2].title == "Pin Command",
+              "ordinary history offers pin, move to top, delete and Finder's folder")
         vm.query = "# changed"
         screen.activate(at: 1)
         check(coordinator.lastAction == "run:git", "snapshot activation runs the displayed command")
@@ -171,13 +171,51 @@ struct ShellHistoryTests {
         let typed = ShellCommandScreen(
             query: ShellCommandQuery("# unseen")!, coordinator: coordinator,
             vm: vm, openActions: {}, scrollToFollow: {})
-        check(typed.actions(at: 0)?.items.count == 2 && !typed.perform(.pin, at: 0) && !typed.perform(.delete, at: 0),
+        check(typed.actions(at: 0)?.items.count == 3 && !typed.perform(.pin, at: 0) && !typed.perform(.delete, at: 0),
               "a new command has no history-management actions before it runs")
         check(screen.actions(at: -1) == nil && !screen.secondary(at: 99) && !screen.perform(.delete, at: 99),
               "out-of-range selections cannot mutate history")
         let lastAction = coordinator.lastAction
         screen.activate(at: 99)
         check(coordinator.lastAction == lastAction, "invalid activation is inert")
+        testTab(coordinator)
+    }
+
+    private static func testTab(_ coordinator: CustomCommandCoordinator) {
+        let vm = PaletteState()
+        vm.query = "# gi"
+        let typed = ShellCommandScreen(
+            query: ShellCommandQuery(vm.query)!, coordinator: coordinator, vm: vm, openActions: {}, scrollToFollow: {})
+        check(typed.tab(at: 0, backwards: false) && coordinator.lastAction == "complete:gi",
+              "Tab on the typed line asks for completion")
+        check(typed.tab(at: 2, backwards: false) && coordinator.lastAction == "edit:git",
+              "Tab on a different history line takes it into the field")
+        vm.query = "# git"
+        let exact = ShellCommandScreen(
+            query: ShellCommandQuery(vm.query)!, coordinator: coordinator, vm: vm, openActions: {}, scrollToFollow: {})
+        check(exact.tab(at: exact.landingSelection, backwards: false) && coordinator.lastAction == "complete:git",
+              "Tab on the line already typed completes instead of re-filling it")
+        coordinator.completions = [
+            ShellCompletion.Candidate(line: "git ", title: "git", isDirectory: false),
+            ShellCompletion.Candidate(line: "gitk ", title: "gitk", isDirectory: false)
+        ]
+        let listed = ShellCommandScreen(
+            query: ShellCommandQuery(vm.query)!, coordinator: coordinator, vm: vm, openActions: {}, scrollToFollow: {})
+        check(listed.landingSelection == 0 && listed.rows.count == 4, "completions lead the list")
+        check(listed.primaryActionTitle == "Insert Completion", "↵ on a completion inserts it")
+        check(listed.tab(at: 0, backwards: false) && vm.selection == 1, "Tab walks the completions")
+        check(listed.tab(at: 1, backwards: false) && vm.selection == 0, "and wraps")
+        check(listed.tab(at: 0, backwards: true) && vm.selection == 1, "⇧Tab walks back")
+        check(listed.tab(at: 3, backwards: false) && vm.selection == 0, "from a command row Tab returns to them")
+        listed.activate(at: 1)
+        check(coordinator.lastAction == "apply:gitk ", "activating a completion writes its line")
+        check(listed.actions(at: 0) == nil && !listed.secondary(at: 0), "completions have no command actions")
+        coordinator.completions = []
+        vm.query = "# cd ~/src"
+        let builtin = ShellCommandScreen(
+            query: ShellCommandQuery(vm.query)!, coordinator: coordinator, vm: vm, openActions: {}, scrollToFollow: {})
+        vm.selection = 0
+        check(builtin.primaryActionTitle == "Change Directory", "cd says what it will do")
     }
 
     private static func check(_ condition: Bool, _ message: String) {
@@ -209,9 +247,16 @@ final class CustomCommandCoordinator {
     func togglePinnedShellHistoryCommand(_ command: String) { lastAction = "pin:" + command }
     func moveShellHistoryCommandToTop(_ command: String) { lastAction = "top:" + command }
     func deleteShellHistoryCommand(_ command: String) { lastAction = "delete:" + command }
+    var completions: [ShellCompletion.Candidate] = []
+    var shellDirectory = "~"
+    func shellCompletions(for query: String) -> [ShellCompletion.Candidate] { completions }
+    func completeShellCommand(_ query: ShellCommandQuery) { lastAction = "complete:" + query.input }
+    func applyShellCompletion(_ candidate: ShellCompletion.Candidate) { lastAction = "apply:" + candidate.line }
+    func useFinderFolder() { lastAction = "finder" }
 }
 
-struct PopoverMenuContent {
+struct PopoverMenuContent: Equatable {
+    static func == (lhs: Self, rhs: Self) -> Bool { lhs.header == rhs.header }
     let header: String?
     let items: [PopoverMenuItem]
 }
@@ -236,11 +281,12 @@ struct EmptyResults: View {
 }
 
 struct ShellCommandList: View {
-    let rows: [ShellCommandHistory.Row]
+    let rows: [ShellCommandScreen.Row]
+    let directory: String
     let selectedID: String?
     let scroll: ScrollIntent
-    let onSelect: (ShellCommandHistory.Row) -> Void
+    let onSelect: (ShellCommandScreen.Row) -> Void
     let onActivate: () -> Void
-    let onActions: (ShellCommandHistory.Row) -> Void
+    let onActions: (ShellCommandScreen.Row) -> Void
     var body: some View { EmptyView() }
 }
