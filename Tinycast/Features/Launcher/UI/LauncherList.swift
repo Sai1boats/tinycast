@@ -12,6 +12,9 @@ struct LauncherList: View {
     let matchCount: Int
     /// Changes only when the list should scroll, so mouse selection never yanks it.
     let scroll: ScrollIntent
+    var recentItems: [LauncherRecentItem]?
+    var onActivateCalculation: (CalcHistoryEntry) -> Void = { _ in }
+    var onCalculationActions: (CalcHistoryEntry) -> Void = { _ in }
     /// The card at flat index 0, when one leads. At most one ever does.
     var card: LeadCard?
     var cardSelected = false
@@ -68,12 +71,14 @@ struct LauncherList: View {
         case app(AppEntry, slot: Character?)
         case fallback(AppEntry, index: Int)
         case file(FileSearchResult)
+        case calculation(CalcHistoryEntry)
         var id: String {
             switch self {
             case .header(let title): return "header-" + title
             case .fallbackHeader: return "fallback-header"
             case .card(let card): return card.rowID
             case .file(let file): return "file-" + file.id
+            case .calculation(let entry): return "calculation-" + entry.id.uuidString
             case .app(let app, _): return app.id
             case .fallback(let app, _): return "fallback-" + app.id
             }
@@ -82,6 +87,7 @@ struct LauncherList: View {
 
     /// Whether the selection sits on flat index 0: the card, else the first result.
     private var firstRowSelected: Bool {
+        if let recentItems { return selectedRowID != nil && selectedRowID == recentItems.first?.id }
         if card != nil { return cardSelected }
         let firstID = results.first?.id ?? files.first.map { "file-" + $0.id }
         return selectedRowID != nil && selectedRowID == firstID
@@ -95,6 +101,14 @@ struct LauncherList: View {
     }
 
     private var rows: [Row] {
+        if let recentItems {
+            return [.header(String(localized: "Recently Used"))] + recentItems.map {
+                switch $0 {
+                case .entry(let entry, _): .app(entry, slot: nil)
+                case .calculation(let entry): .calculation(entry)
+                }
+            }
+        }
         var rows: [Row] = []
         if let card { rows = [.header(card.sectionTitle), .card(card)] }
         let favorites = results.prefix(favoriteCount)
@@ -150,8 +164,9 @@ struct LauncherList: View {
     var body: some View {
         let rows = rows
         return Group {
-            if results.isEmpty && files.isEmpty && card == nil && fallbacks == nil {
-                EmptyResults(text: String(localized: "No apps found"))
+            if recentItems?.isEmpty ?? (results.isEmpty && files.isEmpty && card == nil && fallbacks == nil) {
+                EmptyResults(text: recentItems != nil
+                    ? String(localized: "No recent apps, commands or calculations") : String(localized: "No apps found"))
             } else {
                 ScrollViewReader { proxy in
                     ScrollView {
@@ -183,6 +198,12 @@ struct LauncherList: View {
                                     .onRowTap(drag: drag(for: app)) { onActivate(app) }
                                     .onRightClick { onActions(app) }
                                     .selectionFrame(app.id == selectedRowID)
+                                case .calculation(let entry):
+                                    CalcHistoryRow(entry: entry, selected: row.id == selectedRowID)
+                                        .contentShape(Rectangle())
+                                        .onTapGesture { onActivateCalculation(entry) }
+                                        .onRightClick { onCalculationActions(entry) }
+                                        .selectionFrame(row.id == selectedRowID)
                                 case .file(let file):
                                     FileSearchRow(result: file, selected: row.id == selectedRowID)
                                         .contentShape(Rectangle())

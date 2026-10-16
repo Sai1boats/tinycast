@@ -236,7 +236,8 @@ need saying explicitly. Adding it as the view is written costs a line; retrofitt
 
 ## What is actually checked
 
-Everything above is guidance. The mechanical bar — the harnesses, the purity grep, lint and a
-clean build — is one list, in [testing.md](testing.md#definition-of-done), so that it cannot drift by
+Everything above is guidance. The mechanical bar — the harnesses, the purity grep, lint, a
+clean build and a verified local package/install — is one list, in
+[testing.md](testing.md#definition-of-done), so that it cannot drift by
 being written down twice. Anything not on it is a judgement call: make it, and say why in the PR if it
 is not obvious.

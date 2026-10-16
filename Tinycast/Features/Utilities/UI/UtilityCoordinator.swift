@@ -8,6 +8,7 @@ final class UtilityCoordinator {
     private unowned let core: AppCore
     let rates: CurrencyRateStore
     @ObservationIgnored private var windows: [UtilityTool: AppWindowController] = [:]
+    @ObservationIgnored private var developerSessions: [UtilityTool: DeveloperToolSession] = [:]
     @ObservationIgnored private var jsonTask: Task<Void, Never>?
     @ObservationIgnored private var refreshTask: Task<Void, Never>?
     private var generation = 0
@@ -33,23 +34,25 @@ final class UtilityCoordinator {
 
     func show(_ tool: UtilityTool) {
         core.paletteCoordinator.hidePalette(restoreFocus: false)
+        let session = tool.isDeveloperTool ? developerSession(for: tool) : nil
         if windows[tool] == nil {
-            let size = switch tool {
-            case .json: Theme.Size.jsonToolWindow
-            case .timestamp: Theme.Size.utilityWindow
-            case .currency: Theme.Size.currencyToolWindow
-            }
             windows[tool] = AppWindowController(
                 title: NSLocalizedString(tool.title, comment: "Utility window"),
-                contentSize: size,
-                minimumSize: tool == .currency ? Theme.Size.currencyToolMinimum : Theme.Size.utilityMinimum,
-                resizable: true, autosaveName: tool == .json ? "JSONTool" : "Utility-" + tool.rawValue,
+                contentSize: Theme.Size.utilityFocusWindow, minimumSize: Theme.Size.utilityFocusMinimum,
+                resizable: true, autosaveName: "UtilityFocus-" + tool.rawValue,
                 activation: core.activationPolicy, closesOnEscape: true)
+            windows[tool]?.onClose = { [weak self] in
+                self?.disappear(tool)
+                self?.developerSessions.removeValue(forKey: tool)
+            }
         }
-        windows[tool]?.show(chrome: UtilityWindowChrome()) { UtilityWindowView(tool: tool).environment(self) }
+        windows[tool]?.show(chrome: UtilityWindowChrome()) {
+            UtilityWindowView(tool: tool, developerSession: session).environment(self)
+        }
     }
 
     func disappear(_ tool: UtilityTool) {
+        developerSessions[tool]?.cancel()
         if tool == .json { cancelJSON() }
         if tool == .currency {
             presentation = UUID()
@@ -65,6 +68,51 @@ final class UtilityCoordinator {
 
     func close() {
         for tool in UtilityTool.allCases { close(tool) }
+    }
+
+    func developerSession(for tool: UtilityTool) -> DeveloperToolSession {
+        if let session = developerSessions[tool] { return session }
+        let session = DeveloperToolSession()
+        developerSessions[tool] = session
+        return session
+    }
+
+    func runEncoding(_ tool: UtilityTool, decoding: Bool) {
+        let session = developerSession(for: tool)
+        switch tool {
+        case .urlCodec: session.run(decoding ? .decodeURL(session.urlMode) : .encodeURL(session.urlMode))
+        case .base64: session.run(decoding ? .decodeBase64(session.base64Alphabet) : .encodeBase64(session.base64Alphabet))
+        default: break
+        }
+    }
+
+    func generateUUIDs() { developerSession(for: .uuid).generateUUIDs() }
+
+    func computeHash() {
+        let session = developerSession(for: .hash)
+        session.run(.hash(session.hashAlgorithm))
+    }
+
+    func inspectJWT() { developerSession(for: .jwt).run(.jwt(Date())) }
+
+    func compareText() {
+        let session = developerSession(for: .textDiff)
+        session.run(.diff(session.comparisonInput))
+    }
+
+    func swapComparisonTexts() {
+        let session = developerSession(for: .textDiff)
+        let original = session.input
+        session.input = session.comparisonInput
+        session.comparisonInput = original
+    }
+
+    func readClipboard(into session: DeveloperToolSession, comparison: Bool = false) {
+        guard let text = NSPasteboard.general.string(forType: .string) else {
+            session.clipboardUnavailable()
+            return
+        }
+        if comparison { session.comparisonInput = text } else { session.input = text }
     }
 
     func runJSON(_ operation: JSONTool.Operation) {

@@ -7,6 +7,7 @@ import Observation
 final class CustomCommandCoordinator {
     private(set) var editor: CustomCommandEditorSession?
     private let store: CustomCommandStore
+    private let shellHistory: ShellCommandHistoryStore
     private let settings: AppSettings
     private let appIndex: AppIndex
     private let paletteCoordinator: PaletteCoordinator
@@ -32,6 +33,7 @@ final class CustomCommandCoordinator {
 
     init(
         store: CustomCommandStore,
+        shellHistory: ShellCommandHistoryStore,
         settings: AppSettings,
         appIndex: AppIndex,
         paletteCoordinator: PaletteCoordinator,
@@ -45,6 +47,7 @@ final class CustomCommandCoordinator {
         core: AppCore
     ) {
         self.store = store
+        self.shellHistory = shellHistory
         self.settings = settings
         self.appIndex = appIndex
         self.paletteCoordinator = paletteCoordinator
@@ -251,9 +254,42 @@ final class CustomCommandCoordinator {
         perform(command, arguments: arguments)
     }
 
+    func shellHistoryRows(for query: ShellCommandQuery) -> [ShellCommandHistory.Row] {
+        shellHistory.history.rows(for: query)
+    }
+
+    func editShellCommand(_ text: String) {
+        core.palette.rewriteQuery("# " + text)
+    }
+
+    func deleteShellHistoryCommand(_ text: String) {
+        shellHistory.remove(text)
+        guard let query = ShellCommandQuery(core.palette.query) else { return }
+        let count = shellHistoryRows(for: query).count
+        core.palette.selection = min(core.palette.selection, max(0, count - 1))
+        core.palette.followToken = UUID()
+    }
+
+    func togglePinnedShellHistoryCommand(_ text: String) {
+        shellHistory.togglePinned(text)
+        selectShellHistoryCommand(text)
+    }
+
+    func moveShellHistoryCommandToTop(_ text: String) {
+        shellHistory.moveToTop(text)
+        selectShellHistoryCommand(text)
+    }
+
+    private func selectShellHistoryCommand(_ text: String) {
+        guard let query = ShellCommandQuery(core.palette.query) else { return }
+        core.palette.selection = shellHistoryRows(for: query).firstIndex { $0.command == text } ?? 0
+        core.palette.followToken = UUID()
+    }
+
     func runShellCommand(_ text: String) {
         let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
+        shellHistory.record(text)
         if paletteCoordinator.isVisible { paletteCoordinator.hidePalette(restoreFocus: false) }
         let destination = settings.shellCommandDestination
         if destination != .tinycast {

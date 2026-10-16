@@ -74,6 +74,9 @@ final class ClipboardCoordinator {
     /// ↵ runs the configured default and the other chords follow it; false when `chord` has none.
     @discardableResult
     func activate(_ item: ClipboardItem, chord: ClipboardChord = .return) -> Bool {
+        if chord == .return, palette.clipboardReturnsToSearch {
+            return pasteIntoSearch(item)
+        }
         guard let action = settings.clipboardDefaultAction.action(for: chord, on: item) else {
             return false
         }
@@ -90,6 +93,10 @@ final class ClipboardCoordinator {
     }
 
     func paste(_ item: ClipboardItem) {
+        if palette.clipboardReturnsToSearch {
+            _ = pasteIntoSearch(item)
+            return
+        }
         let previous = windowController.previousApp
         paletteCoordinator.hidePalette(restoreFocus: false)
         // A paste promotes the item, so follow it and keep the moved row highlighted.
@@ -102,6 +109,10 @@ final class ClipboardCoordinator {
 
     /// A file's path stays valid text after the file goes, so this never reports it missing.
     func pasteAsPlainText(_ item: ClipboardItem) {
+        if palette.clipboardReturnsToSearch {
+            _ = pasteIntoSearch(item)
+            return
+        }
         let previous = windowController.previousApp
         paletteCoordinator.hidePalette(restoreFocus: false)
         if Paster.pastePlainText(item, store: clipboardStore, previousApp: previous) {
@@ -110,9 +121,21 @@ final class ClipboardCoordinator {
     }
 
     func pasteKeepingWindowOpen(_ item: ClipboardItem) {
+        if palette.clipboardReturnsToSearch {
+            _ = pasteIntoSearch(item)
+            return
+        }
         if !windowController.pasteKeepingWindowOpen(item, store: clipboardStore) {
             reportUnavailable(item)
         }
+    }
+
+    private func pasteIntoSearch(_ item: ClipboardItem) -> Bool {
+        guard let text = item.plainText else {
+            core.showMessage(String(localized: "Choose a text or file entry to use in search."), tone: .neutral)
+            return true
+        }
+        return palette.returnClipboardTextToSearch(text)
     }
 
     /// Each press pastes the next older entry into the app in front, never promoting it.

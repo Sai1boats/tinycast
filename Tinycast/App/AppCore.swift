@@ -9,6 +9,7 @@ final class AppCore {
     let launcherRanking: LauncherRankingStore
     let appIndex: AppIndex
     let customCommands = CustomCommandStore()
+    let shellHistory = ShellCommandHistoryStore()
     let quicklinks = QuicklinkStore()
     let windowLayouts = WindowLayoutStore()
     let customWindowSizes = CustomWindowSizeStore()
@@ -148,7 +149,7 @@ final class AppCore {
         visibility: visibility, ranking: launcherRanking, aliases: aliases, palette: palette,
         paletteCoordinator: paletteCoordinator, core: self)
     @ObservationIgnored private(set) lazy var customCommandCoordinator = CustomCommandCoordinator(
-        store: customCommands, settings: settings, appIndex: appIndex,
+        store: customCommands, shellHistory: shellHistory, settings: settings, appIndex: appIndex,
         paletteCoordinator: paletteCoordinator, settingsCoordinator: settingsCoordinator,
         hotKeys: hotKeys, favorites: favorites, visibility: visibility,
         ranking: launcherRanking, aliases: aliases, activationPolicy: activationPolicy, core: self)

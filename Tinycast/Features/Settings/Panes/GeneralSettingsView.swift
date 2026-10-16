@@ -50,6 +50,15 @@ struct GeneralSettingsView: View {
                     SettingsRowTitle(.generalGeneral, "Escape Key Behavior")
                     Text(String(localized: "When the search field is empty."))
                 }
+                Picker(selection: $settings.launcherTabDestination) {
+                    ForEach(LauncherTabDestination.allCases) { destination in
+                        Text(destination.title).tag(destination)
+                            .disabled(!settings.enabledTabDestinations.contains(destination))
+                    }
+                } label: {
+                    SettingsRowTitle(.generalGeneral, "Tab opens")
+                    Text(String(localized: "From root search. Enable a feature to choose its page."))
+                }
                 // Empty only when TIS fails; one layout still lists, so the row stays put.
                 if !inputSources.isEmpty {
                     Picker(selection: $settings.autoSwitchInputSourceID) {

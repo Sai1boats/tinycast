@@ -54,6 +54,14 @@ final class LauncherRankingStore {
 
     var isEmpty: Bool { visits.isEmpty }
 
+    var recentItemKeys: [String] {
+        visits.keys.sorted { left, right in
+            let leftDate = visits[left]?.openedAt ?? .distantPast
+            let rightDate = visits[right]?.openedAt ?? .distantPast
+            return leftDate == rightDate ? left < right : leftDate > rightDate
+        }
+    }
+
     /// Awaits the pending persist. The launcher never needs it; reading the file back does.
     func flush() async {
         await writeTask?.value

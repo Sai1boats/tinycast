@@ -158,6 +158,7 @@ final class PaletteCoordinator {
     var paletteIsCollapsed: Bool {
         settings.compactMode
             && !palette.forceExpanded
+            && !palette.showsRecentLaunches
             && palette.mode == .launcher
             && palette.query.trimmingCharacters(in: .whitespaces).isEmpty
     }

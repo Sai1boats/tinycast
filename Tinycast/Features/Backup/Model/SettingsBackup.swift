@@ -34,6 +34,7 @@ struct SettingsBackup: Codable {
         var showInMenuBar: Bool?
         var popToRootSeconds: Int?
         var escapeKeyBehavior: String?
+        var launcherTabDestination: String?
         var language: String?
         var appearance: String?
         var calcNumberStyle: String?
@@ -148,6 +149,7 @@ extension SettingsBackup {
             showInMenuBar: s.showInMenuBar,
             popToRootSeconds: s.popToRootTimeout.rawValue,
             escapeKeyBehavior: s.escapeKeyBehavior.rawValue,
+            launcherTabDestination: s.launcherTabDestination.rawValue,
             language: s.language.rawValue,
             appearance: s.appearance.rawValue,
             calcNumberStyle: s.calcNumberStyle.rawValue,
@@ -356,6 +358,9 @@ extension SettingsBackup {
         if let secs = s.popToRootSeconds, let timeout = PopToRootTimeout(rawValue: secs) {
             settings.popToRootTimeout = timeout
             count += 1
+        }
+        if let raw = s.launcherTabDestination, let destination = LauncherTabDestination(rawValue: raw) {
+            settings.launcherTabDestination = destination
         }
         if let raw = s.escapeKeyBehavior, let behavior = EscapeKeyBehavior(rawValue: raw) {
             settings.escapeKeyBehavior = behavior

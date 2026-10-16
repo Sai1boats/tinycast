@@ -120,6 +120,21 @@ final class AppSettings {
         didSet { defaults.set(mixedSearch, forKey: Key.mixedSearch.rawValue) }
     }
 
+    var launcherTabDestination: LauncherTabDestination {
+        didSet { defaults.set(launcherTabDestination.rawValue, forKey: Key.launcherTabDestination.rawValue) }
+    }
+
+    var enabledTabDestinations: Set<LauncherTabDestination> {
+        var enabled: Set<LauncherTabDestination> = [.automatic, .none, .emoji, .calculatorHistory, .dictionary]
+        if clipboardEnabled { enabled.insert(.clipboard) }
+        if aiEnabled { enabled.insert(.ai) }
+        if fileSearchEnabled { enabled.insert(.fileSearch) }
+        if quicklinksEnabled { enabled.insert(.quicklinks) }
+        if snippetsEnabled { enabled.insert(.snippets) }
+        if customCommandsEnabled { enabled.insert(.customCommands) }
+        return enabled
+    }
+
     var launcherShowsSuggestions: Bool {
         didSet {
             defaults.set(launcherShowsSuggestions, forKey: Key.launcherShowsSuggestions.rawValue)
@@ -680,6 +695,8 @@ final class AppSettings {
         escapeKeyBehavior =
             defaults.string(forKey: Key.escapeKeyBehavior.rawValue).flatMap(EscapeKeyBehavior.init)
             ?? .navigateBackOrClose
+        launcherTabDestination = defaults.string(forKey: Key.launcherTabDestination.rawValue)
+            .flatMap(LauncherTabDestination.init(rawValue:)) ?? .automatic
         language = defaults.string(forKey: Key.language.rawValue)
             .flatMap(AppLanguage.init(rawValue:)) ?? .system
         appearance =

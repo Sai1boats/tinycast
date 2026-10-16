@@ -30,6 +30,11 @@ in `Features/Settings/` (`Model/`, `Service/`, `SettingsFileSchema.swift`), the 
   the shortcuts and aliases of content, extensions and Apple Shortcuts, and what a room learns by
   being entered.
 
+`general.tabDestination` selects the page opened by Tab from root search. Accepted values are
+`automatic` (default cycle), `none`, `clipboard`, `ai`, `fileSearch`, `emoji`, `calculatorHistory`,
+`quicklinks`, `snippets`, `customCommands` and `dictionary`. Selecting a disabled feature does not
+enable it, and Tab stays at root until that feature is enabled.
+
 ## Layout
 
 | File | Role |

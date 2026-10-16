@@ -135,6 +135,9 @@ enum SettingsSearchCatalog {
             .generalGeneral, "Escape Key Behavior",
             keywords: ["escape", "esc", "back", "close", "navigate"]),
         .init(
+            .generalGeneral, "Tab opens",
+            keywords: ["tab", "switch", "page", "clipboard", "切换", "页面", "剪贴板"]),
+        .init(
             .generalGeneral, "Auto-switch input source",
             keywords: ["keyboard", "layout", "language", "abc"]),
         .init(
@@ -218,7 +221,8 @@ enum SettingsSearchCatalog {
     private static let commands: [SettingsSearchEntry] = [
         .init(
             pane: .commands,
-            keywords: ["custom", "script", "shell", "terminal"]),
+            keywords: ["custom", "script", "shell", "terminal", "utilities", "developer tools",
+                       "URL", "Base64", "UUID", "hash", "JWT", "diff", "开发工具"]),
         .init(
             .commandsCommands, "Enable Commands",
             keywords: ["hide", "visibility"]),

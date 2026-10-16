@@ -5,16 +5,30 @@ struct PaletteFrame: Equatable {
     let mode: PaletteMode
     let query: String
     let selection: Int
+    var showsRecentLaunches = false
 }
 
 /// Palette state shared between the panel's SwiftUI tree and the coordinator.
 @MainActor
 @Observable
 final class PaletteState {
-    var mode: PaletteMode = .launcher { didSet { restoredSelection = nil } }
+    var mode: PaletteMode = .launcher {
+        didSet {
+            restoredSelection = nil
+            showsRecentLaunches = false
+            clipboardReturnsToSearch = false
+        }
+    }
     /// The screens below `mode`, innermost last: a summon starts a new one, navigating pushes on.
     private(set) var backStack: [PaletteFrame] = []
-    var query: String = "" { didSet { restoredSelection = nil } }
+    var query: String = "" {
+        didSet {
+            restoredSelection = nil
+            showsRecentLaunches = false
+        }
+    }
+    private(set) var showsRecentLaunches = false
+    private(set) var clipboardReturnsToSearch = false
     @ObservationIgnored private(set) var restoredSelection: Int?
     var selection: Int = 0
     /// True while an IME holds marked text, which leaves `query` empty. The panel publishes it.
@@ -87,6 +101,7 @@ final class PaletteState {
 
     func noteVisible(_ visible: Bool) {
         isVisible = visible
+        if !visible { clipboardReturnsToSearch = false }
         // Ordering out leaves the tree mounted, and a preview must not outlive the window.
         if !visible { fileSearchQuickLook = false }
     }
@@ -107,10 +122,12 @@ final class PaletteState {
 
     /// Open `mode` over the current screen, which a back step returns to.
     func push(mode: PaletteMode) {
+        let returnsToSearch = isVisible && self.mode == .launcher && mode == .clipboard
         if !self.mode.isNativeEditor {
-            backStack.append(PaletteFrame(mode: self.mode, query: query, selection: selection))
+            backStack.append(currentFrame)
         }
         replace(mode: mode)
+        clipboardReturnsToSearch = returnsToSearch
     }
 
     /// Restore the screen underneath, false when this one is the root.
@@ -119,7 +136,8 @@ final class PaletteState {
         openScreen(frame.mode)
         query = frame.query
         selection = frame.selection
-        restoredSelection = preservingSelection ? frame.selection : nil
+        showsRecentLaunches = frame.showsRecentLaunches
+        restoredSelection = preservingSelection || frame.showsRecentLaunches ? frame.selection : nil
         // Not `resetToken`: landing the list again would throw away the selection restored here.
         followToken = UUID()
         return true
@@ -127,8 +145,45 @@ final class PaletteState {
 
     /// Tab's step deeper into the ring: the screen crossed from is the step back, query and all.
     func pushCarryingQuery(mode: PaletteMode) {
-        backStack.append(PaletteFrame(mode: self.mode, query: query, selection: selection))
+        let returnsToSearch = isVisible && self.mode == .launcher && mode == .clipboard
+        backStack.append(currentFrame)
         self.mode = mode
+        clipboardReturnsToSearch = returnsToSearch
+    }
+
+    private var currentFrame: PaletteFrame {
+        PaletteFrame(mode: mode, query: query, selection: selection, showsRecentLaunches: showsRecentLaunches)
+    }
+
+    @discardableResult
+    func showRecentLaunches() -> Bool {
+        guard mode == .launcher, query.isEmpty, !showsRecentLaunches,
+            selection == 0, !isComposing, !isEditingField, !isControlListOpen, !menuOpen
+        else { return false }
+        showsRecentLaunches = true
+        forceExpanded = true
+        resetToken = UUID()
+        return true
+    }
+
+    @discardableResult
+    func closeRecentLaunches() -> Bool {
+        guard showsRecentLaunches else { return false }
+        showsRecentLaunches = false
+        selection = 0
+        resetToken = UUID()
+        return true
+    }
+
+    @discardableResult
+    func returnClipboardTextToSearch(_ text: String) -> Bool {
+        guard isVisible, mode == .clipboard, clipboardReturnsToSearch,
+            backStack.last?.mode == .launcher
+        else { return false }
+        guard pop() else { return false }
+        rewriteQuery(text.split(whereSeparator: \.isNewline).joined(separator: " "))
+        selection = 0
+        return true
     }
 
     /// The search field is one line, so pasted line breaks become spaces; true when it rewrote.
@@ -141,6 +196,7 @@ final class PaletteState {
     /// Tab closing the ring on the launcher, which is its root: nothing is left behind it.
     func resetNavigation() {
         backStack.removeAll()
+        clipboardReturnsToSearch = false
     }
 
     private func openScreen(_ mode: PaletteMode) {

@@ -58,6 +58,8 @@ enum Theme {
         /// Settings shortcut-recorder keycap — smaller than the palette's `keyCap` chip.
         static let recorderKeyCap: CGFloat = 4
         static let tooltip: CGFloat = 8
+        static let utilityWindow: CGFloat = 24
+        static let utilityActions: CGFloat = 18
     }
 
     enum Blur {
@@ -66,12 +68,16 @@ enum Theme {
     }
 
     enum Size {
-        static let currencyToolWindow = CGSize(width: 720, height: 700)
-        static let currencyToolMinimum = CGSize(width: 620, height: 580)
-        static let jsonToolWindow = CGSize(width: 1100, height: 620)
-        static let utilityWindow = CGSize(width: 900, height: 620)
-        static let utilityMinimum = CGSize(width: 760, height: 550)
         static let utilityEditorMinimum: CGFloat = 260
+        static let utilityDiffPaneMinimum: CGFloat = 120
+        static let utilityCountWidth: CGFloat = 72
+        static let utilityFocusWindow = CGSize(width: 760, height: 740)
+        static let utilityFocusMinimum = CGSize(width: 680, height: 600)
+        static let utilityFocusPaneMinimum: CGFloat = 100
+        static let utilityFocusTokenHeight: CGFloat = 120
+        static let utilityFocusDigestHeight: CGFloat = 140
+        static let utilityGlyph: CGFloat = 16
+        static let utilityCloseGlyph: CGFloat = 12
         static let translationPanel = CGSize(width: 900, height: 340)
         static let translationMinimum = CGSize(width: 650, height: 320)
         static let translationTool: CGFloat = 24
@@ -420,6 +426,10 @@ enum Theme {
         static let menuSymbolSize: CGFloat = 14
         static let menuSymbolWeight = Font.Weight.medium
         static let noteTitle = Font.headline
+        static let utilityTitle = Font.title3.weight(.medium)
+        static let utilityPaneTitle = Font.caption.weight(.medium)
+        @MainActor static let utilityEditorNSFont = NSFont.monospacedSystemFont(
+            ofSize: NSFont.preferredFont(forTextStyle: .callout).pointSize, weight: .regular)
         /// The composer row's glyphs; Send's arrow is bolder, and Stop's square smaller to match it.
         static let composerSymbol = Font.system(size: 13, weight: .medium)
         static let composerSend = Font.system(size: 13, weight: .bold)
@@ -439,6 +449,18 @@ enum Theme {
 
         /// The ramp's inverse: the scrim darkens the dark surface and lightens the light one.
         static let panelScrim = adaptive(dark: .srgbInk(0, alpha: 0.40), light: .srgbInk(1, alpha: 0.55))
+        static let utilitySurface = adaptive(
+            dark: NSColor(srgbRed: 24 / 255, green: 25 / 255, blue: 28 / 255, alpha: 1),
+            light: NSColor(srgbRed: 244 / 255, green: 244 / 255, blue: 246 / 255, alpha: 1))
+        static let utilityEditor = adaptive(
+            dark: NSColor(srgbRed: 32 / 255, green: 33 / 255, blue: 37 / 255, alpha: 1),
+            light: .srgbInk(1, alpha: 1))
+        static let utilityDiffAdded = adaptive(
+            dark: NSColor(srgbRed: 167 / 255, green: 208 / 255, blue: 176 / 255, alpha: 1),
+            light: NSColor(srgbRed: 40 / 255, green: 112 / 255, blue: 68 / 255, alpha: 1))
+        static let utilityDiffRemoved = adaptive(
+            dark: NSColor(srgbRed: 221 / 255, green: 166 / 255, blue: 166 / 255, alpha: 1),
+            light: NSColor(srgbRed: 164 / 255, green: 70 / 255, blue: 70 / 255, alpha: 1))
         /// Modal separation inside Tinycast: the launcher recedes while its dialog is in front.
         static let dialogDimming = adaptive(
             dark: .srgbInk(0, alpha: 0.34), light: .srgbInk(0, alpha: 0.34))

@@ -15,9 +15,14 @@ struct ClipboardScreen: PaletteScreen {
     var landingSelection: Int { store.landingIndex(in: vm.query, filter: vm.clipboardFilter) }
 
     var primaryActionTitle: String {
+        if vm.clipboardReturnsToSearch { return String(localized: "Use in Search") }
         let defaultAction = core.settings.clipboardDefaultAction
         let action = item(at: vm.selection).flatMap { defaultAction.action(for: .return, on: $0) }
         return (action ?? defaultAction).title(pastingInto: vm.pasteTarget)
+    }
+
+    func isPrimaryActionEnabled(at selection: Int) -> Bool {
+        !vm.clipboardReturnsToSearch || item(at: selection)?.plainText != nil
     }
 
     private func item(at selection: Int) -> ClipboardItem? {
@@ -180,13 +185,26 @@ enum ClipboardActionsMenu {
                 }
             }
         }
-        items.append(
-            PopoverMenuItem(
-                title: String(localized: "Paste and Keep Window Open"), icon: .paste(target, fallback: "macwindow"),
-                shortcut: "⌥↵"
-            ) {
-                core.clipboardCoordinator.pasteKeepingWindowOpen(item)
-            })
+        if core.palette.clipboardReturnsToSearch {
+            items = [PopoverMenuItem(title: String(localized: "Copy"), systemImage: "doc.on.doc") {
+                core.clipboardCoordinator.copyToClipboard(item)
+            }]
+            if item.plainText != nil {
+                items.insert(PopoverMenuItem(
+                    title: String(localized: "Use in Search"), systemImage: "magnifyingglass", shortcut: "↵"
+                ) {
+                    core.clipboardCoordinator.activate(item)
+                }, at: 0)
+            }
+        } else {
+            items.append(
+                PopoverMenuItem(
+                    title: String(localized: "Paste and Keep Window Open"), icon: .paste(target, fallback: "macwindow"),
+                    shortcut: "⌥↵"
+                ) {
+                    core.clipboardCoordinator.pasteKeepingWindowOpen(item)
+                })
+        }
         if item.isPinned {
             items.append(
                 PopoverMenuItem(

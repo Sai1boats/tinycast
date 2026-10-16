@@ -167,6 +167,22 @@ run launcher-settings-file-test \
 run apple-shortcut-test    Tinycast/Features/AppleShortcuts/Model/*.swift
 run utilities-test         Tinycast/Features/Utilities/Model/*.swift \
                            Tinycast/Features/Calculator/Model/*.swift
+run developer-tools-test   Tinycast/Features/Utilities/Model/*.swift \
+                           Tinycast/Features/Calculator/Model/*.swift \
+                           Tinycast/Features/Utilities/UI/DeveloperToolSession.swift
+run developer-tools-ui-test Tinycast/Features/Utilities/Model/*.swift \
+                           Tinycast/Features/Utilities/UI/*.swift \
+                           Tinycast/Features/Calculator/Model/*.swift \
+                           Tinycast/Platform/Appearance.swift \
+                           Tinycast/Platform/ActivationPolicy.swift \
+                           Tinycast/Windows/AppWindowController.swift \
+                           Tinycast/Windows/WindowChrome.swift \
+                           Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/DesignSystem/InterfaceMetrics.swift \
+                           Tinycast/DesignSystem/ModalActionButtonStyle.swift \
+                           Tinycast/DesignSystem/SymbolImage.swift \
+                           Tinycast/DesignSystem/GlassEffectView.swift \
+                           Tinycast/DesignSystem/Scrolling/OverflowFade.swift
 run calc-test              Tinycast/Features/Calculator/Model/*.swift
 run index calc-performance Tinycast/Features/Calculator/Model/*.swift
 run calendar-test          Tinycast/Features/Calendar/Model/*.swift \
@@ -284,6 +300,7 @@ run action-menu-search-test Tinycast/Palette/ActionMenuSearchQuery.swift \
 run palette-shortcut-test  Tinycast/Palette/PaletteShortcut.swift
 run ascii-layout-test      Tinycast/Platform/ASCIIKeyboardLayout.swift
 run palette-tab-test       Tinycast/Palette/PaletteMode.swift \
+                           Tinycast/Features/Settings/LauncherTabDestination.swift \
                            Tinycast/Palette/PaletteTabAction.swift \
                            Tinycast/Features/Quicklinks/Model/Quicklink.swift \
                            Tinycast/Features/Quicklinks/Model/QuicklinkDestination.swift \
@@ -460,6 +477,10 @@ run terminal-command-test  Tinycast/Platform/ProcessExit.swift \
                            Tinycast/Features/CustomCommands/Model/TerminalCommandRequest.swift \
                            Tinycast/Features/CustomCommands/Service/TerminalCommandRunner.swift \
                            Tinycast/Features/Settings/Model/SettingsFileKey.swift
+run shell-history-test     Tinycast/Features/CustomCommands/Model/ShellCommandQuery.swift \
+                           Tinycast/Features/CustomCommands/Model/ShellCommandHistory.swift \
+                           Tinycast/Features/CustomCommands/Service/ShellCommandHistoryStore.swift \
+                           Tinycast/Features/CustomCommands/UI/ShellCommandScreen.swift
 run custom-command-list-test Tinycast/Features/CustomCommands/Model/CustomCommand.swift \
                              Tinycast/Features/CustomCommands/UI/CustomCommandListScreen.swift
 run uninstall-test         Tinycast/Features/Uninstall/Model/UninstallTarget.swift \

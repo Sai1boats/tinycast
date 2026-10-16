@@ -26,7 +26,52 @@ struct PaletteNavigationTests {
         return vm
     }
 
+    static func recentLaunchesAndClipboardReturn() {
+        let vm = PaletteState()
+        vm.noteVisible(true)
+        expect(vm.showRecentLaunches(), "Up reveals recents from empty root search")
+        expect(vm.forceExpanded && vm.showsRecentLaunches, "recents expand compact mode")
+        expect(!vm.showRecentLaunches(), "Up inside recents remains row navigation")
+        vm.selection = 2
+        vm.push(mode: .clipboard)
+        expect(vm.clipboardReturnsToSearch, "clipboard opened over visible root targets search")
+        expect(vm.pop() && vm.showsRecentLaunches && vm.selection == 2, "Back restores recent row")
+        expect(vm.restoredSelection == 2, "view observers preserve the restored recent selection")
+        vm.query = "draft"
+        expect(!vm.showsRecentLaunches && !vm.showRecentLaunches(), "typing resumes normal search")
+        vm.push(mode: .clipboard)
+        let rewrite = vm.queryRewriteToken
+        expect(vm.returnClipboardTextToSearch("first\nsecond"), "clipboard returns text into search")
+        expect(vm.mode == .launcher && vm.query == "first second" && vm.selection == 0,
+            "paste replaces the root query and normalizes line breaks")
+        expect(vm.queryRewriteToken != rewrite && !vm.clipboardReturnsToSearch && !vm.canGoBack,
+            "paste refocuses the field and consumes its destination")
+        vm.pushCarryingQuery(mode: .clipboard)
+        expect(vm.clipboardReturnsToSearch, "the default Tab cycle also targets root search")
+        vm.noteVisible(false)
+        vm.noteVisible(true)
+        expect(!vm.returnClipboardTextToSearch("stale"), "closing invalidates a preserved clipboard target")
+        vm.prepare(mode: .clipboard)
+        expect(!vm.returnClipboardTextToSearch("external"), "standalone clipboard keeps external paste")
+        vm.prepare(mode: .ai)
+        vm.push(mode: .clipboard)
+        expect(!vm.clipboardReturnsToSearch, "chat drafts do not become root search targets")
+        vm.prepare(mode: .launcher)
+        vm.isComposing = true
+        expect(!vm.showRecentLaunches(), "IME composition owns Up")
+        vm.isComposing = false
+        vm.menuOpen = true
+        expect(!vm.showRecentLaunches(), "menus own Up")
+        vm.menuOpen = false
+        vm.selection = 1
+        expect(!vm.showRecentLaunches(), "Up from lower rows remains ordinary navigation")
+        vm.selection = 0
+        expect(vm.showRecentLaunches() && vm.closeRecentLaunches(), "Escape returns recents to normal search")
+        expect(!vm.showsRecentLaunches && vm.selection == 0, "leaving recents lands on the first row")
+    }
+
     static func main() {
+        recentLaunchesAndClipboardReturn()
         openingDisarmed()
         deliberateMovementArms()
         scrollingDisarms()

@@ -249,9 +249,28 @@ the success pill is skipped for the same reason.
 
 #### The ad-hoc run
 
-The launcher selects **Run Shell Command** when a root query starts with `# `; Return runs the
-text after that prefix. The empty prefix never starts a process. The ordinary fallback and the
-explicit prefix share **Settings → Commands → Run Shell Command → Execute in**.
+The launcher opens `ShellCommandScreen` when a root query starts with `# `. An empty prefix lists
+fixed commands above the latest 100 distinct ordinary ad-hoc commands run in Tinycast, newest
+first. Keywords after the prefix
+filter history case-insensitively, requiring every whitespace-separated term to match. A nonempty
+query keeps a direct execution row above its matching history. An exact saved command selects its
+history row instead, preserving its management actions without duplicating the command.
+Return runs the selected row; ⌘Return or **Edit Command** puts its text back in the field. An empty
+prefix without history never starts a process.
+
+`AppCore` owns `ShellCommandHistoryStore`, injected into `CustomCommandCoordinator`. Ad-hoc runs
+are recorded before dispatch to any destination, including failed attempts and output-window
+reruns. Repeating an ordinary command moves it to the front; blank commands are ignored.
+
+A history row’s right-click / ⌘K menu offers **Delete Entry**, **Pin Command / Unpin Command**
+(⌘.), and **Move to Top**. Pins lead in their own section, ordered by when they were pinned, and
+are retained in addition to the latest 100 ordinary commands. Running a pin leaves its position
+unchanged. Unpinning rejoins the newest ordinary position. Move to Top reorders the command’s
+own block without executing it. Deleting also removes pin metadata. Selection and scrolling follow
+a moved row; deleting the last row clamps selection to its surviving neighbor. Pin state and order
+persist alongside command text in bundle-scoped `UserDefaults`. History stays separate from the
+saved-command library and terminal apps’ own histories. The ordinary fallback and the explicit
+prefix share **Settings → Commands → Run Shell Command → Execute in**.
 
 The default **Tinycast (Internal)** builds a temporary `CustomCommand`, sources the interactive zsh
 configuration, starts in the home directory, and streams into the existing output window with Stop

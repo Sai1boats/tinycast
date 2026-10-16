@@ -5,7 +5,8 @@ is a set of standalone harnesses, and the manual half is the sweep at the bottom
 
 ## Definition of done
 
-The mechanical bar, in one place so it cannot drift. All five pass before a change is finished.
+The mechanical bar, in one place so it cannot drift. All checks below pass before application
+development is finished, including installing the verified build on the current system.
 
 | Check | Command |
 | --- | --- |
@@ -14,10 +15,13 @@ The mechanical bar, in one place so it cannot drift. All five pass before a chan
 | Pure-layer purity | `grep -rln 'import AppKit\|import SwiftUI\|import Cocoa' Tinycast/Features/*/Model/` |
 | A clean build | `xcodebuild … -configuration Debug CODE_SIGNING_ALLOWED=NO`, zero **new** warnings |
 | Docs still true | any doc your change made wrong, fixed in the same commit |
+| Packaged and installed | signed Release DMG verified, current app backed up and replaced, installed version relaunched and checked; follow [required local completion](release.md#required-local-completion) |
 
 There is no CI: every item is on you, run locally. CodeRabbit reviews each PR, but it is a reviewer,
-not a gate. Each is expanded below; the manual sweep at the end of this file is the sixth, judged by
-what you touched.
+not a gate. Packaging and replacement are required after every application development task without
+a separate user request, unless the user explicitly defers them. The manual sweep at the end of this
+file is also required according to what you touched. A passing Debug build alone does not complete
+the task.
 
 ## The harnesses
 
@@ -63,6 +67,9 @@ A `run` line takes two optional markers before the harness name. `-O` compiles t
 which is worth it only where the run dominates the compile — `raycast-test` spends 47 seconds in
 scrypt at `-Onone` and one second at `-O`. `slow` dispatches it in the first wave, so the longest
 harnesses are not still running after everything else has finished.
+
+The offline developer tools have a `developer-tools-test` harness for encoding vectors, UUID formats,
+hash vectors, JWT claims, exact line diffs and cancellation of superseded work.
 
 The script is the **only** place the harness set is written down. Nothing runs it for you, so run it
 before you open a PR. Adding a harness means adding one `run` line.
@@ -112,6 +119,9 @@ If a change touches anything in the right column, the harness on the left is man
 | `scopes-test` | `Launcher/Model/SearchScopes.swift` |
 | `app-name-test` | `Platform/AppDisplayName.swift` — every path that names a scanned bundle |
 | `calc-test` | all of `Calculator/Model/` |
+| `utilities-test` | JSON, timestamp and currency models, exact tokens, bounds and injected environment facts |
+| `developer-tools-test` | Local codecs, UUIDs, hashes, JWT contents, line comparisons and session cancellation |
+| `developer-tools-ui-test` | Nine native Focus Panel windows, shared editor and input-field edges, both appearances and sizes, diff colors and window/session lifetime; optional PNG fixtures through `TINYCAST_TOOL_PREVIEW_DIRECTORY` |
 | `calendar-test` | all of `Calendar/Model/` plus `EventEditorSession` — links, join window, day buckets, draft and form focus |
 | `clipboard-search-test` | Ordinary and OCR result ordering, opt-in lifecycle, cancellation, pins and type filters |
 | `clipboard-text-test` | Apple Vision/PDF extraction, scheduling, retry backoff and recovery |
@@ -144,6 +154,7 @@ If a change touches anything in the right column, the harness on the left is man
 | `window-layout-test` | `WindowManagement/Model/WindowLayout*.swift` and `CustomWindowSize*.swift` — the layout record, its geometry and its inverse, the plan and the store; custom sizes' units, frames and store |
 | `window-room-test` | `WindowManagement/Model/Room*.swift` — every room layout and its minimum sizes, the grid, arrangement reading, window matching, parking, the plan, Tab's choices and the three stores |
 | `terminal-command-test` | Literal automation arguments, shell directory quoting, iTerm URL encoding, cancellation and Automation denial |
+| `shell-history-test` | Shell history search, capacity, pins, ordering, deletion, persistence and menu selection |
 | `custom-command-test` | Command storage and execution, editor drafts, argument identities and dynamic keyboard focus |
 | `custom-command-list-test` | Browser result snapshots, observation, row actions and empty-library messages |
 | `uninstall-test` | all five pure files in `Uninstall/Model/` |
@@ -379,6 +390,16 @@ Run against the **Debug channel** (`Tinycast Dev.app`, `com.tinycast.app.dev`). 
 caches, TCC grants and login item, so this cannot disturb an installed copy.
 
 ### Core
+
+- Open apps and commands, summon an empty root search and press ↑: Recently Used lists newest first,
+  including in compact mode. Arrows and Return select and launch; typing and Escape leave recents.
+  Hidden/disabled/uninstalled entries stay absent. Back from a command restores the recent row.
+- General → Tab opens persists across relaunch and backup/settings.json. Test Clipboard, Files,
+  Emoji, None and the default cycle; disabled features stay closed and argument fields still own Tab.
+- From root search, open Clipboard History by hotkey, command and Tab. Return on text or a file path
+  fills root search with the caret at the end; multiline text becomes one line. Image Return stays
+  in the picker. Cancel preserves the root query; closing and resummoning clipboard uses the normal
+  external paste target, including with delayed Pop to Root Search and a Copy default.
 
 - Palette hotkey opens the launcher; pressing it again closes it; Escape clears a non-empty query,
   then hides on a second press; clicking away closes it
@@ -842,3 +863,11 @@ tccutil reset Accessibility com.tinycast.app.dev 2>/dev/null || true
 - Choose Separate Search: files disappear from root search and remain in Search Files.
 - Disable File Search or edit its scopes while searching: results obey the new policy immediately.
 - Restart and round-trip settings backup / settings.json: the search mode survives.
+
+### Calculator records in recent root history
+
+- Copy a calculation answer, reopen the empty root search and press ↑: the saved expression and
+  result appear alongside recent apps and commands in newest-first order.
+- Select a calculation with arrows: Return copies its answer; Command-Return copies its expression.
+- Open its actions and delete that record: the list updates without disturbing launch history.
+- Type to resume normal search; Escape returns from recents. Check compact/expanded and light/dark.

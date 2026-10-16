@@ -37,7 +37,7 @@ These are the things that quietly break the look if changed. Preserve them unles
 
 - **Dark is the baseline and its values are frozen.** Every `Theme.Colors` token resolves per appearance, and its **dark branch is the literal the forced-dark build shipped** — restated, never recomputed. Retune a light branch freely; touch a dark one only when the task is to change Dark. `AppCore.applyAppearance()` is the only place an appearance is assigned, from `AppSettings.appearance`; `.system` assigns `nil` so AppKit follows macOS.
 - **New colors go through `Theme.Colors.ramp(dark:light:)`** (an alpha that inverts) or `adaptive(dark:light:)` (two explicit `NSColor`s, for anything that isn't a plain inversion — `panelScrim`, `layoutPreviewGround`). Never a bare `Color.white.opacity(…)` in a view: it disappears in Light.
-- **No grays, no opaque fills on the surface.** Reach for `Theme.Colors.*` instead of `.gray`, `NSColor.windowBackground`, etc.
+- **No grays, no opaque fills on the palette surface.** Reach for `Theme.Colors.*` instead of `.gray`, `NSColor.windowBackground`, etc. Native utility windows use the explicit opaque surfaces documented below.
 - **Three things stay fixed in both appearances, on purpose.** The `EdgeDissolve`/`OverflowFade` gradients are **mask luminance, not color** — inverting them breaks the dissolve everywhere. `ExtensionTintColors` and a tinted `IconCache` tile keep white ink, because a saturated tile carries its own contrast. And `IconCache` cannot use a dynamic `NSColor` at all: it rasterizes off-main, so the surface is carried explicitly and is part of the cache key.
 - **An icon is drawn for a surface *and* a system icon style, and both move under you.** macOS restyles the icons `NSWorkspace` hands out when System Settings → Appearance → **Icon & widget style** changes, so `IconStyleMonitor` and Tinycast's own appearance both call `IconCache.invalidateStyled()`. **The monitor may not invalidate on the notification itself.** AppKit posts `NSWorkspaceIconAppearanceConfigurationDidChange` before IconServices has swapped what `NSWorkspace` vends — measured at 25–120ms behind, jittering run to run — and the images it hands back are live objects macOS restyles in place, so flattening one on the signal freezes the *outgoing* style into a bitmap nothing ever invalidates again. `IconStyleMonitor` therefore polls `IconCache.styleFingerprint()` until the pixels actually move, and only then invalidates. Waiting also sidesteps the cost: re-flattening every icon the instant a restyle begins forces a cold IconServices regeneration, measured at 160× the settled draw cost. That drops the cached bitmaps, bumps every cache key so an in-flight decode cannot repopulate a stale one, and moves `IconCache.style.generation`. **Any view that draws an icon must key its fetch on that generation** — wrap the view's own key in `IconRequest`, or call `IconCache.observeStyle()` where the icon is resolved synchronously in a `body`. It is reached through `IconCache` rather than injected precisely because icons are drawn in menus, popovers and every list, where a missed injection would be a silent staleness bug.
 - **No hard dividers between the list and the bars.** The header and bottom bar are `safeAreaInset` overlays with no background; separation comes from `edgeDissolve()`, nothing else. (One deliberate exception: the vertical hairline between a list and its preview pane, as the clipboard and file search screens draw.)
@@ -193,6 +193,10 @@ segment's label once a segmented control has settled.
 
 `keyCap` sizes the palette's keycap chips; `recorderKeyCap` (both size and radius) is the intentionally-smaller Settings shortcut-recorder chip.
 
+Focused utilities use `utilityFocusWindow 760×740`, `utilityFocusMinimum 680×600`,
+`utilityFocusPaneMinimum 100`, `utilityFocusTokenHeight 120`, `utilityFocusDigestHeight 140`,
+`utilityDiffPaneMinimum 120`, `utilityCountWidth 72`, `utilityGlyph 16` and `utilityCloseGlyph 12`.
+
 ### Typography (`Theme.Typography`)
 
 System text styles only — **no fixed point sizes in views**. Two named exceptions are explicit:
@@ -259,6 +263,54 @@ Source: `Palette/PalettePanel.swift`, `Palette/RootPaletteView.swift`.
 - **`BarButton`** is the shared bar control: bare label at rest, a `rowHover` capsule on hover, `barButtonHeight 28`. Set `isSelected` and it fills with `selection` instead, which beats hover; the Notes formatting bar lights its buttons this way. Set `isCompact` for `sm` padding instead of `md`: around a 16-point glyph frame that makes a 28-point square. It carries the footer's two buttons and the clipboard header's type filter, so those hover identically. Hover state lives inside it, so sweeping one never re-renders the palette body.
 
 ---
+
+## Focused utility windows
+
+JSON, Timestamp, Currency, URL encoding, Base64, UUID, Hash, JWT and Text Diff share the
+**Focus Panel / 聚焦面板** design. This is the required design for all nine utility windows and future
+native utilities. The implementation lives entirely in `Features/Utilities/UI/`; all visual values
+come from `Theme`.
+
+- **One compact header.** A fixed 16pt subject-glyph slot and `utilityTitle` align across every window.
+  Close uses a 12pt monochrome × inside a 28pt hit target, with an 8pt continuous corner. Its background
+  is transparent at rest and appears only on hover or press; no permanently filled circle. No icon
+  tile, subtitle, repeated brand or large heading. The content
+  fills the native window, including the hidden titlebar's area.
+- **One shared column.** Header, parameter controls, editor cards and action bar all use the same 20pt
+  leading and trailing inset. The opening size is 760×740pt and the minimum is 680×600pt, independent
+  of palette Interface Size. Every tool keeps its own `UtilityFocus-<tool>` autosaved frame.
+- **Quiet opaque surfaces.** `utilitySurface` is #18191C in Dark and #F4F4F6 in Light;
+  `utilityEditor` is #202125 in Dark and white in Light. These are a deliberate utility-only exception
+  to the palette's blur/scrim rule. Existing palette Dark tokens remain frozen. Window corners are
+  continuous 24pt; editor corners use `formField 12`, with a neutral hairline and no extra outer card.
+- **Titles belong inside editor cards.** A caption at the top-left names the field; optional format
+  or algorithm text sits at the top-right. Header and monospaced text both start 12pt inside the card.
+  Use native selectable text views, preserve editable/read-only roles, and keep selection, undo,
+  input methods and scrolling native. Focus must not change the card's size or move its text.
+- **Content gets the space.** JSON and codecs stack input above output with a draggable vertical
+  split. JWT uses a full-width token above Header/Payload columns; Diff uses two inputs above its
+  full-width comparison. Adjacent cards have 12pt clearance around the split divider. Hash's digest
+  is its own full-width, selectable card; UUID uses one output card. Align outside edges even when
+  split panes have different widths.
+- **Timestamp and Currency use the same card surface.** Timestamp keeps its timezone control above
+  two input cards and one result card; the conversion actions and current-time action share the bottom
+  bar. Currency places its currency controls above an amount card and a two-column result grid;
+  refresh stays in the bottom bar, with feed age and source beneath. Both scroll content at the
+  minimum height rather than clipping input fields or moving the action bar.
+- **One bottom action group.** `UtilityActionBar` contains transformation and clipboard/copy actions.
+  All operation buttons are neutral at rest, including the first; a default keyboard action must
+  never look like a selected option. Hover and press are their only filled states. All
+  buttons are 34pt tall with continuous 12pt corners inside the group's 18pt corner and 6pt inset.
+  Keep primary operations first and copying last. If the complete row cannot fit, put operations
+  and other actions on two centred rows; never clip, shrink labels or hide an existing action.
+- **Status has one place.** Explanations, progress and claimed-time status sit below the action group
+  in centred caption text. Errors sit immediately above the actions and can wrap and be selected.
+  JWT always states that its signature is unverified. Diff uses `utilityDiffAdded` / `utilityDiffRemoved`
+  for quiet green/red ink paired with literal +/− prefixes; other surfaces keep their existing colors.
+- **Validate all nine together.** Render actual native windows in Dark and Light at both opening and
+  minimum sizes, with populated outputs, errors, SHA-512 and all three JWT claims. Check shared edges,
+  action wrapping, title/close alignment and native editor bounds. Use the optional screenshot output
+  of `developer-tools-ui-test`; a browser mockup alone cannot establish native visual alignment.
 
 ## Notes panel
 

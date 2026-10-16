@@ -33,6 +33,7 @@ enum SettingsFileSchema {
         case .showInMenuBar: return bind(settings, \.showInMenuBar)
         case .popToRootTimeout: return bind(settings, \.popToRootTimeout)
         case .escapeKeyBehavior: return bind(settings, \.escapeKeyBehavior)
+        case .launcherTabDestination: return bind(settings, \.launcherTabDestination)
         case .autoSwitchInputSource: return bind(settings, \.autoSwitchInputSourceID)
         case .supportReminders: return bind(settings, \.supportRemindersEnabled)
         case .language: return bind(settings, \.language)
@@ -162,6 +163,7 @@ enum SettingsFileSchema {
 extension ShellCommandDestination: SettingsFileRawValue {}
 extension PopToRootTimeout: SettingsFileRawValue {}
 extension EscapeKeyBehavior: SettingsFileRawValue {}
+extension LauncherTabDestination: SettingsFileRawValue {}
 extension AppLanguage: SettingsFileRawValue {}
 
 extension AppAppearance: SettingsFileRawValue {}

@@ -39,6 +39,18 @@ earliest scope wins; within one folder, the newest `CFBundleShortVersionString` 
 - **`Model/SearchScopes.swift` and `Model/LauncherRankingStore.swift` are pure too** — the ranking store
   takes its clock via `now` and its path via `fileURL`, for `scopes-test` and `ranking-test`.
 
+## Recently used entries
+
+Press ↑ at the first row of an empty root search to display up to 50 recent apps, commands and
+calculations, merged newest first. Calculations use their saved creation date and stored result.
+The list uses persisted `LauncherRankingStore.visits.openedAt`, ordered newest first with stable
+key ordering for ties. `AppIndex.recentResults` intersects that order with currently available,
+visible entries, so hidden, disabled and uninstalled items cannot return through history.
+Return follows normal launch and argument handling for apps and commands. For a calculation, Return
+copies the saved answer and Command-Return copies its expression; its actions can delete the record.
+Typing or Escape leaves the recent list.
+Resetting learned ranking removes app and command records; calculator history is managed separately.
+
 ## Search scopes
 
 `SearchScopes` (`Launcher/Model/SearchScopes.swift`) owns the paths; the list is user-editable in
@@ -300,12 +312,18 @@ can't say what it acts on.
 
 ### Shell command prefix
 
-A root search beginning with `# ` selects **Run Shell Command** directly. For example, typing
+A root search beginning with `# ` opens **Run Shell Command** with fixed commands above the latest
+100 distinct ordinary commands run in Tinycast, newest first. Keywords after the prefix filter history without regard to case;
+multiple keywords must all match. Return runs the selected command; ⌘Return puts it in the field
+for editing. A nonempty query keeps a direct execution row above the matching history, unless it
+exactly names a saved command, in which case that history row is selected. Right-click offers deletion,
+pinning and moving to the top. Pins lead in their own section and survive the 100-entry history limit.
+For example, typing
 `# echo hello` and pressing Return runs `echo hello` in the destination chosen in
 Settings → Commands → Run Shell Command. The prefix is removed before execution; quoting, pipes and other shell syntax in the command stay intact.
 The explicit prefix works even when the ordinary Shell fallback checkbox is off. It bypasses app,
-file, calculator and color search for that query. An empty `# ` shows the row with its Run action
-disabled. A bare `#`, a hash inside text and hex colors such as `#FF5733` keep ordinary search behavior.
+file, calculator and color search for that query. An empty `# ` with no history shows an empty state
+and never runs a process. A bare `#`, a hash inside text and hex colors such as `#FF5733` keep ordinary search behavior.
 
 ### Fallbacks
 

@@ -20,8 +20,8 @@ struct LauncherScreen: PaletteScreen {
 
     /// The one ordered result list; an empty query pins favorites above the ranked matches.
     private let results: [AppEntry]
+    private let recentItems: [LauncherRecentItem]
     private let files: [FileSearchResult]
-    private let shellQuery: ShellCommandQuery?
     private let calc: CalcResult?
     /// The colour the query itself spells, if it spells one; nil for every other query.
     private let color: ColorValue?
@@ -57,21 +57,47 @@ struct LauncherScreen: PaletteScreen {
         self.openArgumentOptions = openArgumentOptions
         self.scrollToFollow = scrollToFollow
 
-        let shellQuery = ShellCommandQuery(vm.query)
-        self.shellQuery = shellQuery
+        if vm.showsRecentLaunches {
+            let recent = appIndex.recentResults(visibility: visibility)
+            let launches = recent.entries.map {
+                LauncherRecentItem.entry($0, core.launcherRanking.visits[$0.preferenceKey]?.openedAt ?? .distantPast)
+            }
+            let items = Array((launches + core.calcHistory.entries.map(LauncherRecentItem.calculation))
+                .sorted {
+                    $0.date == $1.date ? $0.id < $1.id : $0.date > $1.date
+                }.prefix(50))
+            self.recentItems = items
+            self.results = recent.entries
+            self.files = []
+            self.calc = nil
+            self.color = nil
+            self.meeting = nil
+            self.pinsFavorites = false
+            self.favoriteCount = 0
+            self.meetingCount = 0
+            self.suggestionCount = 0
+            self.matchCount = recent.matchCount
+            self.fallbacks = []
+            self.rows = items.map {
+                switch $0 {
+                case .entry(let entry, _): .entry(entry)
+                case .calculation(let entry): .calculation(entry)
+                }
+            }
+            return
+        }
 
         // Listed even when hidden from search: the shortcut that opened it still has to be answered.
         let pinned = vm.argumentEntryID.flatMap(core.customCommands.command(entryID:))
             .map(AppEntry.init).flatMap { $0.name == vm.query ? $0 : nil }
         let ordered =
-            shellQuery.map { _ in AppIndex.Results(entries: []) }
-            ?? pinned.map { AppIndex.Results(entries: [$0], matchCount: 1) }
+            pinned.map { AppIndex.Results(entries: [$0], matchCount: 1) }
             ?? appIndex.orderedResults(
                 query: vm.query, visibility: visibility, favorites: favorites, hotKeys: core.hotKeys)
         var results = ordered.entries
         var matchCount = ordered.matchCount
         // A typed web address leads: nothing the index holds answers it better.
-        if shellQuery == nil, pinned == nil, let browser = CommandCatalog.openInBrowser(for: vm.query),
+        if pinned == nil, let browser = CommandCatalog.openInBrowser(for: vm.query),
             visibility.isVisible(browser)
         {
             results.insert(browser, at: 0)
@@ -79,14 +105,15 @@ struct LauncherScreen: PaletteScreen {
         }
         // No card over a pinned row: its fields hang off the selection, which must start on it.
         let calc =
-            pinned == nil && shellQuery == nil
+            pinned == nil
             ? CalcMemo.evaluate(vm.query, rates: currencyRates.rates, format: core.calcNumberFormat) : nil
         // After the calculator: `#FF5733` is never arithmetic, so the two can't both answer.
-        let color = calc == nil && pinned == nil && shellQuery == nil ? ColorValue.parse(vm.query) : nil
+        let color = calc == nil && pinned == nil ? ColorValue.parse(vm.query) : nil
         let fallbacks = core.fallbackCoordinator.entries(for: vm.query)
-        let files = core.settings.mixedSearch && core.settings.fileSearchEnabled && pinned == nil && shellQuery == nil
+        let files = core.settings.mixedSearch && core.settings.fileSearchEnabled && pinned == nil
             && !vm.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? core.fileSearch.results(matching: vm.query) : []
+        self.recentItems = []
         self.files = files
         let entries = results.map(Row.entry) + files.map(Row.file)
             + fallbacks.map { Row.fallback($0.fallback, $0.entry) }
@@ -117,6 +144,7 @@ struct LauncherScreen: PaletteScreen {
     /// The card is a row like any other, so the flat selection indexes `rows` with no offset.
     enum Row: Equatable, Identifiable {
         case calc(CalcResult)
+        case calculation(CalcHistoryEntry)
         case meeting(MeetingEvent)
         case color(ColorValue)
         case entry(AppEntry)
@@ -127,6 +155,7 @@ struct LauncherScreen: PaletteScreen {
         var id: String {
             switch self {
             case .calc: return "calc-card"
+            case .calculation(let entry): return "calculation-" + entry.id.uuidString
             case .meeting: return "meeting-card"
             case .color: return "color-card"
             case .entry(let app): return app.id
@@ -144,7 +173,7 @@ struct LauncherScreen: PaletteScreen {
 
     var primaryActionTitle: String {
         switch row(at: clampedSelection) {
-        case .calc: return String(localized: "Copy Answer")
+        case .calc, .calculation: return String(localized: "Copy Answer")
         case .color: return String(localized: "Copy Color")
         case .meeting(let meeting):
             return meeting.link == nil ? String(localized: "Open in Calendar") : String(localized: "Join Meeting")
@@ -221,7 +250,7 @@ struct LauncherScreen: PaletteScreen {
     private func isCardSelected(_ selection: Int) -> Bool {
         switch row(at: selection) {
         case .calc, .meeting, .color: return true
-        case .entry, .file, .fallback, nil: return false
+        case .entry, .file, .fallback, .calculation, nil: return false
         }
     }
 
@@ -238,15 +267,12 @@ struct LauncherScreen: PaletteScreen {
         return result.isActionable
     }
 
-    func isPrimaryActionEnabled(at selection: Int) -> Bool {
-        shellQuery?.canRun ?? true
-    }
-
     func actions(at selection: Int) -> PopoverMenuContent? {
-        guard shellQuery?.canRun != false else { return nil }
         switch row(at: selection) {
         case .calc(let result):
             return result.isActionable ? CalcActionsMenu.content(result: result, core: core) : nil
+        case .calculation(let entry):
+            return CalcHistoryActionsMenu.content(entry: entry, core: core, calcHistory: core.calcHistory)
         case .color(let color):
             return ColorActionsMenu.content(color: color, core: core)
         case .meeting(let meeting):
@@ -275,6 +301,7 @@ struct LauncherScreen: PaletteScreen {
         switch row(at: selection) {
         // Error cards no-op — copyCalculatorResult only acts on value payloads.
         case .calc(let result): core.calculatorCoordinator.copyCalculatorResult(result)
+        case .calculation(let entry): core.calculatorCoordinator.copyHistoryEntry(entry)
         case .color(let color):
             core.clipboardCoordinator.copyColor(color, as: ColorFormat.primary(for: color))
         case .meeting(let meeting): core.calendarCoordinator.activateMeeting(id: meeting.id)
@@ -300,6 +327,10 @@ struct LauncherScreen: PaletteScreen {
 
     /// ⌘↵ — a meeting copies its link, an answer becomes the query, an entry on disk is revealed.
     func secondary(at selection: Int) -> Bool {
+        if case .calculation(let entry) = row(at: selection) {
+            core.calculatorCoordinator.copyHistoryExpression(entry)
+            return true
+        }
         if case .file(let file) = row(at: selection) {
             core.fileSearchCoordinator.showInFinder(file)
             return true
@@ -324,6 +355,17 @@ struct LauncherScreen: PaletteScreen {
     }
 
     func perform(_ shortcut: PaletteShortcut, at selection: Int) -> Bool {
+        if case .calculation(let entry) = row(at: selection) {
+            switch shortcut {
+            case .commandDelete, .delete:
+                core.calcHistory.remove(entry)
+                return true
+            case .deleteAll:
+                Task { await core.calculatorCoordinator.deleteAllHistory() }
+                return true
+            default: return false
+            }
+        }
         if case .file(let file) = row(at: selection),
             let index = core.fileSearch.results.firstIndex(of: file)
         {
@@ -460,7 +502,11 @@ struct LauncherScreen: PaletteScreen {
         } else {
             return false
         }
-        select(row: min(index, max(reorderedResults().entries.count - 1, 0)))
+        if vm.showsRecentLaunches {
+            select(row: min(selection, max(rows.count - 2, 0)))
+        } else {
+            select(row: min(index, max(reorderedResults().entries.count - 1, 0)))
+        }
         return true
     }
 
@@ -478,7 +524,8 @@ struct LauncherScreen: PaletteScreen {
 
     /// Re-read the order the change just invalidated; this warms the key the next render reads.
     private func reorderedResults() -> AppIndex.Results {
-        appIndex.orderedResults(
+        if vm.showsRecentLaunches { return appIndex.recentResults(visibility: visibility) }
+        return appIndex.orderedResults(
             query: vm.query, visibility: visibility, favorites: favorites, hotKeys: core.hotKeys)
     }
 
@@ -513,6 +560,12 @@ struct LauncherScreen: PaletteScreen {
             suggestionCount: suggestionCount,
             matchCount: matchCount,
             scroll: scroll,
+            recentItems: vm.showsRecentLaunches ? recentItems : nil,
+            onActivateCalculation: core.calculatorCoordinator.copyHistoryEntry,
+            onCalculationActions: { entry in
+                if let index = rows.firstIndex(of: .calculation(entry)) { vm.selection = index }
+                openActions()
+            },
             card: leadCard,
             cardSelected: isCardSelected(selection),
             onActivateCard: {
@@ -553,7 +606,7 @@ struct LauncherScreen: PaletteScreen {
     private var fallbackSection: LauncherList.FallbackSection? {
         guard !fallbacks.isEmpty else { return nil }
         return LauncherList.FallbackSection(
-            title: shellQuery == nil ? Fallback.sectionTitle(query: vm.query) : String(localized: "Run Shell Command"),
+            title: Fallback.sectionTitle(query: vm.query),
             entries: fallbacks.map(\.entry),
             onActivate: { activate(at: fallbackRow(at: $0)) },
             onActions: {
@@ -565,4 +618,23 @@ struct LauncherScreen: PaletteScreen {
 
     /// Fallbacks are the tail of `rows`, so a click maps to its flat index without a search.
     private func fallbackRow(at index: Int) -> Int { rows.count - fallbacks.count + index }
+}
+
+enum LauncherRecentItem: Identifiable {
+    case entry(AppEntry, Date)
+    case calculation(CalcHistoryEntry)
+
+    var id: String {
+        switch self {
+        case .entry(let entry, _): entry.id
+        case .calculation(let entry): "calculation-" + entry.id.uuidString
+        }
+    }
+
+    var date: Date {
+        switch self {
+        case .entry(_, let date): date
+        case .calculation(let entry): entry.createdAt
+        }
+    }
 }

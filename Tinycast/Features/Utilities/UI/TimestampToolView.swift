@@ -9,67 +9,58 @@ struct TimestampToolView: View {
 
     var body: some View {
         @Bindable var coordinator = coordinator
-        ScrollView {
-            VStack(alignment: .leading, spacing: Theme.Spacing.xxl) {
-            HStack {
-                Picker("Time Zone", selection: $coordinator.timeZoneID) {
-                    ForEach(zones, id: \.self) { Text($0).tag($0) }
-                }
-                Spacer()
-                Button("Use Current Time", action: coordinator.useNow)
-                    .buttonStyle(.modalAction(.standard, fillsWidth: false))
-            }
-            VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
-                Text("Timestamp → Date").font(.headline)
-                HStack {
-                    TextField("Unix timestamp", text: $coordinator.timestampInput)
-                        .textFieldStyle(.plain)
-                        .font(.title3.monospacedDigit())
-                        .padding(.vertical, Theme.Spacing.md)
-                        .onSubmit { coordinator.convertTimestamp(fromDate: false) }
-                    Picker("Unit", selection: $coordinator.timestampUnit) {
-                        Text("Auto Detect").tag(TimestampConverter.Unit.automatic)
-                        Text("Seconds").tag(TimestampConverter.Unit.seconds)
-                        Text("Milliseconds").tag(TimestampConverter.Unit.milliseconds)
+        UtilityToolLayout(error: coordinator.timestampError) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
+                    Picker("Time Zone", selection: $coordinator.timeZoneID) {
+                        ForEach(zones, id: \.self) { Text($0).tag($0) }
+                    }.fixedSize()
+                    UtilityCard(title: Text("Timestamp → Date")) {
+                        HStack(spacing: Theme.Spacing.xl) {
+                            TextField("Unix timestamp", text: $coordinator.timestampInput)
+                                .textFieldStyle(.plain)
+                                .font(Theme.Typography.code)
+                                .frame(minHeight: Theme.Size.dialogButtonHeight)
+                                .onSubmit { coordinator.convertTimestamp(fromDate: false) }
+                                .accessibilityLabel(String(localized: "Unix timestamp"))
+                            Picker("Unit", selection: $coordinator.timestampUnit) {
+                                Text("Auto Detect").tag(TimestampConverter.Unit.automatic)
+                                Text("Seconds").tag(TimestampConverter.Unit.seconds)
+                                Text("Milliseconds").tag(TimestampConverter.Unit.milliseconds)
+                            }.fixedSize()
+                        }
                     }
-                    .fixedSize()
-                    Button("Convert") { coordinator.convertTimestamp(fromDate: false) }
-                        .buttonStyle(.modalAction(.primary, fillsWidth: false))
+                    UtilityCard(title: Text("Date → Timestamp")) {
+                        TextField("yyyy-MM-dd HH:mm:ss.SSS", text: $coordinator.dateInput)
+                            .textFieldStyle(.plain)
+                            .font(Theme.Typography.code)
+                            .frame(minHeight: Theme.Size.dialogButtonHeight)
+                            .onSubmit { coordinator.convertTimestamp(fromDate: true) }
+                            .accessibilityLabel(String(localized: "Date → Timestamp"))
+                    }
+                    UtilityCard(title: Text("Result")) {
+                        VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
+                            if let result = coordinator.timestampResult {
+                                UtilityResultRow(title: "Date in Selected Zone", value: result.localDate)
+                                UtilityResultRow(title: "UTC Date", value: result.utcDate)
+                                UtilityResultRow(title: "Seconds", value: result.seconds)
+                                UtilityResultRow(title: "Milliseconds", value: result.milliseconds)
+                            } else {
+                                Text("Enter a timestamp or date to convert.")
+                                    .font(.callout).foregroundStyle(Theme.Colors.textSecondary)
+                            }
+                        }
+                    }
                 }
-                Text("Auto detects milliseconds at magnitude ≥ 100000000000; choose a unit for smaller values.")
-                    .font(.caption).foregroundStyle(Theme.Colors.textSecondary)
             }
-            .padding(Theme.Spacing.xl)
-            .background(Theme.Colors.cardFill, in: RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous))
-            VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
-                Text("Date → Timestamp").font(.headline)
-                HStack {
-                    TextField("yyyy-MM-dd HH:mm:ss.SSS", text: $coordinator.dateInput)
-                        .textFieldStyle(.plain)
-                        .font(.title3.monospacedDigit())
-                        .padding(.vertical, Theme.Spacing.md)
-                        .onSubmit { coordinator.convertTimestamp(fromDate: true) }
-                    Button("Convert") { coordinator.convertTimestamp(fromDate: true) }
-                        .buttonStyle(.modalAction(.primary, fillsWidth: false))
-                }
-            }
-            .padding(Theme.Spacing.xl)
-            .background(Theme.Colors.cardFill, in: RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous))
-            if let result = coordinator.timestampResult {
-                VStack(spacing: Theme.Spacing.md) {
-                    UtilityResultRow(title: "Date in Selected Zone", value: result.localDate)
-                    UtilityResultRow(title: "UTC Date", value: result.utcDate)
-                    UtilityResultRow(title: "Seconds", value: result.seconds)
-                    UtilityResultRow(title: "Milliseconds", value: result.milliseconds)
-                }
-                .padding(Theme.Spacing.xl)
-                .background(Theme.Colors.cardFill, in: RoundedRectangle(cornerRadius: Theme.Radius.card, style: .continuous))
-            }
-            if !coordinator.timestampError.isEmpty {
-                Text(coordinator.timestampError).foregroundStyle(Theme.Colors.destructive)
-            }
-            }
+            .overflowFade(includingTop: true)
+        } operations: {
+            Button("Timestamp → Date") { coordinator.convertTimestamp(fromDate: false) }
+            Button("Date → Timestamp") { coordinator.convertTimestamp(fromDate: true) }
+        } actions: {
+            Button("Use Current Time", action: coordinator.useNow)
+        } status: {
+            Text("Auto detects milliseconds at magnitude ≥ 100000000000; choose a unit for smaller values.")
         }
-        .overflowFade(includingTop: true)
     }
 }

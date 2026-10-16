@@ -182,6 +182,18 @@ final class LauncherCoordinator {
             core.utilityCoordinator.show(.timestamp)
         case .currencyConverter:
             core.utilityCoordinator.show(.currency)
+        case .urlCodec:
+            core.utilityCoordinator.show(.urlCodec)
+        case .base64:
+            core.utilityCoordinator.show(.base64)
+        case .uuidGenerator:
+            core.utilityCoordinator.show(.uuid)
+        case .hashGenerator:
+            core.utilityCoordinator.show(.hash)
+        case .jwtViewer:
+            core.utilityCoordinator.show(.jwt)
+        case .textDiff:
+            core.utilityCoordinator.show(.textDiff)
         case .quickTranslate:
             core.translationCoordinator.show(selection: false)
         case .translateSelection:

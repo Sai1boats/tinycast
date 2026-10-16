@@ -50,6 +50,12 @@ struct RootPaletteView: View {
     private var screen: any PaletteScreen {
         switch vm.mode {
         case .launcher:
+            if let query = ShellCommandQuery(vm.query) {
+                return ShellCommandScreen(
+                    query: query, coordinator: core.customCommandCoordinator,
+                    vm: vm, openActions: openActions,
+                    scrollToFollow: { scroll = ScrollIntent(kind: .follow) })
+            }
             return LauncherScreen(
                 appIndex: appIndex, favorites: favorites, visibility: visibility,
                 currencyRates: currencyRates, core: core, vm: vm, running: selectionIsRunning,
@@ -473,6 +479,11 @@ struct RootPaletteView: View {
             .onKeyPress(keys: [.upArrow], phases: [.down, .repeat]) { press in
                 if let reorder = movePinnedOrFavorite(-1, modifiers: press.modifiers) { return reorder }
                 if vm.isControlListOpen { return .ignored }
+                if press.modifiers.isDisjoint(with: [.command, .option, .control, .shift]),
+                    searchFocused, argumentFocused == nil, vm.showRecentLaunches()
+                {
+                    return .handled
+                }
                 if isCollapsed { return .ignored }
                 if menuOpen {
                     moveMenu(-1)
@@ -526,6 +537,7 @@ struct RootPaletteView: View {
                 if menuPanel.isClosing { return .handled }
                 // An open control list owns Escape before the palette beneath it.
                 if vm.isControlListOpen { return .ignored }
+                if !menuOpen, argumentFocused == nil, vm.closeRecentLaunches() { return .handled }
                 switch PaletteEscapeAction.resolve(
                     menuOpen: menuOpen, menuQuery: vm.menuQuery,
                     argumentFocused: argumentFocused != nil, query: vm.query, mode: vm.mode,
@@ -635,7 +647,7 @@ struct RootPaletteView: View {
             // Matches the list rows and section headers' own indent below.
             headerGutter(width: metrics.spacing.md * 2)
             // Every sub-screen leaves the same way, so the slot reads the same on all of them.
-            if vm.mode != .launcher {
+            if vm.mode != .launcher || vm.showsRecentLaunches {
                 HeaderBackButton(help: backHelp, action: goBack)
             } else {
                 Image(systemName: vm.mode.systemImage)
@@ -769,8 +781,8 @@ struct RootPaletteView: View {
     private var tabOpensChat: Bool {
         guard !isCollapsed, headerAccessory?.fieldNames.isEmpty ?? true else { return false }
         return PaletteTabAction.resolve(
-            mode: vm.mode, aiEnabled: settings.aiEnabled,
-            clipboardEnabled: settings.clipboardEnabled) == .ask
+            mode: vm.mode, destination: settings.launcherTabDestination,
+            enabled: settings.enabledTabDestinations) == .ask
     }
 
     /// True when the screen took the keyboard over, which leaves the header empty beside the chevron.
@@ -815,6 +827,7 @@ struct RootPaletteView: View {
     }
 
     private var searchPrompt: String {
+        if vm.showsRecentLaunches { return String(localized: "Recently used apps, commands and calculations") }
         // Squeezed to the caret, the field has no room for a prompt; beside one it keeps it.
         if headerAccessory?.placement == .afterQuery, vm.mode != .ai { return "" }
         // Inside a running command the search bar belongs to the extension.
@@ -1324,8 +1337,8 @@ struct RootPaletteView: View {
     /// A ring hop leaves a step back — except the hop closing the ring on the launcher, its root.
     private func cycleMode() {
         switch PaletteTabAction.resolve(
-            mode: vm.mode, aiEnabled: settings.aiEnabled,
-            clipboardEnabled: settings.clipboardEnabled)
+            mode: vm.mode, destination: settings.launcherTabDestination,
+            enabled: settings.enabledTabDestinations)
         {
         case .carryQuery(.launcher):
             vm.mode = .launcher
@@ -1400,7 +1413,7 @@ struct RootPaletteView: View {
 
     /// An extension keeps its own stack, so it can have a step back the palette cannot see.
     private var hasBackStep: Bool {
-        vm.canGoBack || (vm.mode == .extensionCommand && extensions.navigationDepth > 1)
+        vm.showsRecentLaunches || vm.canGoBack || (vm.mode == .extensionCommand && extensions.navigationDepth > 1)
     }
 
     /// Never promises a step the click does not take: a root screen closes rather than backs.
@@ -1410,6 +1423,7 @@ struct RootPaletteView: View {
     }
 
     private func goBack() {
+        if vm.closeRecentLaunches() { return }
         if vm.mode == .customCommandEditor {
             core.customCommandCoordinator.cancelCustomCommandEditing()
             return

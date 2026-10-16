@@ -6,5 +6,7 @@ final class UtilityWindowChrome: WindowChrome {
         for button in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
             window.standardWindowButton(button)?.isHidden = true
         }
+        window.isOpaque = false
+        window.backgroundColor = .clear
     }
 }

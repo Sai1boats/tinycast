@@ -103,7 +103,7 @@ struct CalculatorHistoryList: View {
     }
 }
 
-private struct CalcHistoryRow: View {
+struct CalcHistoryRow: View {
 
     @Environment(\.metrics) private var metrics
     @Environment(AppCore.self) private var core

@@ -17,6 +17,39 @@ local installation signed with another identity, set `CODE_SIGN_IDENTITY` to tha
 selects a separate build directory. These overrides apply to the build invocation and preserve the
 project defaults. Official per-channel releases are built by CI, below.
 
+## Required local completion
+
+**Every application development task finishes by packaging and replacing the version currently
+installed on this system.** This is part of delivering the change, without a separate packaging or
+installation request. An explicit user instruction to defer or skip installation takes precedence.
+This local delivery does not publish a GitHub release or update a Homebrew tap.
+
+1. Complete the pre-install checks in the [definition of done](testing.md#definition-of-done):
+   harnesses, lint, pure layer check, Debug build with no new warnings, updated docs and relevant
+   manual checks. For a UI change, inspect native rendering and alignment in both appearances and at
+   supported window sizes. The package/install check is completed by the remaining steps below.
+2. Locate the current installed app, normally `/Applications/Tinycast.app`. Read its version, bundle
+   identifier, signing identity and designated requirement. Build a signed Release DMG with
+   `Scripts/build-dmg.sh`, using the installed identity as `CODE_SIGN_IDENTITY` and its bundle
+   identifier as `TINYCAST_BUNDLE_IDENTIFIER`. Use `TINYCAST_DERIVED_DATA_PATH` for a separate local
+   Release directory when needed. Choose a version that identifies the new build; do not change the
+   installed channel or substitute a differently signed Debug app.
+3. Verify the app and nested helpers with `Scripts/verify-signature.sh` and verify the DMG with
+   `hdiutil verify`. Check the app icon and bundle metadata, and confirm the new app satisfies the
+   installed app's designated requirement before replacing anything.
+4. Back up the installed bundle under `build/backups/` with its version and a timestamp. Verify the
+   backup, stage the new bundle on the destination filesystem, then gracefully quit the current app.
+   Replace the whole app bundle with rollback available if installation fails. Preserve preferences,
+   Application Support data, caches and existing permissions; do not reset TCC or change the bundle
+   identifier. Keep the verified backup after success.
+5. Reopen the app from the installed path. Verify its version, code signature and executable against
+   the signed build, confirm the new process stays running, and smoke-test the changed behavior.
+   If replacement or launch fails, restore and reopen the verified backup where possible, then report
+   the failure rather than claiming completion. Missing signing credentials or a failed prerequisite
+   must be reported as an incomplete delivery.
+6. Report the installed version and path, DMG path, backup path and verification results. A compiled
+   app, an uninstalled DMG, or an unverified launch is not a completed delivery.
+
 ## App icon
 
 `Tinycast/tinycast.icon` is an Icon Composer package. `project.yml` declares `.icon` as a file
@@ -34,9 +67,10 @@ details in [signing.md](signing.md).
 
 ## Manual installation
 
-This build has no in-app updater. Package the signed app as a DMG, quit the running app, then replace
-its bundle in Applications and reopen it. Preserve its bundle identifier and signing identity when
-replacing a local installation so its channel and permissions remain consistent.
+This build has no in-app updater. Local development uses the mandatory
+[completion sequence above](#required-local-completion): package, verify, back up, quit, replace,
+reopen and check the installed app. Preserve its bundle identifier and signing identity so its channel
+and permissions remain consistent.
 
 The upstream release workflow below also produces ZIP assets for external distribution. Those assets
 are not discovered, downloaded or installed by this app.

@@ -11,6 +11,12 @@ enum CommandID: String, CaseIterable, Sendable {
     case jsonTools = "command:json-tools"
     case timestampConverter = "command:timestamp-converter"
     case currencyConverter = "command:currency-converter"
+    case urlCodec = "command:url-codec"
+    case base64 = "command:base64"
+    case uuidGenerator = "command:uuid-generator"
+    case hashGenerator = "command:hash-generator"
+    case jwtViewer = "command:jwt-viewer"
+    case textDiff = "command:text-diff"
     case quickTranslate = "command:quick-translate"
     case translateSelection = "command:translate-selection"
     case summarize = "command:summarize"
@@ -63,6 +69,12 @@ enum CommandID: String, CaseIterable, Sendable {
         case .jsonTools: return "JSON Tools"
         case .timestampConverter: return "Timestamp Converter"
         case .currencyConverter: return "Currency Converter"
+        case .urlCodec: return "URL Encoder / Decoder"
+        case .base64: return "Base64 Encoder / Decoder"
+        case .uuidGenerator: return "UUID Generator"
+        case .hashGenerator: return "Hash Generator"
+        case .jwtViewer: return "JWT Viewer"
+        case .textDiff: return "Text Diff"
         case .quickTranslate: return "Quick Translate"
         case .translateSelection: return "Translate Selected Text"
         case .summarize: return BuiltInQuickAction.summarize.title
@@ -117,6 +129,12 @@ enum CommandID: String, CaseIterable, Sendable {
         case .jsonTools: return "curlybraces"
         case .timestampConverter: return "clock.arrow.2.circlepath"
         case .currencyConverter: return "dollarsign.arrow.circlepath"
+        case .urlCodec: return "link"
+        case .base64: return "arrow.left.arrow.right"
+        case .uuidGenerator: return "number"
+        case .hashGenerator: return "number.square"
+        case .jwtViewer: return "key.horizontal"
+        case .textDiff: return "doc.text.magnifyingglass"
         case .quickTranslate, .translateSelection: return "translate"
         case .summarize: return BuiltInQuickAction.summarize.symbol
         case .calculatorHistory: return "plus.forwardslash.minus"
@@ -157,6 +175,18 @@ enum CommandID: String, CaseIterable, Sendable {
         case .about: return "info.circle"
         case .support: return "heart"
         case .quit: return "power"
+        }
+    }
+
+    var searchKeywords: [String] {
+        switch self {
+        case .urlCodec: ["percent encoding", "encode", "decode", "URL 编码", "URL 解码"]
+        case .base64: ["base64url", "encode", "decode", "编码", "解码"]
+        case .uuidGenerator: ["identifier", "random", "GUID", "标识符"]
+        case .hashGenerator: ["checksum", "SHA-256", "SHA-384", "SHA-512", "SHA-1", "MD5", "哈希", "校验"]
+        case .jwtViewer: ["JSON Web Token", "Bearer", "header", "payload", "令牌"]
+        case .textDiff: ["compare", "difference", "comparison", "对比", "差异"]
+        default: []
         }
     }
 

@@ -109,6 +109,21 @@ struct RankingTest {
         ])
         check("an import keeps only live, keyed entries", Array(store.visits.keys) == ["kept"])
 
+        store.resetAll()
+        store.visit(itemKey: "older", query: nil)
+        store.visit(itemKey: "older", query: nil)
+        clock += 1
+        store.visit(itemKey: "newer", query: nil)
+        check("history orders by recency rather than frequency", store.recentItemKeys == ["newer", "older"])
+        clock += 1
+        store.visit(itemKey: "older", query: nil)
+        check("reopening promotes without duplicating", store.recentItemKeys == ["older", "newer"])
+        await store.flush()
+        let reopened = LauncherRankingStore(fileURL: fileURL) { clock }
+        check("recent order survives relaunch", reopened.recentItemKeys == store.recentItemKeys)
+        store.reset(itemKey: "older")
+        check("reset removes a history entry", store.recentItemKeys == ["newer"])
+
         await store.flush()
         try? FileManager.default.removeItem(at: fileURL)
 

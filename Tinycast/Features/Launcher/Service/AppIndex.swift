@@ -739,6 +739,13 @@ final class AppIndex {
         return byUsage(listed, usage: ranking.snapshot())
     }
 
+    func recentResults(visibility: VisibilityStore) -> Results {
+        let entries = Dictionary(apps.filter(visibility.isVisible).map { ($0.preferenceKey, $0) },
+            uniquingKeysWith: { first, _ in first })
+        let recent = Array(ranking.recentItemKeys.compactMap { entries[$0] }.prefix(50))
+        return Results(entries: recent, matchCount: recent.count)
+    }
+
     /// The launcher's rows: ranked matches, or favorites, suggestions and each kind by usage.
     func orderedResults(
         query: String, visibility: VisibilityStore, favorites: FavoritesStore, hotKeys: HotKeyManager

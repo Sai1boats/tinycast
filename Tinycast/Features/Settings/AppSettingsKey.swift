@@ -17,6 +17,7 @@ enum AppSettingsKey: String, CaseIterable {
     case showInMenuBar = "showInMenuBar"
     case popToRootTimeout = "popToRootTimeout"
     case escapeKeyBehavior = "escapeKeyBehavior"
+    case launcherTabDestination = "launcherTabDestination"
     case appearance = "appearance"
     case language = "language"
     case calcNumberStyle = "calculatorNumberStyle"

@@ -6,7 +6,12 @@
   has to outrank a stored `false` in `AppSettings.init`, and off means fully off: the poller stops,
   the SQLite file closes, the launcher commands and their shortcuts go, and Tab skips the screen.
   `ClipboardCoordinator.applyEnabled()` is the single place that applies it.
-- **↵, ⌘↵ and ⌃⌘↵ trade places around one setting, and
+- **When opened over visible root search, Return fills that search instead of leaving the app.**
+  `PaletteState.clipboardReturnsToSearch` lasts only for that open session; closing, replacing or
+  returning consumes it. Text and file paths replace the root query without mutating the pasteboard
+  or synthesizing an external paste. Images stay in the picker. The footer and Actions menu name
+  this destination as Use in Search; explicit Copy remains available.
+- **For standalone clipboard sessions, ↵, ⌘↵ and ⌃⌘↵ trade places around one setting, and
   `ClipboardDefaultAction.action(for:on:)` is the only place that says which chord runs what.**
   Paste owns ↵, Copy ⌘↵ and Paste as Plain Text ⌃⌘↵; `clipboardDefaultAction` moves one to ↵ and
   Paste takes the chord it left, so a Copy default keeps the ↵/⌘↵ swap it always had.

@@ -52,7 +52,7 @@ Independently of the folder tree, every mature subsystem has converged on the sa
 └──────────────────────────────────┬─────────────────────────────────────────┘
                                    │ published through
 ┌─ OBSERVABLE STATE ───────────────▼─────────────────────────────────────────┐
-│ 39 @MainActor @Observable stores, sessions, indices and State types        │
+│ @MainActor @Observable stores, sessions, indices and State types           │
 └──────────────────────────────────┬─────────────────────────────────────────┘
                                    │ rendered by
 ┌─ VIEW ───────────────────────────▼─────────────────────────────────────────┐
@@ -175,9 +175,14 @@ driven imperatively from AppKit. Extension menu extras are dynamic `NSStatusItem
 assigns `NSApp.appearance` from `AppSettings.appearance`, and `.system` assigns `nil` so AppKit follows
 macOS by itself. Nothing else in the app sets an appearance.
 
+Utilities share one `UtilityCoordinator` on `AppCore`, with an independent `AppWindowController` per
+tool. Developer sessions are created on first show and released through the window controller's
+synchronous `onClose` callback. The window owns the session's lifetime; view transitions leave its
+work and state intact, so minimizing or re-raising cannot retarget controls to fresh state.
+
 ## Observation
 
-39 types are `@MainActor @Observable`. Nothing uses `ObservableObject` or `@Published`, and views read
+State uses `@MainActor @Observable`. Nothing uses `ObservableObject` or `@Published`, and views read
 state through `@Environment` rather than `@EnvironmentObject`.
 
 Three things about this model are easy to get wrong:

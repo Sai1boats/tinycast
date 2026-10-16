@@ -118,11 +118,11 @@ one rule: a palette already on screen is being _navigated_, so the current scree
 becomes the step back; a hidden one is being _summoned_, so the new screen is a root with nothing
 behind it. Every mode command and every global hotkey funnels through `showPalette`, which calls it —
 so typing "Clipboard History" at the root and pressing ↵ leaves a step back to the search that found
-it, while the Clipboard History hotkey does not. **The launcher is the exception, because it is the
+it. Its hotkey does the same over an open palette, and starts a root when summoned from outside. **The launcher is the exception, because it is the
 root** — ⌘Space over an open clipboard opens the root search with nothing behind it, rather than
 stacking the launcher over the screen it replaced. Nothing per-feature encodes this.
 
-`PaletteState` holds the screens below `mode` as `[PaletteFrame]` — mode, query and selection, enough
+`PaletteState` holds the screens below `mode` as `[PaletteFrame]` — mode, query, selection and recents, enough
 that returning looks like never having left — and offers four motions over it:
 
 | Motion                     | Meaning                                                                    |
@@ -157,7 +157,7 @@ whole stack for that same root search from any depth.
 `closeAndPopToRoot` an empty field closes the window and resets it immediately, whatever Pop to Root
 Search says. Clearing the query is still the first press either way.
 
-The header draws a back chevron on **every** screen but the launcher: leaving is what the icon
+The header draws a back chevron on **every** screen but normal root search: leaving is what the icon
 slot means once you are off the root, and a slot that changed shape with provenance would read
 as two different controls. Where the click lands still depends on the stack — a pushed screen
 pops, a root one closes — so `backHelp` says which, rather than promising a step that is really
@@ -181,6 +181,31 @@ restating the rule.
 takes two presses to unwind, and the back chevron's tooltip stops promising a step it cannot take.
 The launcher is the ring's root, so the hop that closes the ring resets the stack instead of stacking
 a third screen; ringing round forever therefore never grows the stack past two.
+
+### Recently used entries and configurable Tab
+
+With an empty root query and its first row selected, bare ↑ opens **Recently Used**. The same
+launcher rows now merge visible apps and commands with saved calculator history, capped at 50 rows
+and ordered newest first by activation or calculation time, without favorites or suggestions. It expands compact
+mode too. Arrows select a row and Return launches it through the usual coordinator, including any
+required arguments. Calculation rows copy their saved answer on Return and expression on Command-Return.
+Typing resumes normal search; Escape or the header back button leaves recents.
+Back from a screen opened over recents restores that list and its selection.
+
+**General → Tab opens** chooses the root search destination: the default cycle above, no page,
+Clipboard History, Quick AI, Search Files, Emoji & Symbols, Calculator History, Quicklinks,
+Snippets, Custom Commands or Dictionary. Disabled features cannot be opened. Explicit clipboard
+navigation opens with an empty filter; the original root query remains on the back stack. Other
+search pages carry the query and Quick AI retains its explicit ask behavior. A configured page's
+next Tab returns to root. Native form and inline argument focus still take precedence.
+The choice persists in settings backups and `general.tabDestination` in settings.json.
+
+Opening Clipboard History over visible root search, by hotkey, command or Tab, sets a session-only
+return target. Return on text or a file path replaces the root query, collapses line breaks to spaces,
+and puts the caret at its end while keeping the panel open. The primary action reads **Use in Search**.
+Images cannot fill a text search. Back cancels the selection and restores the previous query; closing
+the panel invalidates the target even when the clipboard screen is preserved. Clipboard opened on
+its own retains its configured external paste/copy behavior.
 
 ### Inline row arguments
 

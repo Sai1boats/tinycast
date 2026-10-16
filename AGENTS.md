@@ -128,6 +128,9 @@ feature's doc, under its own `## Invariants`.
 - **Debug builds are their own channel** — `Tinycast Dev.app` / `com.tinycast.app.dev` — so a local run
   never shares prefs, caches, TCC grants or the login item with an installed copy. Anything newly
   persisted must stay keyed by `Bundle.main.bundleIdentifier`.
+- **Native utility windows use the Focus Panel design.** All nine tools share aligned insets, inset
+  card headings, neutral resting actions and one bottom action group, with a quiet × close button.
+  Follow [ui.md](docs/ui.md#focused-utility-windows) and visually check all nine native windows together.
 - **XcodeGen owns the project.** `Tinycast.xcodeproj` is committed but generated from `project.yml`;
   after editing it, run `xcodegen generate` and commit both. No SwiftPM, and never `Bundle.module`.
 
@@ -140,3 +143,9 @@ Each item is explained in [testing.md](docs/testing.md#definition-of-done).
 - `./Scripts/lint.sh` is clean.
 - `grep -rln 'import AppKit\|import SwiftUI\|import Cocoa' Tinycast/Features/*/Model/` returns nothing.
 - Any doc your change made wrong is fixed in the same commit.
+- **Every application development task ends with packaging and replacing the installed version.**
+  Build and verify a signed Release DMG, back up the current app, quit it, replace its bundle and
+  relaunch it. Preserve the installed bundle identifier and signing identity. Verify the installed
+  version and running process, then report the DMG and backup paths. This is part of completion;
+  do not wait for a separate packaging or installation request unless the user explicitly defers it.
+  Follow [release.md](docs/release.md#required-local-completion).

@@ -49,6 +49,19 @@ Dictation similarly embeds its Swift/Core ML helper, named `Tinycast Dev Dictati
 `Tinycast Dictation` in Release, in an accessory `.app` bundle without a bundled icon. Model weights
 download on demand; none are app resources.
 
+### Required completion of local development
+
+After every application development task, complete the test, build and documentation checks in
+[testing.md](testing.md#definition-of-done), build a signed Release DMG, and replace the Tinycast
+version currently installed on this system. Back up the old app, quit it gracefully, install the
+verified bundle and reopen it. Check the installed version, running process and changed behavior.
+Do this as part of the task without waiting for another packaging or installation request, unless
+the user explicitly defers it.
+
+Follow [release.md](release.md#required-local-completion) for the full sequence and completion report.
+Read the installed app's bundle identifier and signing identity before building; the final Release
+must preserve those values. Ordinary Debug iteration still uses the separate dev channel below.
+
 ### The dev channel
 
 Debug builds are a separate channel: **`Tinycast Dev.app`**, bundle id `com.tinycast.app.dev`. Every
