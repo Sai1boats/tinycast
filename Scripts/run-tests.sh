@@ -163,7 +163,14 @@ run launcher-settings-file-test \
                            Tinycast/Features/Quicklinks/Model/QuicklinkDestination.swift \
                            Tinycast/Features/SystemActions/Model/SystemAction.swift \
                            Tinycast/Features/WindowManagement/Model/WindowCommand.swift \
-                           Tinycast/Features/Snippets/Model/Snippet.swift
+                           Tinycast/Features/Snippets/Model/Snippet.swift \
+                           Tinycast/Features/Utilities/Model/UtilityInputDetector.swift \
+                           Tinycast/Features/Utilities/Model/UtilityTool.swift \
+                           Tinycast/Features/Utilities/Model/JWTContents.swift \
+                           Tinycast/Features/Utilities/Model/Base64Codec.swift \
+                           Tinycast/Features/Utilities/Model/JSONTool.swift \
+                           Tinycast/Features/Utilities/Model/TimestampConverter.swift \
+                           Tinycast/Features/Utilities/Model/URLCodec.swift
 run apple-shortcut-test    Tinycast/Features/AppleShortcuts/Model/*.swift
 run utilities-test         Tinycast/Features/Utilities/Model/*.swift \
                            Tinycast/Features/Calculator/Model/*.swift
@@ -472,6 +479,15 @@ run custom-command-test    Tinycast/Platform/PseudoTerminal.swift \
                            Tinycast/Features/CustomCommands/Model/RaycastScriptImport.swift \
                            Tinycast/Features/CustomCommands/UI/CustomCommandEditorSession.swift \
                            Tinycast/Features/CustomCommands/Service/ShellCommandRunner.swift
+run shell-completion-test  Tinycast/Platform/ProcessExit.swift \
+                           Tinycast/Features/CustomCommands/Model/ShellCommandQuery.swift \
+                           Tinycast/Features/CustomCommands/Model/ShellBuiltin.swift \
+                           Tinycast/Features/CustomCommands/Model/ShellCompletion.swift \
+                           Tinycast/Features/CustomCommands/Model/ShellCommandDestination.swift \
+                           Tinycast/Features/CustomCommands/Model/TerminalCommandRequest.swift \
+                           Tinycast/Features/CustomCommands/Service/TerminalCommandRunner.swift \
+                           Tinycast/Features/CustomCommands/Service/ShellCompletionSource.swift \
+                           Tinycast/Features/Settings/Model/SettingsFileKey.swift
 run terminal-command-test  Tinycast/Platform/ProcessExit.swift \
                            Tinycast/Features/CustomCommands/Model/ShellCommandDestination.swift \
                            Tinycast/Features/CustomCommands/Model/TerminalCommandRequest.swift \
@@ -479,6 +495,8 @@ run terminal-command-test  Tinycast/Platform/ProcessExit.swift \
                            Tinycast/Features/Settings/Model/SettingsFileKey.swift
 run shell-history-test     Tinycast/Features/CustomCommands/Model/ShellCommandQuery.swift \
                            Tinycast/Features/CustomCommands/Model/ShellCommandHistory.swift \
+                           Tinycast/Features/CustomCommands/Model/ShellBuiltin.swift \
+                           Tinycast/Features/CustomCommands/Model/ShellCompletion.swift \
                            Tinycast/Features/CustomCommands/Service/ShellCommandHistoryStore.swift \
                            Tinycast/Features/CustomCommands/UI/ShellCommandScreen.swift
 run custom-command-list-test Tinycast/Features/CustomCommands/Model/CustomCommand.swift \
@@ -751,6 +769,7 @@ run translation-session-test Tinycast/Features/Translation/Model/*.swift \
                            Tinycast/Features/Translation/UI/TranslationCoordinator.swift
 run translation-test      Tinycast/Features/Translation/Model/*.swift \
                            Tinycast/Features/Translation/Service/BaiduTranslationService.swift \
+                           Tinycast/Features/Translation/Service/TranslationLanguageDetector.swift \
                            Tinycast/Platform/KeychainSecretStore.swift
 run quick-action-test      Tinycast/Features/Settings/AppSettingsKey.swift \
                            Tinycast/Features/AI/Model/AIConnection.swift \

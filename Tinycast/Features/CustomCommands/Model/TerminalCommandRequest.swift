@@ -2,10 +2,10 @@ import Foundation
 
 struct TerminalCommandRequest: Sendable {
     let command: String
-    let homeDirectory: String
+    let directory: String
 
     var input: String {
-        let directory = "'" + homeDirectory.replacingOccurrences(of: "'", with: "'\\''") + "'"
+        let directory = "'" + directory.replacingOccurrences(of: "'", with: "'\\''") + "'"
         return "cd -- \(directory) && \(command)"
     }
 
@@ -15,7 +15,7 @@ struct TerminalCommandRequest: Sendable {
         components.path = "/command"
         components.queryItems = [
             URLQueryItem(name: "c", value: command),
-            URLQueryItem(name: "d", value: homeDirectory)
+            URLQueryItem(name: "d", value: directory)
         ]
         return components.url
     }

@@ -27,13 +27,12 @@ enum TerminalCommandRunner {
         }
     }
 
-    static func run(_ command: String, in destination: ShellCommandDestination) async throws {
+    static func run(_ command: String, in destination: ShellCommandDestination, directory: String) async throws {
         try Task.checkCancellation()
         guard let bundleID = destination.bundleID,
             let application = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID)
         else { throw Failure.unavailable(destination.name) }
-        let request = TerminalCommandRequest(
-            command: command, homeDirectory: FileManager.default.homeDirectoryForCurrentUser.path)
+        let request = TerminalCommandRequest(command: command, directory: directory)
         if destination == .iterm {
             guard let url = request.itermURL else {
                 throw Failure.executionFailed(String(localized: "The command URL could not be prepared."))

@@ -15,7 +15,7 @@ struct JWTToolView: View {
 
     var body: some View {
         @Bindable var session = session
-        UtilityToolLayout(error: session.error, isBusy: session.isBusy) {
+        UtilityToolLayout(error: session.error, isBusy: session.isBusy, suggestionTool: .jwt) {
             VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
                 UtilityEditorPane(title: "Token", text: $session.input, editable: true, detail: "JWT")
                     .frame(height: Theme.Size.utilityFocusTokenHeight)

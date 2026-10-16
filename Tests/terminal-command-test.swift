@@ -29,13 +29,13 @@ struct TerminalCommandTest {
             end run
             """
         for command in commands {
-            let request = TerminalCommandRequest(command: command, homeDirectory: "/tmp/a'b +&中文")
+            let request = TerminalCommandRequest(command: command, directory: "/tmp/a'b +&中文")
             let components = request.itermURL.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) }
             check("iTerm URL remains local", components?.scheme == "iterm2" && components?.host == nil)
             check("iTerm command survives URL encoding", components?.queryItems?.first { $0.name == "c" }?.value == command)
             check(
                 "iTerm directory survives URL encoding",
-                components?.queryItems?.first { $0.name == "d" }?.value == request.homeDirectory)
+                components?.queryItems?.first { $0.name == "d" }?.value == request.directory)
             let returned = try await TerminalCommandRunner.execute(echo, input: request.input)
             check("command reaches AppleScript as literal data", returned == request.input)
         }
@@ -44,7 +44,7 @@ struct TerminalCommandTest {
         let directory = root.appendingPathComponent("home ' $(touch injected) 中文")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
-        let request = TerminalCommandRequest(command: "printf '%s' \"$PWD\"", homeDirectory: directory.path)
+        let request = TerminalCommandRequest(command: "printf '%s' \"$PWD\"", directory: directory.path)
         let process = Process()
         let output = Pipe()
         process.executableURL = URL(fileURLWithPath: "/bin/zsh")
@@ -90,7 +90,7 @@ struct TerminalCommandTest {
 
         check("internal mode stays available", TerminalCommandRunner.installedDestinations.contains(.tinycast))
         do {
-            try await TerminalCommandRunner.run("echo must-not-run", in: .tinycast)
+            try await TerminalCommandRunner.run("echo must-not-run", in: .tinycast, directory: "/tmp")
             check("terminal runner rejects internal mode", false)
         } catch TerminalCommandRunner.Failure.unavailable {
             check("terminal runner rejects internal mode", true)

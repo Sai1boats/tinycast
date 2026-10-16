@@ -103,6 +103,14 @@ struct LauncherScreen: PaletteScreen {
             results.insert(browser, at: 0)
             matchCount += 1
         }
+        // A pasted JWT or JSON document is the tool's input, so the tool that reads it leads too.
+        if pinned == nil, let utility = CommandCatalog.openInUtility(for: vm.query),
+            visibility.isVisible(CommandCatalog.makeEntry(
+                utility.id == CommandID.openInJWTViewer.rawValue ? .jwtViewer : .jsonTools))
+        {
+            results.insert(utility, at: 0)
+            matchCount += 1
+        }
         // No card over a pinned row: its fields hang off the selection, which must start on it.
         let calc =
             pinned == nil

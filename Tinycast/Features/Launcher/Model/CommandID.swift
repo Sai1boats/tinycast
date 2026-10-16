@@ -29,6 +29,8 @@ enum CommandID: String, CaseIterable, Sendable {
     case switchWindows = "command:switch-windows"
     case openCamera = "command:open-camera"
     case openInBrowser = "command:open-in-browser"
+    case openInJWTViewer = "command:open-in-jwt-viewer"
+    case openInJSONTools = "command:open-in-json-tools"
     case runShellCommand = "command:run-shell-command"
     case createCustomCommand = "command:create-custom-command"
     case searchCustomCommands = "command:search-custom-commands"
@@ -87,6 +89,8 @@ enum CommandID: String, CaseIterable, Sendable {
         case .switchWindows: return "Switch Windows"
         case .openCamera: return "Open Camera"
         case .openInBrowser: return "Open in Browser"
+        case .openInJWTViewer: return "Open in JWT Viewer"
+        case .openInJSONTools: return "Open in JSON Tools"
         case .runShellCommand: return "Run Shell Command"
         case .createCustomCommand: return "Create Custom Command"
         case .searchCustomCommands: return "Search Custom Commands"
@@ -146,6 +150,8 @@ enum CommandID: String, CaseIterable, Sendable {
         case .switchWindows: return "macwindow.on.rectangle"
         case .openCamera: return "camera"
         case .openInBrowser: return "globe"
+        case .openInJWTViewer: return CommandID.jwtViewer.sfSymbol
+        case .openInJSONTools: return CommandID.jsonTools.sfSymbol
         case .runShellCommand: return "terminal"
         case .createCustomCommand: return "terminal"
         case .searchCustomCommands: return "terminal"
@@ -233,7 +239,7 @@ enum CommandID: String, CaseIterable, Sendable {
 
     /// Query-driven: the typed text is their input, so they are built where offered, never listed.
     var isQueryDriven: Bool {
-        self == .openInBrowser || self == .runShellCommand
+        self == .openInBrowser || self == .runShellCommand || self == .openInJWTViewer || self == .openInJSONTools
     }
 
     /// A chord carries no query, and none should be able to terminate the app outright.

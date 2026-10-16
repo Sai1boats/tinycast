@@ -9,7 +9,7 @@ struct TimestampToolView: View {
 
     var body: some View {
         @Bindable var coordinator = coordinator
-        UtilityToolLayout(error: coordinator.timestampError) {
+        UtilityToolLayout(error: coordinator.timestampError, suggestionTool: .timestamp) {
             ScrollView {
                 VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
                     Picker("Time Zone", selection: $coordinator.timeZoneID) {

@@ -32,6 +32,18 @@ enum CommandCatalog {
         return makeEntry(.openInBrowser, url: url, subtitle: "URL")
     }
 
+    /// A pasted token or document earns its tool's row; both checks bail on the first character.
+    static func openInUtility(for query: String) -> AppEntry? {
+        let value = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard value.utf8.count <= utilityQueryLimit else { return nil }
+        if UtilityInputDetector.isJWT(value) { return makeEntry(.openInJWTViewer, subtitle: "JWT") }
+        if UtilityInputDetector.isJSON(value) { return makeEntry(.openInJSONTools, subtitle: "JSON") }
+        return nil
+    }
+
+    /// Root search re-parses on every keystroke, so it recognises less than a pasted window does.
+    nonisolated static let utilityQueryLimit = 262_144
+
     /// A command's row, built rather than looked up — `all` holds none of the query-driven ones.
     nonisolated static func makeEntry(
         _ id: CommandID, url: URL? = nil, subtitle: String? = nil

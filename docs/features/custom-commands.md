@@ -273,19 +273,20 @@ saved-command library and terminal apps’ own histories. The ordinary fallback 
 prefix share **Settings → Commands → Run Shell Command → Execute in**.
 
 The default **Tinycast (Internal)** builds a temporary `CustomCommand`, sources the interactive zsh
-configuration, starts in the home directory, and streams into the existing output window with Stop
-and Rerun. It is not gated on `customCommandsEnabled`, which governs the saved-command library.
+configuration, starts in the shell's [working directory](#a-terminal-in-the-palette), and streams into
+the existing output window with Stop and Rerun. It is not gated on `customCommandsEnabled`, which governs the saved-command library.
 `rerunOutput` checks `lastShellCommand` because this temporary command has no library entry.
 
 External choices include installed **Terminal**, **iTerm**, and **cmux** applications discovered by
-bundle identifier. Each run opens a separate interactive session starting in the home directory;
+bundle identifier. Each run opens a separate interactive session starting in the shell's working
+directory;
 commands use that terminal's configured shell. The shell remains available afterward, including
 changes such as `cd`, so another command can continue the session. Saved custom commands retain
 their own execution and output options.
 
 Terminal uses `do script` to create a window. cmux creates a window, pastes into that window's focused
 terminal and submits Return through its public scripting action. The system `osascript` process gets
-command text as an argument, never interpolated into AppleScript source; the home-directory prefix
+command text as an argument, never interpolated into AppleScript source; the working-directory prefix
 quotes its shell word. Execution runs off-main, captures a bounded automation response, and reaps its
 process on cancellation. Missing applications and Automation denial report through Tinycast's own
 dialog without executing the command elsewhere.
@@ -293,6 +294,38 @@ dialog without executing the command elsewhere.
 [iTerm's current command URL](https://iterm2.com/documentation-url-scheme.html) opens its own review
 page, where the user selects a new window or tab. Command and directory are encoded as distinct URL
 query items; its deprecated AppleScript interface is not used.
+
+#### A terminal in the palette
+
+`ShellSession`, owned by `AppCore` and injected into `CustomCommandCoordinator`, gives the ad-hoc shell
+a **working directory**. It starts at home on every launch and is never persisted. The shell screen
+names it in its first header ("Working Directory: ~/src"), and every ad-hoc run — internal or in an
+external terminal — starts there. Saved custom commands keep their own **Run In** folder.
+
+A line that is only `cd`, `cd <folder>` or `cd -` is answered by Tinycast itself, because a child
+process can never move its parent: `ShellBuiltin` parses it, `ShellPath` resolves `~`, relative paths,
+`..` and the previous folder, and a folder that does not exist is reported without changing anything.
+`cdf`, or **Use Finder's Folder** in any row's ⌘K menu, moves to the front Finder window's folder (the
+Desktop when none is open) through the same `osascript` route as the terminals, so it asks for
+Automation access to Finder the first time. A directory change is recorded in history like any line,
+confirms the new folder in a HUD and leaves the palette on an empty `# ` prompt. A `cd` combined with
+anything else — `cd src && make`, `cd $HOME` — is real shell and runs as typed, in a child shell.
+
+**Tab** completes, zsh-style. In command position (the first word, after `|`, `;`, `&&`, `(` or after
+`sudo`, `time`, `which`…) it offers command names; everywhere else, and for any word containing `/` or
+starting with `~` or `.`, it offers files relative to the working directory. One match completes the
+word (a folder ends in `/`, anything else in a space); several extend it to their shared prefix and
+list under **Completions** at the top of the screen, where Tab and ⇧Tab walk them and Return inserts
+the highlighted one. File matching ignores case and takes the file system's spelling; names are
+backslash-escaped; dotfiles appear only for a word starting with `.`. With a different history line
+highlighted, Tab instead takes that line into the field. Nothing to complete beeps.
+
+Command names come from one interactive login zsh — `${(k)commands}`, aliases, functions, builtins and
+reserved words — spawned on the **first Tab** of a launch, never on opening the screen, so the "no
+process without a run" rule above still holds until the reader asks. It runs with `TINYCAST=1`, stdin
+at `/dev/null`, output to a temporary file (a daemon the rc file starts could hold a pipe open), and is
+terminated after 4 s; measured ~1 s against a real oh-my-zsh setup. An empty answer is retried on the
+next Tab. Folder listings run off the main actor and are capped at 5000 entries.
 
 `shellCommandDestination` defaults to `tinycast`; `settings.json` mirrors it as
 `commands.shellDestination` with values `tinycast`, `terminal`, `iterm`, or `cmux`. Native settings

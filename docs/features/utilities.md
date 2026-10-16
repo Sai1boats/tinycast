@@ -14,8 +14,9 @@ is neutral at rest, including the first; keyboard defaults do not carry selected
 ## Invariants
 
 - `AppCore` owns `UtilityCoordinator`; views receive it through the environment. Tool state stays in
-  memory, and no input/output is written to settings, history or disk. Clipboard reads and writes only
-  happen through explicit buttons.
+  memory, and no input/output is written to settings, history or disk. Clipboard writes only happen
+  through explicit buttons, and nothing is ever *filled in* from the clipboard without the reader
+  choosing Read Clipboard or Load — see [Clipboard suggestions](#clipboard-suggestions).
 - JSON transformations execute off-main. Source changes and window closure cancel the task and advance
   its generation; late results cannot replace a newer input's output. Parsing is bounded to 1 MiB input,
   128 container levels and 4 MiB formatted output.
@@ -110,6 +111,32 @@ green `+` prefix and deletions a red `-` prefix; unchanged lines have two spaces
 final newline markers make otherwise invisible ending differences explicit. Copy Diff copies this
 human-readable comparison, not a patch file. Swap Texts reverses the inputs and clears the result.
 
+## Clipboard suggestions
+
+JSON Tools, Timestamp Converter, URL and Base64 codecs and JWT Viewer can recognise their own input.
+When one of those windows opens or becomes key, `UtilityCoordinator.checkClipboard` reads the
+clipboard's plain text through `UtilityClipboard` and asks `UtilityInputDetector.tool(for:)` what it
+is. Only a match for *that* window shows a banner above the action group — "The clipboard contains a
+JWT. Load it?" — with **Load** and a quiet ×. The text is classified in memory and dropped; the
+coordinator keeps only the pasteboard's `changeCount`. Load reads the clipboard again, refuses if it
+no longer matches, then fills the input and runs the primary operation (format, convert, decode or
+inspect; Base64 picks the alphabet that decodes). Dismissing, loading or Read Clipboard all retire the
+banner for that clipboard change, so it returns only after something new is copied.
+
+Copies marked secret — `org.nspasteboard.ConcealedType`, `TransientType` or `com.apple.is-sensitive`,
+the same set clipboard history skips — are never inspected. Hash, Diff, UUID and Currency take any
+text, so they never suggest.
+
+The detector is deliberately narrow, because a wrong guess is noise: a JWT must parse as a three-part
+token with a JSON header carrying `alg`; JSON must be an object or array; a timestamp is exactly ten
+or thirteen digits within years 0001–9999; percent-encoding needs a `%XX` escape that changes on
+decoding; Base64 needs at least 16 characters with no whitespace that decode to readable UTF-8, so a
+hex digest or an ordinary word never qualifies.
+
+Root search offers the same recognition for a pasted JWT or JSON document: **Open in JWT Viewer** or
+**Open in JSON Tools** leads the results and opens the tool already working on the query (see
+[contextual commands](launcher.md#contextual-commands)).
+
 ## Verification
 
 `utilities-test` compiles the shipped pure sources and covers exact large-number preservation, strings,
@@ -122,7 +149,9 @@ RFC Base64 vectors, malformed encodings and padding, binary decode rejection, UU
 known hash vectors, JWT number preservation and time boundaries, reconstructed diff inputs including
 line endings, worst-case line limits, cancelled tasks and superseded results. Manual checks cover all
 six launch commands, independent windows, keyboard actions, bilingual labels, native text editing,
-split resizing, copying results and closing during processing.
+split resizing, copying results and closing during processing. Copy a JWT, JSON, timestamp, encoded
+text and a password-manager secret, then focus each tool: the first four are offered to their own
+window only, and the secret is offered nowhere.
 
 `developer-tools-ui-test` mounts all nine shipped views in real AppKit windows. It checks shared editor
 edges and native timestamp/currency input alignment at both default and minimum sizes in Light and Dark,

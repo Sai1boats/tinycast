@@ -4,6 +4,11 @@ import Observation
 @MainActor
 @Observable
 final class TranslationCoordinator {
+    struct Progress: Equatable {
+        let completed: Int
+        let total: Int
+    }
+
     private unowned let core: AppCore
     private let palette: PaletteCoordinator
     private let injector: TextInjector
@@ -20,16 +25,28 @@ final class TranslationCoordinator {
     var text = "" { didSet { if oldValue != text { invalidate() } } }
     var source = "auto" { didSet { if oldValue != source { invalidate() } } }
     var destination = "auto" { didSet { if oldValue != destination { invalidate() } } }
-    private(set) var result: BaiduTranslation?
+    private(set) var result: TranslationResult?
+    /// The chunks translated so far while a long text is still in flight.
+    private(set) var partial: TranslationResult?
+    private(set) var progress: Progress?
+    /// Why Apple answered instead of Baidu; empty when Baidu did.
+    private(set) var fallbackReason = ""
     private(set) var isReadingSelection = false
     private(set) var isLoading = false
     private(set) var isSaving = false
     private(set) var isTranslating = false
     private(set) var message = ""
     var showsSettings = false
+    var showsBilingual = false
+    var textSize = Theme.Size.translationTextDefault
     var appID = ""
     var secret = ""
     var isPinned = false
+
+    private(set) var isExpanded = false
+
+    var hasCredentials: Bool { credentials != nil }
+    var displayedResult: TranslationResult? { result ?? partial }
 
     init(core: AppCore, palette: PaletteCoordinator, injector: TextInjector) {
         self.core = core
@@ -67,7 +84,6 @@ final class TranslationCoordinator {
                 self.appID = stored?.appID ?? ""
                 self.secret = stored?.secret ?? ""
                 self.isLoading = false
-                self.showsSettings = stored == nil
                 guard selection, self.generation == version else {
                     self.isReadingSelection = false
                     return
@@ -77,7 +93,7 @@ final class TranslationCoordinator {
                 self.isReadingSelection = false
                 self.panels.focus()
                 self.text = selected
-                if stored != nil { self.translate() }
+                self.translate()
             } catch {
                 guard let self, !Task.isCancelled, self.session == currentSession else { return }
                 self.isLoading = false
@@ -89,27 +105,48 @@ final class TranslationCoordinator {
     }
 
     func translate() {
-        guard let credentials else { showsSettings = true; return }
         invalidate()
         let version = generation
         let input = text
         let from = source
         let to = destination
+        let stored = credentials
+        do {
+            try BaiduTranslation.validateDocument(input, source: from, target: to)
+        } catch BaiduTranslation.Failure.tooLong {
+            return translateWithApple(input, from: from, to: to, reason: BaiduTranslation.Failure.tooLong, version: version)
+        } catch {
+            return report(error)
+        }
+        guard let stored else {
+            return translateWithApple(
+                input, from: from, to: to, reason: BaiduTranslation.Failure.credentials, version: version)
+        }
+        let chunks = TranslationChunks.split(input)
         isTranslating = true
+        progress = Progress(completed: 0, total: chunks.count)
         running = Task { [weak self] in
             do {
-                let translated = try await BaiduTranslationService.translate(
-                    text: input, source: from, target: to, credentials: credentials)
-                guard let self, !Task.isCancelled, self.generation == version else { return }
-                self.result = translated
-                self.history.append(translated)
-                self.isTranslating = false
-                self.running = nil
+                var combined: TranslationResult?
+                for (index, chunk) in chunks.enumerated() {
+                    if index > 0 { try await Task.sleep(for: Self.chunkPacing) }
+                    let piece = try await BaiduTranslationService.translate(
+                        text: chunk, source: combined?.source ?? from, target: combined?.target ?? to,
+                        credentials: stored)
+                    guard let self, !Task.isCancelled, self.generation == version else { return }
+                    combined = combined.map { $0.appending(piece) } ?? piece
+                    self.partial = combined
+                    self.progress = Progress(completed: index + 1, total: chunks.count)
+                }
+                guard let self, let combined else { return }
+                self.finish(combined)
             } catch {
                 guard let self, !Task.isCancelled, self.generation == version else { return }
-                self.isTranslating = false
-                self.running = nil
-                self.report(error)
+                guard BaiduTranslation.allowsFallback(after: error) else {
+                    self.stopTranslating()
+                    return self.report(error)
+                }
+                self.translateWithApple(input, from: from, to: to, reason: error, version: version)
             }
         }
     }
@@ -195,6 +232,12 @@ final class TranslationCoordinator {
             })
     }
 
+    func adjustTextSize(by step: CGFloat) {
+        textSize = min(max(textSize + step, Theme.Size.translationTextMinimum), Theme.Size.translationTextMaximum)
+    }
+
+    func toggleExpanded() { isExpanded = panels.setExpanded(!isExpanded) }
+
     func close() {
         session = UUID()
         invalidate()
@@ -207,24 +250,70 @@ final class TranslationCoordinator {
         isSaving = false
         target = nil
         secret = ""
+        isExpanded = false
         panels.dismiss()
+    }
+
+    /// Baidu's standard tier answers one request a second; a long text waits its turn per chunk.
+    private static let chunkPacing = Duration.milliseconds(1100)
+
+    private func translateWithApple(
+        _ input: String, from: String, to: String, reason: any Error, version: Int
+    ) {
+        let reasonText = describe(reason)
+        isTranslating = true
+        partial = nil
+        progress = nil
+        running = Task { [weak self] in
+            do {
+                let translated = try await AppleTranslationService.translate(text: input, source: from, target: to)
+                guard let self, !Task.isCancelled, self.generation == version else { return }
+                self.fallbackReason = reasonText
+                self.finish(translated)
+            } catch {
+                guard let self, !Task.isCancelled, self.generation == version else { return }
+                self.stopTranslating()
+                let detail = self.describe(error)
+                self.message = reasonText + "\n" + String(localized: "Apple Translation: \(detail)")
+                self.core.showMessage(self.message, tone: .danger)
+            }
+        }
+    }
+
+    private func finish(_ translated: TranslationResult) {
+        result = translated
+        history.append(translated)
+        stopTranslating()
+    }
+
+    private func stopTranslating() {
+        isTranslating = false
+        partial = nil
+        progress = nil
+        running = nil
     }
 
     private func invalidate() {
         generation += 1
         running?.cancel()
-        running = nil
-        isTranslating = false
+        stopTranslating()
         result = nil
+        fallbackReason = ""
         message = ""
     }
 
-    private func report(_ error: Error) {
+    private func describe(_ error: any Error) -> String {
         if let failure = error as? BaiduTranslation.Failure {
-            message = NSLocalizedString(failure.rawValue, comment: "Translation error")
-        } else {
-            message = error.localizedDescription
+            return NSLocalizedString(failure.rawValue, comment: "Translation error")
         }
+        if let failure = error as? AppleTranslationService.Failure {
+            return NSLocalizedString(failure.rawValue, comment: "Translation error")
+        }
+        return error.localizedDescription
+    }
+
+    private func report(_ error: any Error) {
+        message = describe(error)
         core.showMessage(message, tone: .danger)
     }
 }

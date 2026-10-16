@@ -5,7 +5,7 @@ struct JSONToolView: View {
 
     var body: some View {
         @Bindable var coordinator = coordinator
-        UtilityToolLayout(error: coordinator.jsonError, isBusy: coordinator.jsonBusy) {
+        UtilityToolLayout(error: coordinator.jsonError, isBusy: coordinator.jsonBusy, suggestionTool: .json) {
             VSplitView {
                 UtilityEditorPane(title: "Input", text: $coordinator.jsonInput, editable: true,
                                   label: String(localized: "JSON Input"), detail: "JSON")

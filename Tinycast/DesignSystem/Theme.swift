@@ -78,9 +78,17 @@ enum Theme {
         static let utilityFocusDigestHeight: CGFloat = 140
         static let utilityGlyph: CGFloat = 16
         static let utilityCloseGlyph: CGFloat = 12
-        static let translationPanel = CGSize(width: 900, height: 340)
-        static let translationMinimum = CGSize(width: 650, height: 320)
+        static let translationPanel = CGSize(width: 960, height: 560)
+        static let translationMinimum = CGSize(width: 680, height: 420)
         static let translationTool: CGFloat = 24
+        /// Below this width the source and translation stack instead of sitting side by side.
+        static let translationSideBySideWidth: CGFloat = 820
+        static let translationExpandedFraction: CGFloat = 0.86
+        static let translationTextDefault: CGFloat = 15
+        static let translationTextMinimum: CGFloat = 12
+        static let translationTextMaximum: CGFloat = 26
+        static let translationTextStep: CGFloat = 1
+        static let translationLineHeight: CGFloat = 1.3
         static let panelWidth: CGFloat = 750
         static let panelHeight: CGFloat = 475
         /// Opening size on a first run and the floor: below it the title bar's own parts collide.

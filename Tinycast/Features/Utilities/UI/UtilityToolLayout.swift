@@ -3,6 +3,7 @@ import SwiftUI
 struct UtilityToolLayout<Content: View, Operations: View, Actions: View, Status: View>: View {
     var error = ""
     var isBusy = false
+    var suggestionTool: UtilityTool?
     @ViewBuilder let content: Content
     @ViewBuilder let operations: Operations
     @ViewBuilder let actions: Actions
@@ -13,6 +14,7 @@ struct UtilityToolLayout<Content: View, Operations: View, Actions: View, Status:
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .layoutPriority(1)
+            if let suggestionTool { UtilityClipboardBanner(tool: suggestionTool) }
             if !error.isEmpty {
                 Text(error)
                     .font(.caption)
