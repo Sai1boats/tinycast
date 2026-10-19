@@ -343,6 +343,10 @@ final class AppSettings {
         didSet { defaults.set(notesEnabled, forKey: Key.notesEnabled.rawValue) }
     }
 
+    var todosEnabled: Bool {
+        didSet { defaults.set(todosEnabled, forKey: Key.todosEnabled.rawValue) }
+    }
+
     var dictationEnabled: Bool {
         didSet { defaults.set(dictationEnabled, forKey: Key.dictationEnabled.rawValue) }
     }
@@ -742,6 +746,10 @@ final class AppSettings {
         fileSearchIgnorePatterns =
             defaults.stringArray(forKey: Key.fileSearchIgnorePatterns.rawValue) ?? []
         notesEnabled = defaults.bool(forKey: Key.notesEnabled.rawValue)
+        // Ships on: the todo list is a first-party surface, not an opt-in side feature.
+        todosEnabled =
+            defaults.object(forKey: Key.todosEnabled.rawValue) == nil
+            || defaults.bool(forKey: Key.todosEnabled.rawValue)
         dictationEnabled = defaults.bool(forKey: Key.dictationEnabled.rawValue)
         dictationMode =
             defaults.string(forKey: Key.dictationMode.rawValue)

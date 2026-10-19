@@ -24,7 +24,7 @@ Independently of the folder tree, every mature subsystem has converged on the sa
 │ PaletteRowIndex ·                                                          │
 │ Uninstall{Target,SearchRoot,Rules,Protection,Plan} ·                       │
 │ Quicklink{,Destination,Store,Archive} · AppleShortcut · Notes/Model/* ·    │
-│ Snippets/Model/* ·                                                         │
+│ Snippets/Model/* · Todos/Model/* ·                                         │
 │ ShellCommandRunner · DoubleTap{Modifier,Detector} · ClipboardStore ·       │
 │ RaycastDecoder · Scrypt · AppSettingsKey · SettingsBackupCoverage          │
 │ SettingsFile{JSON,Key,Value,Format,Binding,Issue,Identity} ·               │
@@ -42,7 +42,7 @@ Independently of the folder tree, every mature subsystem has converged on the sa
 │ RoomWindowSweep · RoomRunner ·                                             │
 │ IconCache · WindowMover · UninstallScanner · UninstallRunner ·             │
 │ SystemActionRunner · QuicklinkLauncher · TextInjector ·             │
-│ SnippetKeywordListener · NotesRepository · CurrencyRateStore · Paster ·    │
+│ SnippetKeywordListener · NotesRepository · TodoBridgeClient · CurrencyRateStore · Paster ·    │
 │ HotKeyCenter · HyperKeyTap · KeyboardRemapper · ModifierTapMonitor ·       │
 │ SecureInputMonitor · RunningAppsMonitor ·                                  │
 │ CalendarStore · MeetingLauncher · MeetingClock · CameraSession ·           │

@@ -65,6 +65,10 @@ extension SettingsAnchor {
     static let notesOptions = Self(tab: .notes, title: "Options")
     static let notesCommands = Self(tab: .notes, title: "Commands")
 
+    static let todosTodos = Self(tab: .todos, title: "Todos")
+    static let todosOptions = Self(tab: .todos, title: "Options")
+    static let todosCommands = Self(tab: .todos, title: "Commands")
+
     static let snippetsSnippets = Self(tab: .snippets, title: "Snippets")
     static let snippetsCommands = Self(tab: .snippets, title: "Commands")
     static let snippetsLibrary = Self(tab: .snippets, title: "Library")

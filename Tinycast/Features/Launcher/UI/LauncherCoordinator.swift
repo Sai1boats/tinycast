@@ -244,6 +244,12 @@ final class LauncherCoordinator {
         case .searchNotes:
             dismissPalette()
             notesCoordinator.searchNotes()
+        case .showTodos:
+            dismissPalette()
+            core.todosCoordinator.toggle()
+        case .createTodo:
+            dismissPalette()
+            core.todosCoordinator.createTodo()
         case .searchQuicklinks:
             paletteCoordinator.togglePalette(mode: .quicklinks)
         case .searchSnippets:

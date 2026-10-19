@@ -43,6 +43,8 @@ enum CommandID: String, CaseIterable, Sendable {
     case showNotes = "command:show-notes"
     case createNote = "command:create-note"
     case searchNotes = "command:search-notes"
+    case showTodos = "command:show-todos"
+    case createTodo = "command:create-todo"
     case createWindowLayout = "command:create-window-layout"
     case captureWindowLayout = "command:capture-window-layout"
     case switchRoom = "command:switch-room"
@@ -103,6 +105,8 @@ enum CommandID: String, CaseIterable, Sendable {
         case .showNotes: return "Show Notes"
         case .createNote: return "Create Note"
         case .searchNotes: return "Search Notes"
+        case .showTodos: return "Show Todos"
+        case .createTodo: return "New Todo"
         case .createWindowLayout: return "Create Window Layout"
         case .captureWindowLayout: return "Create Layout from Current Windows"
         case .switchRoom: return "Switch Room"
@@ -164,6 +168,8 @@ enum CommandID: String, CaseIterable, Sendable {
         case .showNotes: return "text.page"
         case .createNote: return "note.text.badge.plus"
         case .searchNotes: return "text.magnifyingglass"
+        case .showTodos: return "checklist"
+        case .createTodo: return "plus.circle"
         case .createWindowLayout: return "plus.rectangle.on.rectangle"
         case .captureWindowLayout: return "macwindow.badge.plus"
         case .switchRoom: return "door.left.hand.open"
@@ -192,6 +198,7 @@ enum CommandID: String, CaseIterable, Sendable {
         case .hashGenerator: ["checksum", "SHA-256", "SHA-384", "SHA-512", "SHA-1", "MD5", "哈希", "校验"]
         case .jwtViewer: ["JSON Web Token", "Bearer", "header", "payload", "令牌"]
         case .textDiff: ["compare", "difference", "comparison", "对比", "差异"]
+        case .showTodos, .createTodo: ["todo", "task", "planote", "待办", "任务", "清单"]
         default: []
         }
     }

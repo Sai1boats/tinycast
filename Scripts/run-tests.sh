@@ -532,6 +532,21 @@ run notes-test             Tinycast/Platform/Signposts.swift \
                            $L/SearchRelevance.swift \
                            Tinycast/Features/Notes/Model/*.swift \
                            Tinycast/Features/Notes/Service/*.swift
+run todos-bridge-test      Tinycast/Features/Todos/Model/TodoBridgeFileStore.swift \
+                           Tinycast/Features/Todos/Model/TodoBridgePaths.swift \
+                           Tinycast/Features/Todos/Model/TodoBridgeProtocol.swift \
+                           Tinycast/Features/Todos/Model/TodoEditorDraft.swift \
+                           Tinycast/Features/Todos/Model/TodoListModel.swift
+run todos-ui-test          Tinycast/Features/Todos/Model/*.swift \
+                           Tinycast/Features/Todos/Service/*.swift \
+                           Tinycast/Features/Todos/UI/*.swift \
+                           Tinycast/Features/Notes/Model/NoteWindowPlacement.swift \
+                           Tinycast/Platform/Appearance.swift \
+                           Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/DesignSystem/InterfaceMetrics.swift \
+                           Tinycast/DesignSystem/BarButton.swift \
+                           Tinycast/DesignSystem/SymbolImage.swift \
+                           Tinycast/DesignSystem/GlassEffectView.swift
 run notes-editor-test      Tinycast/Platform/Signposts.swift \
                            Tinycast/Platform/Appearance.swift \
                            Tinycast/DesignSystem/Theme.swift \

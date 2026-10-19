@@ -170,6 +170,10 @@ final class AppCore {
         saveFormattingBarExpanded: {
             UserDefaults.standard.set($0, forKey: Self.noteFormattingBarKey)
         })
+    @ObservationIgnored private(set) lazy var todosCoordinator = TodosCoordinator(
+        bridge: TodoBridgeClient(
+            paths: TodoBridgePaths(homeDirectory: FileManager.default.homeDirectoryForCurrentUser)),
+        settings: settings, appIndex: appIndex, core: self)
 
     @ObservationIgnored private(set) lazy var launcherCoordinator = LauncherCoordinator(
         ranking: launcherRanking, windowController: windowController,
@@ -294,6 +298,7 @@ final class AppCore {
             menuSearchCoordinator.applyEnabled()
             fileSearchCoordinator.applyPolicy()
             notesCoordinator.applyEnabled()
+            todosCoordinator.applyEnabled()
             installedAI.launchSettings = { [aiSettings] in aiSettings.launch(for: $0) }
             chatGPTSubscription.launchSettings = { [aiSettings] in aiSettings.launch(for: .codex) }
             aiChatCoordinator.applyEnabled()
@@ -664,6 +669,7 @@ final class AppCore {
                 $0.menuSearchCoordinator.applyEnabled()
             })
         track({ _ = $0.notesEnabled }, reproject: { $0.notesCoordinator.applyEnabled() })
+        track({ _ = $0.todosEnabled }, reproject: { $0.todosCoordinator.applyEnabled() })
         track({ _ = $0.aiEnabled }, reproject: { $0.aiChatCoordinator.applyEnabled() })
         track(
             { _ = $0.dictationIdleRelease },
