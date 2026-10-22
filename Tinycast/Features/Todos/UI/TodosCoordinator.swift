@@ -271,6 +271,8 @@ final class TodosCoordinator {
             return error.localizedDescription
         }
         switch sendError {
+        case .serviceStopped:
+            return String(localized: "Planote service is stopped. Start it in Planote settings to save.")
         case .planoteNotInstalled:
             return String(localized: "Planote is not installed.")
         case .launchTimedOut:

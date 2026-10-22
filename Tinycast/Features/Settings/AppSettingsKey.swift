@@ -40,6 +40,8 @@ enum AppSettingsKey: String, CaseIterable {
     case notesRendersMarkdown = "notesRendersMarkdown"
     case notesShowsFormattingBar = "notesShowsFormattingBar"
     case notesFolder = "notesFolder"
+    case planoteNotesEnabled = "planoteNotesEnabled"
+    case planoteServiceEnabled = "planoteServiceEnabled"
     case todosEnabled = "todosEnabled"
     case shellCommandDestination = "shellCommandDestination"
     case customCommandsEnabled = "customCommandsEnabled"

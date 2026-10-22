@@ -22,11 +22,11 @@ struct TodoEditorView: View {
             errorText
             footer
         }
-        .onAppear {
-            Task { @MainActor in
-                await Task.yield()
-                titleFocused = true
-            }
+        .task {
+            guard draft.wrappedValue.isNew else { return }
+            await Task.yield()
+            guard !Task.isCancelled else { return }
+            titleFocused = true
         }
     }
 
@@ -199,7 +199,7 @@ struct TodoEditorView: View {
                         : String(localized: "Mark \(subtask.title) complete"))
                 TextField(String(localized: "Subtask"), text: subtaskTitle(subtask.id))
                     .textFieldStyle(.plain)
-                    .font(Theme.Typography.todosControl)
+                    .font(Theme.Typography.todosBody)
                     .foregroundStyle(Theme.Colors.textSecondary)
                 Button {
                     mutate { $0.removeSubtask(id: subtask.id) }
@@ -226,7 +226,7 @@ struct TodoEditorView: View {
             .accessibilityLabel(String(localized: "Add Subtask"))
             TextField(String(localized: "Add Subtask"), text: $newSubtaskTitle)
                 .textFieldStyle(.plain)
-                .font(Theme.Typography.todosControl)
+                .font(Theme.Typography.todosBody)
                 .onSubmit(addSubtask)
         }
         .frame(height: Theme.Size.barButtonHeight)

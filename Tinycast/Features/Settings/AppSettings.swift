@@ -343,6 +343,14 @@ final class AppSettings {
         didSet { defaults.set(notesEnabled, forKey: Key.notesEnabled.rawValue) }
     }
 
+    var planoteNotesEnabled: Bool {
+        didSet { defaults.set(planoteNotesEnabled, forKey: Key.planoteNotesEnabled.rawValue) }
+    }
+
+    var planoteServiceEnabled: Bool {
+        didSet { defaults.set(planoteServiceEnabled, forKey: Key.planoteServiceEnabled.rawValue) }
+    }
+
     var todosEnabled: Bool {
         didSet { defaults.set(todosEnabled, forKey: Key.todosEnabled.rawValue) }
     }
@@ -747,6 +755,10 @@ final class AppSettings {
             defaults.stringArray(forKey: Key.fileSearchIgnorePatterns.rawValue) ?? []
         notesEnabled = defaults.bool(forKey: Key.notesEnabled.rawValue)
         // Ships on: the todo list is a first-party surface, not an opt-in side feature.
+        planoteNotesEnabled = defaults.object(forKey: Key.planoteNotesEnabled.rawValue) == nil
+            || defaults.bool(forKey: Key.planoteNotesEnabled.rawValue)
+        planoteServiceEnabled = defaults.object(forKey: Key.planoteServiceEnabled.rawValue) == nil
+            || defaults.bool(forKey: Key.planoteServiceEnabled.rawValue)
         todosEnabled =
             defaults.object(forKey: Key.todosEnabled.rawValue) == nil
             || defaults.bool(forKey: Key.todosEnabled.rawValue)

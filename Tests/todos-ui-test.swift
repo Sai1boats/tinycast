@@ -69,9 +69,42 @@ struct TodosUITests {
         precondition(coordinator.editorDraft?.title == "Edited task title", "Hide preserves the draft")
         coordinator.cancelEditing()
         precondition(coordinator.editorDraft == nil && !coordinator.isShowingEditor)
+        window.orderOut(nil)
+        window.contentView = nil
+        try await focusBehavior(coordinator, task: snapshot.tasks[0])
         try await rowActions(snapshot.tasks[0])
         precondition(!FileManager.default.fileExists(atPath: paths.commandsDirectory.path), "No real task mutations")
         print("Todos: native list/edit/create, dark/light, default/minimum, field bindings and separate row actions passed")
+    }
+
+    static func focusBehavior(
+        _ coordinator: TodosCoordinator, task: TodoBridgeTask
+    ) async throws {
+        coordinator.show()
+        guard let panel = NSApp.windows.first(where: { $0 is TodosPanel && $0.isVisible }),
+              let root = panel.contentView else { preconditionFailure("Missing todo panel") }
+        defer { coordinator.hide(); panel.close() }
+        try await settle(root)
+        precondition(panel.firstResponder === panel, "Opening the list does not focus Refresh")
+        panel.selectNextKeyView(nil)
+        try await settle(root)
+        precondition(panel.firstResponder !== panel, "Tab still reaches the controls")
+        coordinator.hide()
+        coordinator.show()
+        try await settle(root)
+        precondition(panel.firstResponder === panel, "Reopening the list keeps actions unfocused")
+        coordinator.beginEditing(task)
+        try await settle(root)
+        precondition(!(panel.firstResponder is NSTextView), "Viewing a task does not select its title")
+        coordinator.cancelEditing()
+        try await settle(root)
+        coordinator.createTodo()
+        try await settle(root)
+        guard let title = fields(in: root).first(where: { $0.isEditable && $0.font?.pointSize == 22 }),
+              let editor = title.currentEditor() else { preconditionFailure("New title accepts typing") }
+        precondition(panel.firstResponder === editor, "A new task focuses its empty title")
+        precondition(editor.selectedRange.length == 0, "An empty title has only an insertion point")
+        coordinator.cancelEditing()
     }
 
     static func settle(_ root: NSView) async throws {
@@ -83,12 +116,12 @@ struct TodosUITests {
         let inputs = fields(in: root).filter(\.isEditable)
         precondition(inputs.contains { $0.stringValue == title }, "Title field mounts")
         precondition(editors(in: root).count == 1, "Exactly one native Markdown editor")
-        precondition(inputs.first { $0.stringValue == title }?.font?.pointSize == 27,
-                     "The title matches the HTML design's 27-point type")
+        precondition(inputs.first { $0.stringValue == title }?.font?.pointSize == 22,
+                     "Task titles use the balanced 22-point heading")
         precondition(editors(in: root).first?.font?.pointSize == 13,
-                     "Markdown matches the HTML design's 13-point type")
+                     "Markdown uses the 13-point body size")
         for input in inputs where input.stringValue != title {
-            precondition(input.font?.pointSize == 12, "Subtask inputs match the 12-point design")
+            precondition(input.font?.pointSize == 13, "Subtask inputs match the 13-point body")
         }
         for input in inputs {
             let frame = input.convert(input.bounds, to: root)

@@ -11,9 +11,8 @@ hotkey, with an in-panel task sheet for adding, editing and annotating tasks.
   `snapshot.json` and writes command files; every mutation is applied by the running Planote process
   through its existing `TodoStore`, so reminders, recurrence and persistence keep working untouched.
 - **The bridge runs headless.** A write with no Planote running launches the app with
-  `--todo-bridge-only`: no window, no Dock icon, no activation. The bridge starts from
-  `applicationDidFinishLaunching` (never a SwiftUI `onAppear`), so the process serves commands with no
-  UI. Opening Planote later hands the same process over to its visible window; the bridge never stops.
+  `--todo-bridge-only`: no window, no Dock icon, no activation. A dedicated accessory NSApplication starts the bridge from
+  `applicationDidFinishLaunching`, without constructing SwiftUI scenes or windows. Opening Planote later hands the same process over to its visible window; the bridge never stops.
 - **The bridge is the only contract between the apps.** Its wire schema is versioned independently of
   either app and is append-only; this doc and Planote's `docs/TODO_BRIDGE.md` describe the same v1.1.
   A field is never renamed or repurposed.
@@ -37,6 +36,9 @@ hotkey, with an in-panel task sheet for adding, editing and annotating tasks.
 - **Failure is inline and non-destructive.** There is no delete in v1. Offline, not-installed, launch
   timeout, persistence failure and validation errors are shown in the window (or the initiating view);
   no `DialogController` sheet is raised for a routine mirror failure.
+
+Settings → Planote can stop the shared background service. While stopped, todo writes are refused
+until Start Service is chosen; cached tasks remain readable. See [planote.md](planote.md).
 
 ## Storage and protocol
 
@@ -74,31 +76,36 @@ carry a user-readable message. A result always carries the snapshot revision tha
 `TodosPanel` is a titled, resizable, non-activating panel with its own behind-window HUD material.
 The title is drawn in SwiftUI inside a 52-point band, centred on the window; AppKit draws and seats the
 traffic lights (`todosTrafficLightInset`), and the band drags the window. Its trailing end is one quiet
-ink capsule: connection dot, connection word and a compact Refresh. The panel keeps its frame under the
-`"Todos Window"` autosave name and seats itself at the top right of the visible screen on a first run.
+ink capsule: a connection dot and compact Refresh. The dot exposes its status through a tooltip and
+accessibility label. The panel keeps its frame under the `"Todos Window"` autosave name and seats
+itself at the top right of the visible screen on a first run.
 
-The Task Sheet design uses one 28-point inset (`Spacing.xxxl`). A rounded 30-point “My Todos”
+The Task Sheet design uses one 28-point inset (`Spacing.xxxl`). A rounded 22-point “My Todos”
 heading leads the list, with the open count on its trailing edge. Planote board sections retain their
 order, inbox first, under compact semibold headings. Rows pair a separate completion control with a
-15-point task title and a second line of due date, named label and subtask count. Notes stay in the
+14-point task title and a second line of due date, named label and subtask count. Notes stay in the
 editor, leaving the list easy to scan. An overdue glyph accompanies the date; hover is the only row
 fill. Empty and unavailable states remain inline, and connection failures leave cached rows visible.
 
-Editing replaces the list inside the same panel. A quiet back control precedes the rounded 27-point
+Editing replaces the list inside the same panel. A quiet back control precedes the rounded 22-point
 editable title and a 118-point Markdown text editor. Both sit directly on the panel material. A compact
 property block, ruled only at its top and bottom, holds the optional due date, board section and label.
 The date switch preserves the existing enable/disable behavior and reveals a full date/time picker.
 Subtasks follow as plain editable rows, with separate complete/remove actions and a final add row.
 There are no nested form cards. Content scrolls at the minimum 420×480 size; the footer stays visible.
+Opening the list leaves its controls unfocused until keyboard or pointer navigation. Existing tasks
+open without selecting their title; only a new task automatically focuses its empty title.
 
 `TodoStatusCaption` shows connection status on the list and draft guidance in the editor, replaced by
-progress during a command. The list footer ends in Completed, Open Planote and New Todo. Editing ends
-in Cancel and Save Changes (Create Todo for a new task), using feature-local capsule buttons. An empty
+progress during a command. The list footer ends in three equally sized icon buttons: Completed,
+Open Planote and New Todo. Each has a tooltip and accessibility label; the completed filter uses a
+filled checkmark when active. Editing ends in Cancel and Save Changes (Create Todo for a new task),
+using feature-local capsule buttons. An empty
 title or an in-flight command disables save. Escape cancels the editor before hiding, and neither hide
 nor a failed save discards the draft. Text follows the shared ink ramp. The local HUD backdrop blurs
 behind the window under a light adaptive slate tint, remaining active when the panel loses focus.
-Typography matches the HTML design explicitly: title 27, notes 13, subtasks/actions 12, property labels
-11 and metadata/status 10 points. These fonts, backdrop tints, geometry and action ink live in `Theme`.
+Typography uses a compact scale: headings 22, task rows 14, notes/subtasks 13, properties/actions 12
+and metadata/status 11 points. These fonts, backdrop tints, geometry and action ink live in `Theme`.
 
 ### Focused UI verification
 
@@ -106,7 +113,7 @@ Typography matches the HTML design explicitly: title 27, notes 13, subtasks/acti
 model and the shipped native list/editor views. The UI harness reads a private temporary snapshot, never the user's Planote data.
 It checks list/edit/create in Dark and Light at 480×700 and 420×480, title/Markdown bindings, empty-title
 save validation, hide/cancel draft behavior, independent completion/open actions, native input font
-sizes and behind-window material configuration. Set
+sizes, behind-window material configuration and initial/reopened keyboard focus. Set
 `TINYCAST_TODO_PREVIEW_DIRECTORY` to export the twelve native view PNGs for inspection.
 
 ## Commands and settings

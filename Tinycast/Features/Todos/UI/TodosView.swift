@@ -44,18 +44,12 @@ struct TodosView: View {
 
     private var statusCapsule: some View {
         HStack(spacing: Theme.Spacing.xxs) {
-            HStack(spacing: Theme.Spacing.xs) {
-                Circle()
-                    .fill(statusDot)
-                    .frame(width: Theme.Size.colorDot, height: Theme.Size.colorDot)
-                    .accessibilityHidden(true)
-                Text(statusWord)
-                    .font(Theme.Typography.todosMetadata)
-                    .foregroundStyle(Theme.Colors.textSecondary)
-                    .lineLimit(1)
-            }
-            .padding(.leading, Theme.Spacing.md)
-            .accessibilityLabel(statusWord)
+            Circle()
+                .fill(statusDot)
+                .frame(width: Theme.Size.colorDot, height: Theme.Size.colorDot)
+                .padding(.leading, Theme.Spacing.md)
+                .accessibilityLabel(statusWord)
+                .help(statusWord)
             BarButton(isCompact: true, action: refresh) {
                 SymbolImage(name: "arrow.clockwise", size: Theme.Size.noteGlyph)
             }
@@ -303,38 +297,34 @@ struct TodosView: View {
     }
 
     private var footer: some View {
-        HStack(spacing: Theme.Spacing.xs) {
+        HStack(spacing: Theme.Spacing.md) {
             TodoStatusCaption()
-            Spacer(minLength: Theme.Spacing.xs)
+            Spacer(minLength: Theme.Spacing.md)
             Button(action: todos.toggleCompletedVisibility) {
-                Text(String(localized: "Completed"))
-                    .foregroundStyle(todos.isShowingCompleted
-                        ? Theme.Colors.textPrimary : Theme.Colors.textSecondary)
-                    .padding(.horizontal, Theme.Spacing.sm)
-                    .frame(height: Theme.Size.todosActionHeight)
-                    .background(Capsule().fill(
-                        todos.isShowingCompleted ? Theme.Colors.rowHover : Color.clear))
+                SymbolImage(
+                    name: todos.isShowingCompleted ? "checkmark.circle.fill" : "checkmark.circle",
+                    size: Theme.Size.utilityGlyph)
             }
-            .buttonStyle(.plain)
-            .font(Theme.Typography.todosControl)
+            .buttonStyle(TodoActionButtonStyle(isIconOnly: true))
             .accessibilityLabel(String(localized: "Show completed tasks"))
             .accessibilityValue(todos.isShowingCompleted
                 ? String(localized: "On") : String(localized: "Off"))
+            .accessibilityIdentifier("todo-show-completed")
+            .help(String(localized: "Show completed tasks"))
             Button(action: todos.openPlanote) {
                 SymbolImage(name: "arrow.up.forward.square", size: Theme.Size.utilityGlyph)
-                    .frame(width: Theme.Size.todosActionHeight, height: Theme.Size.todosActionHeight)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(TodoActionButtonStyle(isIconOnly: true))
             .accessibilityLabel(String(localized: "Open Planote"))
+            .accessibilityIdentifier("todo-open-planote")
             .help(String(localized: "Open Planote"))
             Button(action: todos.createTodo) {
-                HStack(spacing: Theme.Spacing.xs) {
-                    SymbolImage(name: "plus", size: Theme.Size.utilityGlyph)
-                    Text(String(localized: "New Todo"))
-                }
+                SymbolImage(name: "plus", size: Theme.Size.utilityGlyph)
             }
-            .buttonStyle(TodoActionButtonStyle())
+            .buttonStyle(TodoActionButtonStyle(isIconOnly: true))
+            .accessibilityLabel(String(localized: "New Todo"))
             .accessibilityIdentifier("todo-create")
+            .help(String(localized: "New Todo"))
         }
         .padding(.horizontal, Theme.Spacing.xxxl)
         .frame(height: Theme.Size.bottomBarHeight)

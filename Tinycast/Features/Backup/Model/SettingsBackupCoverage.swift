@@ -77,6 +77,8 @@ enum SettingsBackupCoverage {
 
     /// Keys kept out of a backup on purpose, each with the reason it has to stay out.
     static let deliberatelyExcluded: [String: String] = [
+        AppSettingsKey.planoteServiceEnabled.rawValue: "Planote service and note access are local to this Mac.",
+        AppSettingsKey.planoteNotesEnabled.rawValue: "Planote service and note access are local to this Mac.",
         AppSettingsKey.dictationEnabled.rawValue:
             "Microphone capture is an opt-in capability on this Mac; a backup must not enable it.",
         AppSettingsKey.dictationMode.rawValue: "Dictation preferences stay local until backup supports them.",

@@ -123,6 +123,10 @@ text over pipes. The coordinator keeps microphone capture, UI and insertion in T
 store starts the helper on demand and reaps it after the selected idle delay or a model switch.
 `AppCore` owns the audio ducker and starts volume recovery on every launch, even when Dictation is off.
 
+`AppCore.planoteCoordinator` owns the Planote note editor, draft session and title index. A shared
+`planoteBridge` handles process launch/stop for both notes and todos; Planote remains the database
+owner. See [features/planote.md](features/planote.md).
+
 ## Entry points and windows
 
 `TinycastApp` (`@main`) declares only two `MenuBarExtra` scenes — Tinycast's own item and the

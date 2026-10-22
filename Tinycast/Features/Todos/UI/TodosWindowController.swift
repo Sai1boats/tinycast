@@ -23,6 +23,9 @@ final class TodosWindowController: NSObject, NSWindowDelegate {
         panel.contentView?.layoutSubtreeIfNeeded()
         if focus {
             panel.makeKeyAndOrderFront(nil)
+            if !coordinator.isShowingEditor {
+                panel.makeFirstResponder(nil)
+            }
         }
         panel.orderFrontRegardless()
         seatTrafficLights(in: panel)

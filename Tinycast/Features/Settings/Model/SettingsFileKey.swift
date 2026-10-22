@@ -74,6 +74,9 @@ enum SettingsFileKey: String, CaseIterable, Sendable {
     case notesCommands = "notes.commands"
     case todosEnabled = "todos.enabled"
     case todosCommands = "todos.commands"
+
+    case planoteNotesEnabled = "planote.notesEnabled"
+    case planoteServiceEnabled = "planote.serviceEnabled"
     case snippetsShowInLauncher = "snippets.showInLauncher"
     case snippetsFolder = "snippets.folder"
     case snippetsCommands = "snippets.commands"

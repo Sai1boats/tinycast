@@ -133,6 +133,12 @@ final class LauncherCoordinator {
             extensionCoordinator.runExtensionCommand(app, arguments: arguments)
             return
         }
+        if app.kind == .planoteNote {
+            guard let id = UUID(uuidString: String(app.id.dropFirst("planote-note:".count))) else { return }
+            paletteCoordinator.hidePalette(restoreFocus: false)
+            core.planoteCoordinator.open(id)
+            return
+        }
         if app.kind == .meeting {
             guard let id = MeetingEvent.id(fromEntryID: app.id) else { return }
             calendarCoordinator.activateMeeting(id: id)
@@ -161,7 +167,7 @@ final class LauncherCoordinator {
             guard let snippetID = StoredSnippet.id(fromEntryID: app.id) else { return }
             snippetCoordinator.expandSnippet(id: snippetID, target: previous)
         case .command, .quickAction, .customCommand, .systemAction, .windowCommand, .windowLayout,
-            .windowRoom, .quicklink, .appleShortcut, .extensionCommand, .meeting:
+            .windowRoom, .quicklink, .appleShortcut, .extensionCommand, .meeting, .planoteNote:
             break  // handled above
         }
     }

@@ -22,6 +22,7 @@ struct SettingsDetailView: View {
             case .fileSearch: FileSearchSettingsView()
             case .notes: NotesSettingsView()
             case .todos: TodosSettingsView()
+            case .planote: PlanoteSettingsView()
             case .snippets: SnippetsSettingsView()
             case .navigation: NavigationSettingsView()
             case .windowManagement: WindowManagementSettingsView()

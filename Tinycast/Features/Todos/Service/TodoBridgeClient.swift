@@ -12,6 +12,7 @@ final class TodoBridgeClient {
     }
 
     enum SendError: Error, Equatable {
+        case serviceStopped
         case planoteNotInstalled
         case launchTimedOut
         case resultTimedOut
@@ -23,6 +24,10 @@ final class TodoBridgeClient {
     private static let fallbackPlanotePath = "/Applications/Planote.app"
     private static let bridgeOnlyArgument = "--todo-bridge-only"
     private static let livenessMaxAge: TimeInterval = 10
+
+    var allowsBackgroundLaunch: () -> Bool = { true }
+
+    private var launchTask: Task<Bool, Never>?
 
     private let paths: TodoBridgePaths
     private let store: TodoBridgeFileStore
@@ -76,27 +81,40 @@ final class TodoBridgeClient {
 
     /// Bridge-only open: Planote must come up without stealing focus or the frontmost app.
     func launchPlanoteInBackground() async -> Bool {
-        guard let appURL = planoteAppURL else { return false }
-        if isLive() { return true }
-        let configuration = NSWorkspace.OpenConfiguration()
-        configuration.activates = false
-        configuration.addsToRecentItems = false
-        configuration.createsNewApplicationInstance = false
-        configuration.arguments = [Self.bridgeOnlyArgument]
-        do {
-            _ = try await NSWorkspace.shared.openApplication(
-                at: appURL, configuration: configuration)
-        } catch {
-            return false
+        guard allowsBackgroundLaunch() else { return false }
+        if let launchTask { return await launchTask.value }
+        let task = Task { [weak self] in
+            guard let self else { return false }
+            return await launchAndWait()
+        }
+        launchTask = task
+        let result = await task.value
+        launchTask = nil
+        return result
+    }
+
+    private func launchAndWait() async -> Bool {
+        guard allowsBackgroundLaunch(), let appURL = planoteAppURL else { return false }
+        if isLive(), isPlanoteRunning { return true }
+        if !isPlanoteRunning {
+            let configuration = NSWorkspace.OpenConfiguration()
+            configuration.activates = false
+            configuration.addsToRecentItems = false
+            configuration.createsNewApplicationInstance = false
+            configuration.arguments = [Self.bridgeOnlyArgument]
+            do {
+                let app = try await NSWorkspace.shared.openApplication(at: appURL, configuration: configuration)
+                guard allowsBackgroundLaunch(), !Task.isCancelled else {
+                    app.terminate()
+                    return false
+                }
+            } catch { return false }
         }
         let deadline = Date.now.addingTimeInterval(20)
         while Date.now < deadline {
+            guard allowsBackgroundLaunch(), !Task.isCancelled else { return false }
             if isLive() { return true }
-            do {
-                try await Task.sleep(for: .milliseconds(200))
-            } catch {
-                return false
-            }
+            do { try await Task.sleep(for: .milliseconds(200)) } catch { return false }
         }
         return isLive()
     }
@@ -119,6 +137,7 @@ final class TodoBridgeClient {
         _ command: TodoBridgeCommand,
         timeout: Duration = .seconds(12)
     ) async throws -> TodoBridgeResult {
+        guard allowsBackgroundLaunch() else { throw SendError.serviceStopped }
         guard planoteAppURL != nil else { throw SendError.planoteNotInstalled }
         if !isLive() {
             let launched = await launchPlanoteInBackground()
@@ -128,6 +147,8 @@ final class TodoBridgeClient {
                 throw SendError.launchTimedOut
             }
         }
+        try Task.checkCancellation()
+        guard allowsBackgroundLaunch() else { throw SendError.serviceStopped }
         try store.writeCommand(command)
         let clock = ContinuousClock()
         let resultDeadline = clock.now.advanced(by: timeout)
@@ -144,6 +165,12 @@ final class TodoBridgeClient {
             throw SendError.commandRejected(code: result.errorCode, message: result.errorMessage)
         }
         return try await awaitPublishedRevision(result, clock: clock)
+    }
+
+    func terminatePlanote() -> Bool {
+        launchTask?.cancel()
+        let apps = NSRunningApplication.runningApplications(withBundleIdentifier: Self.planoteBundleID)
+        return apps.map { $0.terminate() }.allSatisfy { $0 }
     }
 
     private var planoteVersion: String? {

@@ -2,7 +2,7 @@ import Foundation
 
 enum SettingsTab: CaseIterable, Identifiable {
     case general, applications, systemSettings, systemActions, commands, quicklinks, appleShortcuts,
-        fallbacks, clipboard, snippets, fileSearch, windowManagement, navigation, notes, todos,
+        fallbacks, clipboard, snippets, fileSearch, windowManagement, navigation, notes, todos, planote,
         calendar, emoji, dictation, ai, quickActions, extensions, permissions, backup, about
     /// The case, never an index: a selectable `List` flattens section and row IDs together.
     var id: Self { self }
@@ -25,6 +25,7 @@ enum SettingsTab: CaseIterable, Identifiable {
         case .fileSearch: return "File Search"
         case .notes: return "Notes"
         case .todos: return "Todos"
+        case .planote: return "Planote"
         case .snippets: return "Snippets"
         case .navigation: return "Navigation"
         case .windowManagement: return "Window Management"
@@ -54,6 +55,7 @@ enum SettingsTab: CaseIterable, Identifiable {
         case .fileSearch: return "doc.text.magnifyingglass"
         case .notes: return "text.page"
         case .todos: return "checklist"
+        case .planote: return "text.book.closed"
         case .snippets: return "curlybraces"
         case .navigation: return "arrow.left.arrow.right"
         case .windowManagement: return "macwindow"
@@ -96,7 +98,7 @@ enum SettingsSection: CaseIterable, Identifiable {
         case .features:
             // Everyday tools first; AI and extensions are opt-in extras.
             return [
-                .clipboard, .snippets, .fileSearch, .windowManagement, .navigation, .notes, .todos,
+                .clipboard, .snippets, .fileSearch, .windowManagement, .navigation, .notes, .todos, .planote,
                 .calendar, .emoji, .dictation, .ai, .quickActions, .extensions
             ]
         case .advanced: return [.backup, .about]
