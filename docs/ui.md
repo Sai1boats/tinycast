@@ -177,6 +177,10 @@ Notes adds `noteWindow 440×180` (opening size on a first run, and the floor), `
 `noteTitlebar 44`, `noteTitleInset 120`, `noteEditorInset 16`, `noteSearchHeight 34`,
 `noteFooterHeight 28`, `noteGlyph 16`, `noteEmptyGlyph 28`, and `noteHeadingMenu 220×159`.
 
+Todos adds `todosWindow 480×700` (opening size), `todosWindowMinimum 420×480`, `todosTitlebar 52`,
+`todosTitleInset 120`, `todosTrafficLightInset 20`, `todosRowMinHeight 44`, `todosRowGlyph 12`,
+`todosNotesEditorHeight 118`, `todosPropertyHeight 36`, `todosActionHeight 34` and `todosEmptyGlyph 28`.
+
 AI Chat adds `aiChatWindow 960×660` (opening size), `aiChatWindowMinimum 680×440`, a sidebar of
 `aiChatSidebarMinimum 240`–`aiChatSidebarMaximum 340`, `aiChatDetailMinimum 440`,
 `aiChatReadingWidth 760` for the transcript and composer column, a composer of at most
@@ -390,6 +394,46 @@ than adding another toolbar or window.
 The switcher exposes activation, Rename, and Move to Trash as VoiceOver actions with the actual note
 title. Its hover buttons are hidden from accessibility so those actions are announced once. See
 [features/notes.md](features/notes.md).
+
+## Planote notes
+
+Planote results open a separate floating editor using Notes' TextKit 2 Markdown surface. Its native
+window surface, title field, quiet open-in-Planote action and one bottom status/action group share
+both appearances and support 660 × 580 and 440 × 350 sizes. Source rendering, save and recovery are
+available from the footer. Attachment notices and conflicts stay inline. See [features/planote.md](features/planote.md).
+
+## Todos panel
+
+Source: `Features/Todos/UI/`.
+
+Todos is a titled, non-activating panel with a centred title and native traffic lights. Its local
+`TodoBackdropView` uses the HUD material with `.behindWindow` blending, so the desktop is blurred
+through the sheet. A light adaptive slate tint replaces the shared panel scrim; one continuous
+`panel` clip rounds the surface. The material remains active when focus moves elsewhere and respects
+system accessibility settings. Its 52-point title band ends in a status dot and Refresh capsule.
+The dot has no visible text; its tooltip and accessibility label name the current connection state.
+
+The **Task Sheet / 任务手记** layout uses a single 28-point `xxxl` inset throughout. A rounded
+22-point list heading sits above Planote's board sections, with an open-task count opposite it.
+Rows place a 14-point title above compact due-date, named-label and subtask metadata. Completion is a
+separate button from opening the task. Notes appear in the editor rather than as list previews.
+
+The editor is a flat writing sheet: quiet Back, a rounded 22-point title field, a 118-point Markdown
+editor, a compact property block and plain subtask rows. Only the property block has top/bottom rules;
+there are no filled form cards. Due Date keeps its enable switch and date/time picker; Section and
+Label use their existing choices. The body scrolls, while the footer stays fixed at every window size.
+
+Status occupies the footer's leading edge, and all actions align at the trailing edge. The list has
+three matching 34-point icon buttons for Completed / Open Planote / New Todo, with tooltips and
+accessibility labels. The editor has Cancel / Save Changes, or Create Todo. Local
+`TodoActionButtonStyle` draws neutral capsules and a high-contrast primary save button. The main panel
+uses dedicated adaptive backdrop tints; text uses the shared ink ramp. `todosActionInk` is only the
+primary button's ink. The type scale keeps headings at 22, task rows at 14, notes/subtasks at 13,
+properties/section headings/actions at 12 and metadata/status at 11 points. Todos typography and
+dimensions live in `Theme`; none changes another feature's appearance.
+
+Behavior remains the coordinator's: same Escape/⌘W/autosave and draft retention, same bridge commands.
+See [features/todos.md](features/todos.md) for the focused native UI harness.
 
 ---
 

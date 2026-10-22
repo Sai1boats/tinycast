@@ -113,6 +113,21 @@ enum Theme {
         static let noteTitleInset: CGFloat = 120
         /// Nine points crowds the palette's 26-point corner, so Notes seats its lights further in.
         static let noteTrafficLightInset: CGFloat = 20
+        /// Opening size for the todo panel; it scrolls past this height rather than growing.
+        static let todosWindow = CGSize(width: 480, height: 700)
+        static let todosWindowMinimum = CGSize(width: 420, height: 480)
+        static let todosTitlebar: CGFloat = 52
+        static let todosTitleInset: CGFloat = 120
+        static let todosTrafficLightInset: CGFloat = 20
+        static let todosRowMinHeight: CGFloat = 44
+        static let todosNotesEditorHeight: CGFloat = 118
+        static let todosNotesTextInset: CGFloat = 5
+        static let todosNotesLineSpacing: CGFloat = 7
+        static let todosPropertyHeight: CGFloat = 36
+        static let todosActionHeight: CGFloat = 34
+        /// A row's trailing marks: the overdue glyph and the subtask count.
+        static let todosRowGlyph: CGFloat = 12
+        static let todosEmptyGlyph: CGFloat = 28
         /// Fraction of visible height above the palette's top edge; it grows downward.
         static let paletteTopMarginFraction: CGFloat = 0.18
         static let headerHeight: CGFloat = 44
@@ -434,6 +449,13 @@ enum Theme {
         static let menuSymbolSize: CGFloat = 14
         static let menuSymbolWeight = Font.Weight.medium
         static let noteTitle = Font.headline
+        static let todosHeading = Font.system(size: 22, weight: .semibold, design: .rounded)
+        static let todosEditorTitle = Font.system(size: 22, weight: .medium, design: .rounded)
+        static let todosRowTitle = Font.system(size: 14, weight: .medium)
+        static let todosBody = Font.system(size: 13)
+        static let todosControl = Font.system(size: 12)
+        static let todosDetail = Font.system(size: 12)
+        static let todosMetadata = Font.system(size: 11)
         static let utilityTitle = Font.title3.weight(.medium)
         static let utilityPaneTitle = Font.caption.weight(.medium)
         @MainActor static let utilityEditorNSFont = NSFont.monospacedSystemFont(
@@ -507,6 +529,13 @@ enum Theme {
         static let border = ramp(dark: 0.20, light: 0.18)
         /// Alpha 1, so a call site can dim it with `.opacity` and land on the value it replaced.
         static let textPrimary = ramp(dark: 1.0, light: 1.0)
+        static let todosTintTop = adaptive(
+            dark: NSColor(srgbRed: 60 / 255, green: 67 / 255, blue: 72 / 255, alpha: 0.24),
+            light: NSColor(srgbRed: 245 / 255, green: 248 / 255, blue: 250 / 255, alpha: 0.16))
+        static let todosTintBottom = adaptive(
+            dark: NSColor(srgbRed: 48 / 255, green: 56 / 255, blue: 66 / 255, alpha: 0.20),
+            light: NSColor(srgbRed: 230 / 255, green: 237 / 255, blue: 242 / 255, alpha: 0.14))
+        static let todosActionInk = adaptive(dark: .srgbInk(0, alpha: 0.85), light: .srgbInk(1, alpha: 1))
         static let textSecondary = ramp(dark: 0.60, light: 0.60)
         static let textTertiary = ramp(dark: 0.40, light: 0.42)
         static let menuSymbol = ramp(dark: 0.70, light: 0.70)

@@ -113,7 +113,7 @@ enum SettingsSearchCatalog {
     static let entries: [SettingsSearchEntry] =
         general + applications + systemSettings + systemActions + commands + quicklinks
         + appleShortcuts + fallbacks + clipboard + snippets + fileSearch + windowManagement
-        + navigation + notes + calendar + emoji + ai + quickActions + dictation + extensions + permissions
+        + navigation + notes + todos + planote + calendar + emoji + ai + quickActions + dictation + extensions + permissions
         + backup + about
 
     private static let general: [SettingsSearchEntry] = [
@@ -392,6 +392,25 @@ enum SettingsSearchCatalog {
         .init(
             group: .notesCommands, "Notes commands",
             keywords: ["shortcut", "new note", "search notes"])
+    ]
+
+    private static let planote: [SettingsSearchEntry] = [
+        .init(pane: .planote, keywords: ["planote", "笔记", "后台", "服务"]),
+        .init(.planoteNotes, "Search Planote Notes", keywords: ["notes", "search", "edit"]),
+        .init(group: .planoteService, "Background Service", keywords: ["start", "stop", "headless"])
+    ]
+
+    private static let todos: [SettingsSearchEntry] = [
+        .init(pane: .todos, keywords: ["todo", "task", "planote", "checklist"]),
+        .init(
+            .todosTodos, "Enable Todos",
+            keywords: ["todo", "task", "checklist", "planote"]),
+        .init(
+            .todosOptions, "Planote Connection",
+            keywords: ["bridge", "sync", "status", "path", "folder"]),
+        .init(
+            group: .todosCommands, "Todos commands",
+            keywords: ["shortcut", "new todo", "show todos"])
     ]
 
     private static let snippets: [SettingsSearchEntry] = [

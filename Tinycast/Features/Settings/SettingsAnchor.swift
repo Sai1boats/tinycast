@@ -61,9 +61,16 @@ extension SettingsAnchor {
     static let fileSearchSearchScopes = Self(tab: .fileSearch, title: "Search Scopes")
     static let fileSearchIgnorePatterns = Self(tab: .fileSearch, title: "Ignore Patterns")
 
+    static let planoteNotes = Self(tab: .planote, title: "Planote Notes")
+    static let planoteService = Self(tab: .planote, title: "Background Service")
+
     static let notesNotes = Self(tab: .notes, title: "Notes")
     static let notesOptions = Self(tab: .notes, title: "Options")
     static let notesCommands = Self(tab: .notes, title: "Commands")
+
+    static let todosTodos = Self(tab: .todos, title: "Todos")
+    static let todosOptions = Self(tab: .todos, title: "Options")
+    static let todosCommands = Self(tab: .todos, title: "Commands")
 
     static let snippetsSnippets = Self(tab: .snippets, title: "Snippets")
     static let snippetsCommands = Self(tab: .snippets, title: "Commands")

@@ -16,6 +16,7 @@ struct AppEntry: Identifiable, Hashable, Sendable {
         case appleShortcut
         case extensionCommand
         case meeting
+        case planoteNote
 
         var descriptor: KindDescriptor {
             switch self {
@@ -91,6 +92,11 @@ struct AppEntry: Identifiable, Hashable, Sendable {
                 return KindDescriptor(
                     label: String(localized: "Extension"), sectionTitle: String(localized: "Extensions"),
                     openVerb: String(localized: "Run Command"), canHideFromSearch: true,
+                    canRevealInFinder: false, canDragOut: false, isSymbolIcon: true, rankPriority: 3)
+            case .planoteNote:
+                return KindDescriptor(
+                    label: "Planote", sectionTitle: String(localized: "Planote Notes"),
+                    openVerb: String(localized: "Open Note"), canHideFromSearch: false,
                     canRevealInFinder: false, canDragOut: false, isSymbolIcon: true, rankPriority: 3)
             case .meeting:
                 return KindDescriptor(
@@ -214,7 +220,7 @@ struct AppEntry: Identifiable, Hashable, Sendable {
             return AppleShortcut.id(fromEntryID: id).map { .appleShortcut(id: $0) }
         case .snippet:
             return StoredSnippet.id(fromEntryID: id).map { .snippet(id: $0) }
-        case .extensionCommand, .meeting:
+        case .extensionCommand, .meeting, .planoteNote:
             return nil
         }
     }
@@ -250,6 +256,7 @@ struct AppEntry: Identifiable, Hashable, Sendable {
         case .windowLayout: return WindowLayout.sfSymbol
         case .windowRoom: return Room.sfSymbol
         case .meeting: return "video.fill"
+        case .planoteNote: return "text.page"
         case .application, .systemSettings, .appleShortcut, .extensionCommand: return "questionmark"
         }
     }
@@ -413,6 +420,7 @@ final class AppIndex {
     private var windowLayoutEntries: [AppEntry] = []
     private var windowRoomEntries: [AppEntry] = []
     private var quicklinkEntries: [AppEntry] = []
+    private var planoteNoteEntries: [AppEntry] = []
     private var appleShortcutEntries: [AppEntry] = []
     private var customQuickActionEntries: [AppEntry] = []
     private var extensionEntries: [AppEntry] = []
@@ -504,6 +512,18 @@ final class AppIndex {
     }
 
     /// Discovered from the Shortcuts app, so it arrives already built and sorted.
+    func setPlanoteNotes(_ notes: [PlanoteNoteSummary]) {
+        let entries = notes.map { note in
+            AppEntry(
+                id: "planote-note:" + note.id.uuidString, name: note.title,
+                url: URL(filePath: "/"), bundleID: nil, kind: .planoteNote,
+                settingsOwner: .planote, ownerName: "Planote")
+        }
+        guard entries != planoteNoteEntries else { return }
+        planoteNoteEntries = entries
+        publishEntries()
+    }
+
     func setAppleShortcuts(_ entries: [AppEntry]) {
         guard entries != appleShortcutEntries else { return }
         appleShortcutEntries = entries
@@ -693,7 +713,7 @@ final class AppIndex {
         let updated =
             Self.named(meetingEntries) + discoveredEntries
             + Self.named(
-                extensionEntries + quicklinkEntries + appleShortcutEntries + snippetEntries
+                extensionEntries + quicklinkEntries + appleShortcutEntries + planoteNoteEntries + snippetEntries
                     + Self.systemActionEntries + windowLayoutEntries + windowRoomEntries
                     + windowCommandEntries
                     + customWindowSizeEntries + customCommandEntries + quickActionEntries

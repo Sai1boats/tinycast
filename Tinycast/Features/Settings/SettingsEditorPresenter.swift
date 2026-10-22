@@ -409,6 +409,7 @@ extension View {
             .environment(navigation)
             .environment(core)
             .environment(core.settings)
+            .environment(core.planoteCoordinator)
             .environment(core.dictationCoordinator)
             .environment(core.appIndex)
             .environment(core.hotKeys)

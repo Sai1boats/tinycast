@@ -35,6 +35,10 @@ in `Features/Settings/` (`Model/`, `Service/`, `SettingsFileSchema.swift`), the 
 `quicklinks`, `snippets`, `customCommands` and `dictionary`. Selecting a disabled feature does not
 enable it, and Tab stays at root until that feature is enabled.
 
+`planote.notesEnabled` controls note title search and `planote.serviceEnabled` permits on-demand
+background service starts. Turning the latter off stops Planote, including its visible workspace.
+Both are local preferences excluded from settings backups.
+
 ## Layout
 
 | File | Role |

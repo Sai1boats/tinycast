@@ -170,6 +170,16 @@ final class AppCore {
         saveFormattingBarExpanded: {
             UserDefaults.standard.set($0, forKey: Self.noteFormattingBarKey)
         })
+    @ObservationIgnored private(set) lazy var planoteBridge: TodoBridgeClient = {
+        let bridge = TodoBridgeClient(
+            paths: TodoBridgePaths(homeDirectory: FileManager.default.homeDirectoryForCurrentUser))
+        bridge.allowsBackgroundLaunch = { [weak self] in self?.settings.planoteServiceEnabled == true }
+        return bridge
+    }()
+    @ObservationIgnored private(set) lazy var planoteCoordinator = PlanoteCoordinator(
+        settings: settings, index: appIndex, bridge: planoteBridge)
+    @ObservationIgnored private(set) lazy var todosCoordinator = TodosCoordinator(
+        bridge: planoteBridge, settings: settings, appIndex: appIndex, core: self)
 
     @ObservationIgnored private(set) lazy var launcherCoordinator = LauncherCoordinator(
         ranking: launcherRanking, windowController: windowController,
@@ -294,6 +304,8 @@ final class AppCore {
             menuSearchCoordinator.applyEnabled()
             fileSearchCoordinator.applyPolicy()
             notesCoordinator.applyEnabled()
+            todosCoordinator.applyEnabled()
+            planoteCoordinator.applyEnabled()
             installedAI.launchSettings = { [aiSettings] in aiSettings.launch(for: $0) }
             chatGPTSubscription.launchSettings = { [aiSettings] in aiSettings.launch(for: .codex) }
             aiChatCoordinator.applyEnabled()
@@ -330,6 +342,7 @@ final class AppCore {
             appleShortcutCoordinator.applyPresence()
             paletteCoordinator.onLauncherShown = { [weak self] in
                 self?.appleShortcutCoordinator.refresh()
+                self?.planoteCoordinator.refresh(startIfNeeded: true)
             }
             paletteCoordinator.onScreenOpening = { [weak self] mode in
                 switch mode {
@@ -508,6 +521,7 @@ final class AppCore {
 
     func flushNotesForTermination() async {
         await notesCoordinator.prepareForTermination()
+        await planoteCoordinator.prepareForTermination()
     }
 
     func stopDictationForTermination() async {
@@ -664,6 +678,9 @@ final class AppCore {
                 $0.menuSearchCoordinator.applyEnabled()
             })
         track({ _ = $0.notesEnabled }, reproject: { $0.notesCoordinator.applyEnabled() })
+        track({ _ = $0.planoteServiceEnabled }, reproject: { $0.planoteCoordinator.applyServiceEnabled() })
+        track({ _ = $0.planoteNotesEnabled }, reproject: { $0.planoteCoordinator.applyEnabled() })
+        track({ _ = $0.todosEnabled }, reproject: { $0.todosCoordinator.applyEnabled() })
         track({ _ = $0.aiEnabled }, reproject: { $0.aiChatCoordinator.applyEnabled() })
         track(
             { _ = $0.dictationIdleRelease },
