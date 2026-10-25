@@ -111,7 +111,7 @@ enum SettingsSearchCatalog {
     static let entries: [SettingsSearchEntry] =
         general + applications + systemSettings + systemActions + commands + quicklinks
         + appleShortcuts + fallbacks + clipboard + snippets + fileSearch + windowManagement
-        + navigation + notes + todos + planote + calendar + emoji + ai + quickActions + dictation + extensions + permissions
+        + navigation + notes + planote + calendar + emoji + ai + quickActions + dictation + extensions + permissions
         + backup + about
 
     private static let general: [SettingsSearchEntry] = [
@@ -407,21 +407,17 @@ enum SettingsSearchCatalog {
     ]
 
     private static let planote: [SettingsSearchEntry] = [
-        .init(pane: .planote, keywords: ["planote", "笔记", "后台", "服务"]),
+        .init(pane: .planote, keywords: ["planote", "notes", "todo", "task", "笔记", "待办", "后台", "服务"]),
         .init(.planoteNotes, "Search Planote Notes", keywords: ["notes", "search", "edit"]),
-        .init(group: .planoteService, "Background Service", keywords: ["start", "stop", "headless"])
-    ]
-
-    private static let todos: [SettingsSearchEntry] = [
-        .init(pane: .todos, keywords: ["todo", "task", "planote", "checklist"]),
+        .init(group: .planoteService, "Background Service", keywords: ["start", "stop", "headless"]),
         .init(
-            .todosTodos, "Enable Todos",
-            keywords: ["todo", "task", "checklist", "planote"]),
+            .planoteTodos, "Enable Todos",
+            keywords: ["todo", "task", "checklist", "planote", "待办"]),
         .init(
-            .todosOptions, "Planote Connection",
+            .planoteConnection, "Planote Connection",
             keywords: ["bridge", "sync", "status", "path", "folder"]),
         .init(
-            group: .todosCommands, "Todos commands",
+            group: .planoteCommands, "Todos commands",
             keywords: ["shortcut", "new todo", "show todos"])
     ]
 

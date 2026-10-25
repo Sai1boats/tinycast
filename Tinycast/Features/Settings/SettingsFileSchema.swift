@@ -100,7 +100,7 @@ enum SettingsFileSchema {
         case .planoteNotesEnabled: return bind(settings, \.planoteNotesEnabled)
         case .planoteServiceEnabled: return bind(settings, \.planoteServiceEnabled)
         case .todosEnabled: return bind(settings, \.todosEnabled)
-        case .todosCommands: return launcher.commandsBinding(for: key, owner: .todos)
+        case .todosCommands: return launcher.commandsBinding(for: key, owner: .planote)
         case .dictationMode: return bind(settings, \.dictationMode)
         case .dictationShortcut:
             return shortcuts.binding(for: key, action: .dictation, name: String(localized: "Dictation"))

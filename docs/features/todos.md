@@ -119,10 +119,10 @@ sizes, behind-window material configuration and initial/reopened keyboard focus.
 ## Commands and settings
 
 `Show Todos` (`command:show-todos`) toggles the panel and `New Todo` (`command:create-todo`) opens it in
-the editor. Both are owned by the Todos settings pane, so they follow the feature switch, can be aliased,
+the editor. Both are owned by the Planote settings pane, so they follow the feature switch, can be aliased,
 pinned, hidden and given hotkeys like any other launcher command.
 
-The pane holds the enable switch and a live status block: whether Planote is installed and running, the
+The shared Planote pane holds note search, background service controls, the todo enable switch and a live status block: whether Planote is installed and running, the
 bridge directory, the last heartbeat and the last error. Its subtitle states that Tinycast starts Planote
 in the background when needed. The switch ships on, so the feature is usable without a trip to Settings;
 turning it off removes both commands, closes the panel and stops polling. `todos.enabled` and the

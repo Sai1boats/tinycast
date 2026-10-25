@@ -1,58 +1,52 @@
 import SwiftUI
 
 struct TodosSettingsView: View {
-    @Environment(AppCore.self) private var core
+    @Environment(TodosCoordinator.self) private var todos
     @Environment(AppSettings.self) private var settings
 
     var body: some View {
         @Bindable var settings = settings
-        return Form {
+        return Group {
             Section {
                 Toggle(isOn: $settings.todosEnabled) {
                     SettingsFeatureToggleLabel(
-                        anchor: .todosTodos, title: "Enable Todos",
+                        anchor: .planoteTodos, title: "Enable Todos",
                         subtitle: enableSubtitle)
                 }
             }
-            .settingsAnchor(.todosTodos)
+            .settingsAnchor(.planoteTodos)
 
             Section {
                 LabeledContent {
                     Text(planoteState)
                 } label: {
-                    SettingsRowTitle(.todosOptions, "Planote Connection")
+                    SettingsRowTitle(.planoteConnection, "Planote Connection")
                 }
                 LabeledContent {
                     Button(
                         String(localized: "Open Folder"),
-                        action: core.todosCoordinator.openBridgeFolder)
+                        action: todos.openBridgeFolder)
                 } label: {
-                    SettingsRowTitle(.todosOptions, "Bridge Folder")
+                    SettingsRowTitle(.planoteConnection, "Bridge Folder")
                     Text(bridgePath)
                 }
                 LabeledContent {
                     Text(lastHeartbeat)
                 } label: {
-                    SettingsRowTitle(.todosOptions, "Last Heartbeat")
+                    SettingsRowTitle(.planoteConnection, "Last Heartbeat")
                 }
-                if let error = core.todosCoordinator.errorMessage {
+                if let error = todos.errorMessage {
                     Text(error)
                         .font(.caption)
                         .foregroundStyle(Theme.Colors.destructive)
                 }
             } header: {
-                SettingsSectionHeader(.todosOptions)
+                SettingsSectionHeader(.planoteConnection)
             }
             .settingsEnabled(settings.todosEnabled)
 
-            FeatureCommandsSection(owner: .todos, anchor: .todosCommands)
+            FeatureCommandsSection(owner: .planote, anchor: .planoteCommands)
                 .settingsEnabled(settings.todosEnabled)
-        }
-        .formStyle(.grouped)
-        .settingsScrollTarget(.todos)
-        .task {
-            guard settings.todosEnabled else { return }
-            await core.todosCoordinator.refresh()
         }
     }
 
@@ -61,7 +55,6 @@ struct TodosSettingsView: View {
     }
 
     private var planoteState: String {
-        let todos = core.todosCoordinator
         guard todos.isPlanoteInstalled else { return String(localized: "Not installed") }
         return todos.isPlanoteRunning
             ? String(localized: "Installed, running")
@@ -69,11 +62,11 @@ struct TodosSettingsView: View {
     }
 
     private var bridgePath: String {
-        (core.todosCoordinator.bridgeDirectoryPath as NSString).abbreviatingWithTildeInPath
+        (todos.bridgeDirectoryPath as NSString).abbreviatingWithTildeInPath
     }
 
     private var lastHeartbeat: String {
-        guard let heartbeat = core.todosCoordinator.lastHeartbeat else {
+        guard let heartbeat = todos.lastHeartbeat else {
             return String(localized: "Not yet")
         }
         return heartbeat.formatted(date: .abbreviated, time: .shortened)

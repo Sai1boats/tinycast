@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PlanoteSettingsView: View {
     @Environment(PlanoteCoordinator.self) private var planote
+    @Environment(TodosCoordinator.self) private var todos
     @Environment(AppSettings.self) private var settings
 
     var body: some View {
@@ -33,9 +34,15 @@ struct PlanoteSettingsView: View {
                 }
             } header: { SettingsSectionHeader(.planoteService) }
             .settingsAnchor(.planoteService)
+
+            TodosSettingsView()
         }
         .formStyle(.grouped)
         .settingsScrollTarget(.planote)
+        .task(id: settings.todosEnabled) {
+            guard settings.todosEnabled else { return }
+            await todos.refresh()
+        }
         .task {
             while !Task.isCancelled {
                 planote.refresh()

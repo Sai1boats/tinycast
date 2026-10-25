@@ -18,7 +18,8 @@
 
 ## Search and editing
 
-Settings → Planote controls title search and the background service. Opening the launcher refreshes
+Settings → Planote is the single settings page for notes and todos. It holds title search, the
+background service, the todo enable switch, bridge status and todo command shortcuts. Opening the launcher refreshes
 its small title index off-main and starts the service if permitted. Clicking a result opens a floating
 660 × 580 panel (minimum 440 × 350). It reuses Notes' TextKit 2 Markdown editor, undo, find, list editing,
 formatting shortcuts and literal-source semantics. The title is editable. Changes autosave after
