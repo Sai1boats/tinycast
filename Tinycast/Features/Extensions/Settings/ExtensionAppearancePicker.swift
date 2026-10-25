@@ -65,7 +65,7 @@ struct ExtensionAppearancePicker: View {
 
             HStack(spacing: Theme.Spacing.sm) {
                 Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                TextField("", text: $query, prompt: Text(String(localized: "Search symbols…")))
+                TextField("", text: $query, prompt: Text("Search symbols…"))
                     .textFieldStyle(.plain)
                     .labelsHidden()
                     .pointerStyle(.horizontalText)
@@ -80,7 +80,7 @@ struct ExtensionAppearancePicker: View {
 
             let results = catalog.search(query, in: category)
             if results.isEmpty {
-                Text(String(localized: "No symbols match \u{201C}\(query)\u{201D}."))
+                Text("No symbols match \u{201C}\(query)\u{201D}.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     // Whole rows: a half one clipped by the footer reads as a rendering bug.
@@ -120,9 +120,9 @@ struct ExtensionAppearancePicker: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer()
-                Button(String(localized: "Use Original Icon"), action: onReset)
+                Button("Use Original Icon", action: onReset)
                     .disabled(!isCustom)
-                    .help(String(localized: "Go back to the icon the extension ships."))
+                    .help("Go back to the icon the extension ships.")
             }
         }
         .padding(Metrics.inset)
@@ -135,12 +135,9 @@ struct ExtensionAppearancePicker: View {
     }
 
     private func footnote(_ count: Int) -> String {
-        let noun = count == 1 ? "symbol" : "symbols"
-        return query.isEmpty ? String(
-            localized: "\(count) \(noun) in \(category.title)"
-        ) : String(
-            localized: "\(count) \(noun) matching"
-        )
+        query.isEmpty
+            ? String(localized: "\(count) symbols in \(category.title)")
+            : String(localized: "\(count) symbols matching")
     }
 }
 

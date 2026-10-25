@@ -25,7 +25,9 @@ final class AIChatWindowChrome: NSObject, WindowChrome, NSToolbarDelegate, NSSea
         self.find = find
         searchItem = NSSearchToolbarItem(itemIdentifier: Self.search)
         actionsButton = NSButton(
-            image: NSImage(systemSymbolName: "slider.horizontal.3", accessibilityDescription: String(localized: "Actions"))
+            image: NSImage(
+                systemSymbolName: "slider.horizontal.3",
+                accessibilityDescription: String(localized: "Actions"))
                 ?? NSImage(),
             target: nil, action: nil)
         super.init()
@@ -93,11 +95,8 @@ final class AIChatWindowChrome: NSObject, WindowChrome, NSToolbarDelegate, NSSea
                 action: #selector(toggleSidebar))
         case Self.newChat:
             return button(
-                identifier, symbol: "square.and.pencil", label: String(
-                    localized: "New Chat"
-                ), toolTip: String(
-                    localized: "New Chat  ⌘N"
-                ),
+                identifier, symbol: "square.and.pencil", label: String(localized: "New Chat"),
+                toolTip: String(localized: "New Chat  ⌘N"),
                 action: #selector(newChatAction))
         case Self.search:
             return searchItem
@@ -130,7 +129,6 @@ final class AIChatWindowChrome: NSObject, WindowChrome, NSToolbarDelegate, NSSea
         find.query = searchItem.searchField.stringValue
     }
 
-    /// Return walks the matches, ⇧↩ walks back, as Find does in every Mac app.
     func control(
         _ control: NSControl, textView: NSTextView, doCommandBy selector: Selector
     ) -> Bool {
@@ -244,7 +242,9 @@ enum AIChatActionsMenu {
             })
         if canRegenerate(chat) {
             menu.addItem(
-                ClosureMenuItem(String(localized: "Regenerate Response"), symbol: "arrow.clockwise", key: "r") {
+                ClosureMenuItem(
+                    String(localized: "Regenerate Response"), symbol: "arrow.clockwise", key: "r"
+                ) {
                     coordinator.regenerate(in: chat)
                 })
         }
@@ -252,7 +252,8 @@ enum AIChatActionsMenu {
         if chat.lastAssistantText != nil {
             menu.addItem(
                 ClosureMenuItem(
-                    String(localized: "Copy Last Response"), symbol: "doc.on.doc", key: "c", modifiers: [.command, .shift]
+                    String(localized: "Copy Last Response"), symbol: "doc.on.doc", key: "c",
+                    modifiers: [.command, .shift]
                 ) {
                     coordinator.copyLastResponse(in: chat)
                 })
@@ -273,7 +274,10 @@ enum AIChatActionsMenu {
             menu.addItem(.separator())
             let pinned = coordinator.isPinned(chat)
             menu.addItem(
-                ClosureMenuItem(pinned ? String(localized: "Unpin Chat") : String(localized: "Pin Chat"), symbol: "pin") {
+                ClosureMenuItem(
+                    pinned ? String(localized: "Unpin Chat") : String(localized: "Pin Chat"),
+                    symbol: "pin"
+                ) {
                     coordinator.togglePin(id: chat.session.id)
                 })
             menu.addItem(
@@ -283,10 +287,12 @@ enum AIChatActionsMenu {
         }
         menu.addItem(.separator())
         menu.addItem(
-            ClosureMenuItem(String(localized: "Find in Chat"), symbol: "magnifyingglass", key: "f", findInChat))
+            ClosureMenuItem(
+                String(localized: "Find in Chat"), symbol: "magnifyingglass", key: "f", findInChat))
         menu.addItem(
             ClosureMenuItem(
-                String(localized: "AI Settings"), symbol: "slider.horizontal.3", key: ",", modifiers: [.command, .option]
+                String(localized: "AI Settings"), symbol: "slider.horizontal.3", key: ",",
+                modifiers: [.command, .option]
             ) {
                 coordinator.showSettings()
             })

@@ -14,7 +14,7 @@ struct DisabledApplicationsList: View {
             }
         }
 
-        Button(String(localized: "Add Application…")) { picking = true }
+        Button("Add Application…") { picking = true }
             .popover(isPresented: $picking, arrowEdge: .bottom) {
                 AppPickerPopover(excluded: Set(bundleIDs)) { bundleID in
                     bundleIDs.append(bundleID)
@@ -24,7 +24,6 @@ struct DisabledApplicationsList: View {
     }
 }
 
-/// A whole section of them, for a pane whose exclusions are a subject of their own.
 struct DisabledApplicationsSection: View {
     @Binding var bundleIDs: [String]
     let anchor: SettingsAnchor
@@ -58,7 +57,7 @@ private struct DisabledAppRow: View {
                     .foregroundStyle(.tertiary)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(String(localized: "Stop excluding \(name)"))
+            .accessibilityLabel("Stop excluding \(name)")
         } label: {
             Label {
                 Text(name).lineLimit(1)

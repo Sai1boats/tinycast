@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Search Snippets: the enabled library filtered by the search field, previewed before it pastes.
 struct SnippetsScreen: PaletteScreen {
     let store: SnippetsStore
     let core: AppCore
@@ -104,19 +103,25 @@ enum SnippetActionsMenu {
         PopoverMenuContent(
             header: record.snippet.name,
             items: [
-                PopoverMenuItem(title: String(localized: "Paste Snippet"), systemImage: "text.quote", shortcut: "↵") {
+                PopoverMenuItem(
+                    title: String(localized: "Paste Snippet"), systemImage: "text.quote", shortcut: "↵"
+                ) {
                     core.snippetCoordinator.expandSnippetFromPalette(id: record.id)
                 },
                 PopoverMenuItem(
-                    title: String(localized: "Edit Snippet"), systemImage: "pencil", startsSection: true, shortcut: "⌘E"
+                    title: String(localized: "Edit Snippet"), systemImage: "pencil", startsSection: true,
+                    shortcut: "⌘E"
                 ) {
                     core.snippetCoordinator.editSnippet(record)
                 },
-                PopoverMenuItem(title: String(localized: "Create Snippet"), systemImage: "plus", shortcut: "⌘N") {
+                PopoverMenuItem(
+                    title: String(localized: "Create Snippet"), systemImage: "plus", shortcut: "⌘N"
+                ) {
                     core.snippetCoordinator.editSnippet(nil)
                 },
                 PopoverMenuItem(
-                    title: String(localized: "Show in Finder"), systemImage: "folder", startsSection: true, shortcut: "⌘↵"
+                    title: String(localized: "Show in Finder"), systemImage: "folder", startsSection: true,
+                    shortcut: "⌘↵"
                 ) {
                     core.snippetCoordinator.showSnippetInFinder(record)
                 },

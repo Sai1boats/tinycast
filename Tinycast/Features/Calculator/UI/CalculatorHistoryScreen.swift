@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Past calculations, led by the live answer for whatever is typed into the search field.
 struct CalculatorHistoryScreen: PaletteScreen {
     let history: CalculatorHistoryStore
     let currencyRates: CurrencyRateStore
@@ -68,7 +67,6 @@ struct CalculatorHistoryScreen: PaletteScreen {
 
     func activate(at selection: Int) {
         switch row(at: selection) {
-        // A fresh calculation: copy + record like the launcher card; error cards no-op.
         case .calc(let result): core.calculatorCoordinator.copyCalculatorResult(result)
         case .entry(let entry): core.calculatorCoordinator.copyHistoryEntry(entry)
         case nil: break
@@ -122,7 +120,8 @@ struct CalculatorHistoryScreen: PaletteScreen {
         if rows.isEmpty {
             EmptyResults(
                 text: vm.query.trimmingCharacters(in: .whitespaces).isEmpty
-                    ? String(localized: "No calculations yet") : String(localized: "No matching calculations"))
+                    ? String(localized: "No calculations yet")
+                    : String(localized: "No matching calculations"))
         } else {
             CalculatorHistoryList(
                 results: entries,
@@ -152,7 +151,6 @@ struct CalculatorHistoryScreen: PaletteScreen {
     }
 }
 
-/// Actions menu content for a calculator-history entry, shown bottom-right like the other modes.
 @MainActor
 enum CalcHistoryActionsMenu {
     static func content(
@@ -163,16 +161,20 @@ enum CalcHistoryActionsMenu {
         PopoverMenuContent(
             header: core.calcNumberFormat.localizedExpression(entry.expression),
             items: [
-                PopoverMenuItem(title: String(localized: "Copy Answer"), systemImage: "doc.on.doc", shortcut: "↵") {
+                PopoverMenuItem(
+                    title: String(localized: "Copy Answer"), systemImage: "doc.on.doc", shortcut: "↵"
+                ) {
                     core.calculatorCoordinator.copyHistoryEntry(entry)
                 },
                 PopoverMenuItem(
-                    title: String(localized: "Copy Expression"), systemImage: "doc.on.doc.fill", shortcut: "⌘↵"
+                    title: String(localized: "Copy Expression"), systemImage: "doc.on.doc.fill",
+                    shortcut: "⌘↵"
                 ) {
                     core.calculatorCoordinator.copyHistoryExpression(entry)
                 },
                 PopoverMenuItem(
-                    title: String(localized: "Delete Entry"), systemImage: "trash", startsSection: true, shortcut: "⌃X",
+                    title: String(localized: "Delete Entry"), systemImage: "trash", startsSection: true,
+                    shortcut: "⌃X",
                     isDestructive: true
                 ) {
                     calcHistory.remove(entry)

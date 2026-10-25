@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// A grid of SF Symbols with an Automatic escape hatch; the symbols are the caller's.
 struct SymbolPicker: View {
     @Binding var selection: String?
     /// Drawn on the Automatic row, and what the row falls back to when nothing is picked.
@@ -24,7 +23,7 @@ struct SymbolPicker: View {
             } label: {
                 HStack(spacing: Theme.Spacing.sm) {
                     SymbolImage(name: fallback, size: 14)
-                    Text(String(localized: "Automatic"))
+                    Text("Automatic")
                     Spacer(minLength: 0)
                 }
                 .contentShape(Rectangle())

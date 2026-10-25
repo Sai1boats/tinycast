@@ -35,7 +35,6 @@ protocol ExtensionHostContext: AnyObject {
     func launch(_ link: ExtensionDeepLink) throws
 }
 
-/// A toast as the palette shows it.
 struct ExtensionToast: Sendable, Equatable, Identifiable {
     enum Style: String, Sendable {
         case success = "SUCCESS"
@@ -100,7 +99,8 @@ struct ExtensionAlert: Sendable {
         message = payload["message"]?.stringValue
         let primary = payload["primaryAction"]?.objectValue
         primaryTitle = primary?["title"]?.stringValue ?? String(localized: "Confirm")
-        dismissTitle = payload["dismissAction"]?.objectValue?["title"]?.stringValue ?? String(localized: "Cancel")
+        dismissTitle =
+            payload["dismissAction"]?.objectValue?["title"]?.stringValue ?? String(localized: "Cancel")
         isDestructive = primary?["style"]?.stringValue == "destructive"
     }
 }
@@ -112,9 +112,9 @@ enum ExtensionHostError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .noActiveExtension: return String(localized: "No extension command is running.")
+        case .noActiveExtension: return "No extension command is running."
         case .unknown(let what): return "Unknown host call '\(what)'."
-        case .unsupported(let what): return String(localized: "\(what) is not supported in Tinycast extensions.")
+        case .unsupported(let what): return "\(what) is not supported in Tinycast extensions."
         }
     }
 }
@@ -126,6 +126,8 @@ final class ExtensionHostBridge: ExtensionHostAPI {
     private let fetcher: ExtensionFetcher
     private let sockets = ExtensionWebSocketBridge()
     private var reportedSocketFailures: Set<String> = []
+    /// One browser sign-in at a time; the palette keeps its command alive while it is out.
+    private(set) var isSigningIn = false
 
     init(clipboardStore: ClipboardStore, fetcher: ExtensionFetcher = ExtensionFetcher()) {
         self.clipboardStore = clipboardStore
@@ -152,6 +154,7 @@ final class ExtensionHostBridge: ExtensionHostAPI {
         case "window": return window(method: method, arguments: arguments)
         case "feedback": return try await feedback(method: method, arguments: arguments)
         case "system": return try await system(method: method, arguments: arguments)
+        case "oauth": return try await oauth(method: method, arguments: arguments)
         case "fetch": return try await fetch(arguments.first)
         case "websocket": return try await sockets.perform(method: method, arguments: arguments)
         case "dns": return await ExtensionNameResolver.resolve(arguments.first)
@@ -181,8 +184,9 @@ final class ExtensionHostBridge: ExtensionHostAPI {
             {
                 _ = context.present(
                     toast: ExtensionToast(
-                        style: .failure, title: "Connection failed",
-                        message: "Start the local service or check its socket path: \(path)"))
+                        style: .failure, title: String(localized: "Connection failed"),
+                        message: String(
+                            localized: "Start the local service or check its socket path: \(path)")))
             }
             throw error
         }
@@ -393,6 +397,45 @@ final class ExtensionHostBridge: ExtensionHostAPI {
 
         default:
             throw ExtensionHostError.unknown("feedback.\(method)")
+        }
+    }
+
+    // MARK: - OAuth
+
+    private func oauth(method: String, arguments: [RenderValue]) async throws -> Any? {
+        let (context, name) = try requireContext()
+        switch method {
+        case "authorize":
+            guard context.activeLaunchType != .background else {
+                throw ExtensionHostError.unsupported("Signing in during a background refresh")
+            }
+            guard !isSigningIn else {
+                throw ExtensionHostError.unsupported("A second sign-in while one is open")
+            }
+            guard let url = arguments.first?.stringValue.flatMap(URL.init(string:)),
+                let scheme = arguments[safe: 1]?.stringValue
+            else { throw URLError(.badURL) }
+            isSigningIn = true
+            defer {
+                isSigningIn = false
+                // Come forward like Raycast once the redirect lands, unless the command stopped.
+                if !Task.isCancelled { context.reopenPalette() }
+            }
+            return try await ExtensionSignInSession().run(url: url, callbackScheme: scheme)
+                .absoluteString
+
+        case "getTokens":
+            let provider = arguments.first?.stringValue ?? ""
+            return context.storage.oauthTokens(extension: name, provider: provider)
+
+        case "setTokens":
+            let provider = arguments.first?.stringValue ?? ""
+            let tokens = arguments[safe: 1]?.stringValue
+            context.storage.setOAuthTokens(extension: name, provider: provider, tokens: tokens)
+            return nil
+
+        default:
+            throw ExtensionHostError.unknown("oauth.\(method)")
         }
     }
 

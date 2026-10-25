@@ -11,7 +11,7 @@ struct PlanoteSettingsView: View {
                 Toggle(isOn: $settings.planoteNotesEnabled) {
                     SettingsFeatureToggleLabel(
                         anchor: .planoteNotes, title: "Search Planote Notes",
-                        subtitle: String(localized: "Find notes by title in the launcher, then read and edit them here."))
+                        subtitle: "Find notes by title in the launcher, then read and edit them here.")
                 }
                 LabeledContent("Indexed Notes", value: "\(planote.notes.count)")
             }

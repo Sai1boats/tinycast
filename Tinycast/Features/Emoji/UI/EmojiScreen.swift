@@ -176,7 +176,6 @@ struct EmojiScreen: PaletteScreen {
     }
 }
 
-/// Actions menu for a cell, shown bottom-right on right-click like `ClipboardActionsMenu`.
 @MainActor
 enum EmojiActionsMenu {
     static func content(
@@ -206,7 +205,8 @@ enum EmojiActionsMenu {
                 core.emojiCoordinator.pasteEmojiKeepingWindowOpen(entry)
             },
             PopoverMenuItem(
-                title: pinPosition == nil ? String(localized: "Pin \(noun)") : String(localized: "Unpin \(noun)"),
+                title: pinPosition == nil
+                    ? String(localized: "Pin \(noun)") : String(localized: "Unpin \(noun)"),
                 systemImage: pinPosition == nil ? "pin" : "pin.slash",
                 startsSection: true, shortcut: "⌘.", action: togglePin)
         ]

@@ -16,7 +16,8 @@ enum AIProviderFactory {
         switch selection {
         case .appleIntelligence:
             guard settings.isRouteEnabled(.appleIntelligence) else {
-                throw AIProviderError.unavailable(String(localized: "Apple Intelligence is disabled in AI Settings."))
+                throw AIProviderError.unavailable(
+                    String(localized: "Apple Intelligence is disabled in AI Settings."))
             }
             if let message = AppleIntelligenceProvider.status().message {
                 throw AIProviderError.unavailable(message)
@@ -50,12 +51,13 @@ enum AIProviderFactory {
                 throw AIProviderError.unavailable(String(localized: "Cursor is disabled in AI Settings."))
             }
             return try installedAI.provider(kind: .cursor, model: model, effort: effort)
-        case .api(let connectionID, let model, let effort):
+        case .api(let connectionID, let model, let savedEffort):
             guard let connection = settings.connection(id: connectionID) else {
                 throw AIProviderError.unavailable(String(localized: "Choose an API connection in Settings."))
             }
             guard settings.isRouteEnabled(.api(connectionID)) else {
-                throw AIProviderError.unavailable(String(localized: "\(connection.title) is disabled in AI Settings."))
+                throw AIProviderError.unavailable(
+                    String(localized: "\(connection.title) is disabled in AI Settings."))
             }
             let baseURL: URL
             do {
@@ -67,16 +69,27 @@ enum AIProviderFactory {
             do {
                 key = try keyStore.secret(for: connection.id) ?? ""
             } catch {
-                throw AIProviderError.unavailable(String(localized: "The API key could not be read from Keychain."))
+                throw AIProviderError.unavailable(
+                    String(localized: "The API key could not be read from Keychain."))
             }
-            guard AIEndpointPolicy.isLoopback(connection.baseURL) || !key.isEmpty else {
+            let headers: [String: String]
+            do {
+                headers = try KeychainSecretStore.aiRequestHeaders.values(for: connection.id)
+            } catch {
+                throw AIProviderError.unavailable(
+                    String(localized: "The request headers could not be read from Keychain."))
+            }
+            guard AIEndpointPolicy.isLoopback(connection.baseURL) || !key.isEmpty || !headers.isEmpty
+            else {
                 throw AIProviderError.unavailable(String(localized: "Add an API key in Settings."))
             }
+            let effort = connection.offeredEffort(savedEffort, for: model)
             return HTTPAIProvider(
                 configuration: AIHTTPConfiguration(
                     provider: connection.provider, baseURL: baseURL, model: model, effort: effort,
                     disablesThinking: effort == AIConnection.ReasoningOptions.noEffort
-                        && connection.takesThinkingField),
+                        && connection.takesThinkingField,
+                    headers: headers),
                 apiKey: key)
         }
     }

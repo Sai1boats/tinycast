@@ -1,7 +1,6 @@
 import AppKit
 import SwiftUI
 
-/// The Layout row: an add button beside the dropdown naming the entry every field below edits.
 struct WindowLayoutEntryPicker: View {
     let draft: WindowLayoutDraft
     let displays: [WindowLayoutDisplay]
@@ -27,7 +26,7 @@ struct WindowLayoutEntryPicker: View {
                 .layoutFieldChrome()
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(String(localized: "Add an app to this layout"))
+        .accessibilityLabel("Add an app to this layout")
         .popover(isPresented: $showingAppPicker, arrowEdge: .bottom) {
             AppPickerPopover { bundleID in
                 showingAppPicker = false
@@ -50,7 +49,7 @@ struct WindowLayoutEntryPicker: View {
                         .frame(width: Theme.Size.settingsRowIcon, height: Theme.Size.settingsRowIcon)
                     Text(app.name).lineLimit(1)
                 } else {
-                    Text(String(localized: "No app yet")).foregroundStyle(.secondary)
+                    Text("No app yet").foregroundStyle(.secondary)
                 }
                 Spacer(minLength: Theme.Spacing.sm)
                 Image(systemName: "chevron.down")
@@ -61,7 +60,7 @@ struct WindowLayoutEntryPicker: View {
         }
         .buttonStyle(.plain)
         .disabled(draft.entries.isEmpty)
-        .accessibilityLabel(String(localized: "Entry being edited"))
+        .accessibilityLabel("Entry being edited")
         .popover(isPresented: $showingEntries, arrowEdge: .bottom) { entryList }
     }
 
@@ -81,7 +80,7 @@ struct WindowLayoutEntryPicker: View {
             }
             if draft.selectedEntry != nil {
                 Divider()
-                Button(String(localized: "Remove This Entry"), role: .destructive) {
+                Button("Remove This Entry", role: .destructive) {
                     showingEntries = false
                     draft.removeSelectedEntry()
                 }

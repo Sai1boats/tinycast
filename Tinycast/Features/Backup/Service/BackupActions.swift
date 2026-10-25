@@ -6,7 +6,6 @@ extension UTType {
     static let tinycastBackup = UTType(exportedAs: "com.tinycast.backup")
 }
 
-/// The backup flows' entry points, shared by the Settings pane and the commands.
 @MainActor
 enum BackupActions {
     struct RaycastOutcome {
@@ -110,8 +109,8 @@ enum BackupActions {
         } catch is CancellationError {
         } catch {
             await present(
-                core: core, title: String(localized: "Export Failed"), message: error.localizedDescription,
-                symbol: exportSymbol)
+                core: core, title: String(localized: "Export Failed"),
+                message: error.localizedDescription, symbol: exportSymbol)
         }
     }
 
@@ -124,12 +123,12 @@ enum BackupActions {
                 let summary = await applyBackup(manifest.categories, from: staging, to: core)
             else { return }
             await present(
-                core: core, title: String(localized: "Backup Imported"), message: summaryText(summary),
-                symbol: importSymbol, tone: .success)
+                core: core, title: String(localized: "Backup Imported"),
+                message: summaryText(summary), symbol: importSymbol, tone: .success)
         } catch {
             await present(
-                core: core, title: String(localized: "Import Failed"), message: error.localizedDescription,
-                symbol: importSymbol)
+                core: core, title: String(localized: "Import Failed"),
+                message: error.localizedDescription, symbol: importSymbol)
         }
     }
 
@@ -201,7 +200,6 @@ enum BackupActions {
         }
     }
 
-    /// Shared `.rayconfig` file picker used by the Backup pane and onboarding.
     static func pickRaycastFile() -> URL? {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = false
@@ -228,9 +226,11 @@ enum BackupActions {
         if summary.clipboard > 0 { imported.append(String(localized: "\(summary.clipboard) clips")) }
         if summary.snippets > 0 { imported.append(String(localized: "\(summary.snippets) snippets")) }
         if summary.notes > 0 { imported.append(String(localized: "\(summary.notes) notes")) }
-        if summary.learning > 0 { imported.append(String(localized: "\(summary.learning) learning records")) }
+        if summary.learning > 0 {
+            imported.append(String(localized: "\(summary.learning) learning records"))
+        }
         if !imported.isEmpty {
-            parts.append(String(localized: "Imported ") + imported.joined(separator: ", ") + ".")
+            parts.append(String(localized: "Imported \(imported.formatted(.list(type: .and)))."))
         }
         if summary.snippetsNeedEnabling { parts.append(snippetsNeedEnablingText) }
         parts.append(contentsOf: summary.problems)
@@ -238,20 +238,18 @@ enum BackupActions {
     }
 
     static func exportText(_ result: BackupComposer.Result) -> String {
-        let categories = BackupCategory.ordered(result.manifest.categories)
+        let labels = BackupCategory.ordered(result.manifest.categories).map(\.descriptor.label)
         var text =
-            categories.isEmpty
+            labels.isEmpty
             ? String(localized: "Nothing was selected.")
-            : String(localized: "Saved ")
-                + categories.map(\.descriptor.label)
-                .joined(separator: ", ") + "."
+            : String(localized: "Saved \(labels.formatted(.list(type: .and))).")
         if result.missingImages > 0 {
-            text += String(localized: " \(result.missingImages) images were unavailable and skipped.")
+            text += " " + String(localized: "\(result.missingImages) images were unavailable and skipped.")
         }
         return text
     }
 
-    static let nothingImportedText = "Nothing to import from this file."
+    static let nothingImportedText = String(localized: "Nothing to import from this file.")
 
     /// No import may grant keystroke listening, so say the switch an imported keyword needs is off.
     private static let snippetsNeedEnablingText =
@@ -260,7 +258,6 @@ enum BackupActions {
     /// Not everything an import applies settles in the running app, so say to relaunch.
     private static let restartAfterImportText = String(localized: "Quit and reopen Tinycast to finish.")
 
-    /// One sentence per Raycast category that actually moved, shared by the pane and onboarding.
     static func raycastText(_ outcome: RaycastOutcome) -> String {
         var parts: [String] = []
         if let applied = appliedText(outcome.summary) { parts.append(applied) }
@@ -268,23 +265,22 @@ enum BackupActions {
             parts.append(String(localized: "Imported \(outcome.clipboardImported) clipboard entries."))
         }
         if outcome.snippetsImported > 0 {
-            let noun = outcome.snippetsImported == 1 ? "snippet" : "snippets"
-            parts.append(String(localized: "Imported \(outcome.snippetsImported) \(noun)."))
+            parts.append(String(localized: "Imported \(outcome.snippetsImported) snippets."))
         }
         if outcome.snippetsNeedEnabling { parts.append(snippetsNeedEnablingText) }
         if let snippetsError = outcome.snippetsError {
             parts.append(String(localized: "Couldn’t import snippets: \(snippetsError)"))
         }
         if outcome.quicklinksImported > 0 {
-            let noun = outcome.quicklinksImported == 1 ? "quicklink" : "quicklinks"
-            parts.append(String(localized: "Imported \(outcome.quicklinksImported) \(noun)."))
+            parts.append(String(localized: "Imported \(outcome.quicklinksImported) quicklinks."))
         }
         if let quicklinksError = outcome.quicklinksError {
             parts.append(String(localized: "Couldn’t import quicklinks: \(quicklinksError)"))
         }
         var message = parts.isEmpty ? nothingImportedText : parts.joined(separator: " ")
         if outcome.missingImages > 0 {
-            message += String(localized: " \(outcome.missingImages) images were unavailable and skipped.")
+            message +=
+                " " + String(localized: "\(outcome.missingImages) images were unavailable and skipped.")
         }
         if !parts.isEmpty { message += " \(restartAfterImportText)" }
         return message
@@ -298,8 +294,12 @@ enum BackupActions {
         if s.favorites > 0 { parts.append(String(localized: "\(s.favorites) favorites")) }
         if s.hiddenItems > 0 { parts.append(String(localized: "\(s.hiddenItems) hidden items")) }
         if s.aliases > 0 { parts.append(String(localized: "\(s.aliases) aliases")) }
-        if s.pinnedEmoji > 0 { parts.append(String(localized: "\(s.pinnedEmoji) pinned emoji and symbols")) }
-        if s.customCommands > 0 { parts.append(String(localized: "\(s.customCommands) custom commands")) }
+        if s.pinnedEmoji > 0 {
+            parts.append(String(localized: "\(s.pinnedEmoji) pinned emoji and symbols"))
+        }
+        if s.customCommands > 0 {
+            parts.append(String(localized: "\(s.customCommands) custom commands"))
+        }
         if s.quicklinks > 0 { parts.append(String(localized: "\(s.quicklinks) quicklinks")) }
         if s.windowLayouts > 0 { parts.append(String(localized: "\(s.windowLayouts) window layouts")) }
         if s.windowRooms > 0 { parts.append(String(localized: "\(s.windowRooms) rooms")) }
@@ -307,12 +307,11 @@ enum BackupActions {
             parts.append(String(localized: "\(s.customWindowSizes) custom window sizes"))
         }
         guard !parts.isEmpty else { return nil }
-        return String(localized: "Applied ") + parts.joined(separator: ", ") + "."
+        return String(localized: "Applied \(parts.formatted(.list(type: .and))).")
     }
 
     // MARK: - Settings file
 
-    /// Where settings.json lives for this channel, as the pane and its dialog spell it.
     static var settingsFilePath: String {
         (AppPaths.settingsFile().path as NSString).abbreviatingWithTildeInPath
     }
@@ -325,9 +324,11 @@ enum BackupActions {
         }
         let choice = await core.choose(
             title: String(localized: "Import the existing settings file?"),
-            message:
-                String(localized: "\(settingsFilePath) already exists. Import applies its settings here; Replace ")
-                + String(localized: "overwrites it with the current ones."),
+            message: String(
+                localized: """
+                    \(settingsFilePath) already exists. Import applies its settings here; Replace \
+                    overwrites it with the current ones.
+                    """),
             symbol: importSymbol,
             options: [
                 DialogAction(title: String(localized: "Import")),
@@ -352,15 +353,14 @@ enum BackupActions {
         -> Bool
     {
         guard commands > 0 || shortcuts > 0 else { return true }
-        let commandText = commands == 1 ? String(localized: "1 custom command") : String(localized: "\(commands) custom commands")
-        let shortcutText =
-            shortcuts == 1 ? String(localized: "1 global shortcut") : String(localized: "\(shortcuts) global shortcuts")
         // Red glyph for a real warning, plain button: importing destroys nothing.
         return await core.confirm(
             title: String(localized: "Import executable commands?"),
-            message:
-                String(localized: "This backup contains \(commandText) and \(shortcutText). Custom commands can run ")
-                + "arbitrary shell code. Only import files you trust.",
+            message: String(
+                localized: """
+                    This backup contains \(commands) custom commands and \(shortcuts) global shortcuts. \
+                    Custom commands can run arbitrary shell code. Only import files you trust.
+                    """),
             symbol: importSymbol, confirmTitle: String(localized: "Import"), confirmRole: .standard)
     }
 

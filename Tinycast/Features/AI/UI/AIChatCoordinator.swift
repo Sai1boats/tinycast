@@ -65,10 +65,14 @@ final class AIChatCoordinator {
     // MARK: - The window
 
     /// Reopens on whatever it last showed: the conversation is `AppCore`'s, not the window's.
-    func showWindow() {
+    func showWindow(applyingOpenPolicy: Bool = false) {
         guard settings.aiEnabled else { return }
         prepareForChat()
         guard !window.focus() else { return }
+        if applyingOpenPolicy {
+            chats.applyWindowOpenPolicy(
+                opensTo: core.aiSettings.opensTo, newAfter: core.aiSettings.newChatAfter)
+        }
         // One find per window: the chrome's search field writes it, the transcript reads it.
         let find = ChatFindState()
         window.show(chrome: AIChatWindowChrome(coordinator: self, chats: chats, find: find)) {
@@ -80,7 +84,7 @@ final class AIChatCoordinator {
 
     func toggleWindow() {
         guard !closeWindowIfKey() else { return }
-        showWindow()
+        showWindow(applyingOpenPolicy: true)
     }
 
     /// The window's views read these through the coordinator, never through `AppCore`.
@@ -114,8 +118,9 @@ final class AIChatCoordinator {
 
     /// The sidebar's filter is the view's own state, so ⌃Tab walks every saved chat.
     func openAdjacentChat(step: Int) {
-        guard let target = history.conversations.pinnedFirst.adjacent(
-            to: chats.window.session.id, step: step)
+        guard
+            let target = history.conversations.pinnedFirst.adjacent(
+                to: chats.window.session.id, step: step)
         else { return }
         openChat(id: target.id)
     }
@@ -144,7 +149,6 @@ final class AIChatCoordinator {
         core.chatHistory.rename(id: id, to: title)
     }
 
-    /// The title the window and the sidebar show, a rename included.
     func title(of chat: AIChatState) -> String {
         core.chatHistory.conversation(id: chat.session.id)?.displayTitle ?? chat.session.title
     }
@@ -155,7 +159,6 @@ final class AIChatCoordinator {
         core.showMessage(String(localized: "Chat copied"))
     }
 
-    /// The same Markdown Copy Chat makes, written where the reader chooses.
     func exportChat(id: UUID) {
         guard let markdown = markdownTranscript(of: id) else { return }
         let panel = NSSavePanel()
@@ -182,11 +185,8 @@ final class AIChatCoordinator {
         let title = core.chatHistory.conversation(id: id)?.displayTitle ?? String(localized: "This chat")
         guard
             await core.confirm(
-                title: String(
-                    localized: "Delete chat?"
-                ), message: String(
-                    localized: "“\(title)” will be removed. This can't be undone."
-                ),
+                title: String(localized: "Delete chat?"),
+                message: String(localized: "“\(title)” will be removed. This can't be undone."),
                 symbol: "trash", confirmTitle: String(localized: "Delete"))
         else { return }
         core.chatGPTSubscription.turns.discardConversation(id: id)
@@ -197,8 +197,10 @@ final class AIChatCoordinator {
         guard
             await core.confirm(
                 title: String(localized: "Delete all chats?"),
-                message: String(localized: "Every saved conversation except pinned ones will be removed. ")
-                    + String(localized: "This can't be undone."),
+                message: String(
+                    localized: """
+                        Every saved conversation except pinned ones will be removed. This can't be undone.
+                        """),
                 symbol: "trash", confirmTitle: String(localized: "Delete All"))
         else { return }
         for conversation in core.chatHistory.conversations where !conversation.isPinned {
@@ -279,7 +281,7 @@ final class AIChatCoordinator {
             let sent = chat.send(
                 address.rest, using: try provider(for: chat, scopedTo: address.slug),
                 model: model(for: chat), webSearch: webSearch(for: chat),
-                instructions: instructions, contextBudget: contextBudget(for: chat),
+                instructions: instructions(for: chat), contextBudget: contextBudget(for: chat),
                 toolScope: address.slug)
             // Named while the answer streams, so the sidebar has a title before the reply ends.
             if sent { nameIfNeeded(chat) }
@@ -298,7 +300,7 @@ final class AIChatCoordinator {
             chat.regenerate(
                 using: try provider(for: chat, scopedTo: scope),
                 model: model(for: chat), webSearch: webSearch(for: chat),
-                instructions: instructions, contextBudget: contextBudget(for: chat))
+                instructions: instructions(for: chat), contextBudget: contextBudget(for: chat))
         } catch {
             chat.report(error.localizedDescription)
         }
@@ -308,10 +310,12 @@ final class AIChatCoordinator {
         core.aiSettings.webSearchEnabled && capabilities(for: chat).webSearch
     }
 
-    private var instructions: String? {
+    private func instructions(for chat: AIChatState) -> String? {
         AIInstructions.compose(
             userPrompt: core.aiSettings.systemPrompt,
-            isEnabled: core.aiSettings.systemPromptEnabled)
+            isEnabled: core.aiSettings.systemPromptEnabled,
+            offersChoices: core.aiSettings.choicesEnabled,
+            model: model(for: chat))
     }
 
     /// A turn's route and its tools: a CLI with its own client is handed servers, others the loop.
@@ -359,7 +363,6 @@ final class AIChatCoordinator {
         }
     }
 
-    /// The servers a chat's tools menu offers; empty when MCP is off or nothing is set up.
     var mcpServers: [MCPServer] { core.mcpCoordinator.servers }
 
     func setToolsEnabled(_ enabled: Bool, in chat: AIChatState) {
@@ -399,9 +402,13 @@ final class AIChatCoordinator {
         case .appleIntelligence?: return .appleIntelligence
         case .codex?: return .codex
         case .claude?: return .claudeCommand
-        case .grok?, .openCode?, .cursor?:
+        case .openCode(let model, _)?:
+            let images = core.installedAI.status(for: .openCode).models
+                .contains { $0.id == model && $0.acceptsImages }
             return AIModelCapabilities(
-                images: false, documents: false, webSearch: false, tools: false)
+                images: images, documents: false, webSearch: false, tools: false)
+        case .grok?, .cursor?:
+            return .none
         case .api(let connection, let model, _)?:
             return core.aiSettings.connection(id: connection)?.capabilities(for: model)
                 ?? AIModelCapabilities.none
@@ -476,7 +483,8 @@ final class AIChatCoordinator {
         panel.canChooseDirectories = false
         panel.allowsMultipleSelection = true
         panel.prompt = String(localized: "Attach")
-        panel.message = String(localized: "Choose images, PDFs or text files to send with your next message.")
+        panel.message = String(
+            localized: "Choose images, PDFs or text files to send with your next message.")
         NSApp.activate(ignoringOtherApps: true)
         guard panel.runModal() == .OK else { return }
         attach(files: panel.urls, to: chat)
@@ -636,7 +644,6 @@ final class AIChatCoordinator {
         }
     }
 
-    /// What entering chat costs once: the model list resolved, and the servers connected.
     func prepareForChat() {
         warmUpModelList()
         core.mcpCoordinator.warmUp()

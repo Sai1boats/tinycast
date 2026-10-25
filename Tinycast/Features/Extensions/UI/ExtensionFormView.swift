@@ -62,12 +62,10 @@ struct ExtensionFormView: View {
         if index != selection { onSelect(index) }
     }
 
-    /// Scroll id of the focused field, or nil when the form has nothing to land on.
     private var focusedRowID: String? {
         screen.items.indices.contains(selection) ? screen.items[selection].id : nil
     }
 
-    /// One drawn field, wired into the focus order `ExtensionScreen` decided.
     @ViewBuilder
     private func row(_ field: RenderNode) -> some View {
         if let item = screen.focusItem(for: field) {
@@ -170,7 +168,7 @@ struct ExtensionFormView: View {
 
         default:
             labelled(field) {
-                Text(String(localized: "\(field.type) isn't supported yet"))
+                Text("\(field.type) isn't supported yet")
                     .font(metrics.typography.rowTrailing)
                     .foregroundStyle(.secondary)
             }
@@ -189,7 +187,6 @@ struct ExtensionFormView: View {
                     .font(metrics.typography.rowTrailing)
                     .foregroundStyle(Theme.Colors.textSecondary)
                     .multilineTextAlignment(.trailing)
-                // The info marker Raycast draws beside a label that carries one.
                 if let info = field.string("info"), !info.isEmpty {
                     Image(systemName: "info.circle")
                         .font(metrics.typography.disclosure)
@@ -252,7 +249,9 @@ private struct ExtensionTextField: View {
         .extensionFieldChrome(focused: focus == index)
         .modifier(ExtensionFormKeys(field: .text, onActivate: {}, onSubmit: onSubmit))
         // The visible label is a Text in the row beside it, which the field cannot claim itself.
-        .accessibilityLabel(Text(node.string("title") ?? node.string("placeholder") ?? String(localized: "Text")))
+        .accessibilityLabel(
+            Text(node.string("title") ?? node.string("placeholder") ?? String(localized: "Text"))
+        )
         .extensionFieldHint(node.string("info"), error: node.string("error"))
         .onAppear { text = node.string("value") ?? "" }
         .onChange(of: node.string("value") ?? "") { _, incoming in
@@ -363,10 +362,12 @@ private struct ExtensionCheckbox: View {
         .onHover { hovered = $0 }
         .onTapGesture { toggle() }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text(node.string("label") ?? node.string("title") ?? String(localized: "Checkbox")))
+        .accessibilityLabel(
+            Text(node.string("label") ?? node.string("title") ?? String(localized: "Checkbox"))
+        )
         // A toggle announces what it is and what it holds, not just that it can be pressed.
         .accessibilityAddTraits(isOn ? [.isToggle, .isSelected] : .isToggle)
-        .accessibilityValue(Text(isOn ? String(localized: "On") : String(localized: "Off")))
+        .accessibilityValue(Text(isOn ? "On" : "Off"))
         .extensionFieldHint(node.string("info"), error: node.string("error"))
         .accessibilityAction { toggle() }
         .modifier(ExtensionFormKeys(field: .checkbox, onActivate: toggle, onSubmit: onSubmit))

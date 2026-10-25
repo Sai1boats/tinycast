@@ -29,16 +29,16 @@ struct CalendarMenuBarLabel: View {
     }
 
     private func icon(_ symbol: String, describing description: String) -> some View {
-        Image(systemName: symbol).accessibilityLabel("\(appName): \(description)")
+        Image(systemName: symbol).accessibilityLabel(Text(verbatim: "\(appName): \(description)"))
     }
 
     private func title(_ text: String) -> some View {
-        Text(text).accessibilityLabel("\(appName): \(text)")
+        Text(text).accessibilityLabel(Text(verbatim: "\(appName): \(text)"))
     }
 
     private func summary(for meeting: MeetingEvent) -> String {
         let countdown = UpcomingWindow.menuBarCountdown(
-            for: meeting, now: AppCore.shared.meetingClock.now)
+            for: meeting, now: AppCore.shared.meetingClock.now, locale: .current)
         return "\(MenuBarSummary.title(meeting.title)) • \(countdown)"
     }
 }
@@ -52,25 +52,25 @@ struct CalendarMenuBarMenu: View {
             if let meeting = coordinator.menuBarEvent {
                 Section {
                     if let link = meeting.link {
-                        Button(String(localized: "Join \(meeting.title)"), systemImage: link.provider.sfSymbol) {
+                        Button("Join \(meeting.title)", systemImage: link.provider.sfSymbol) {
                             coordinator.join(meeting)
                         }
                     }
-                    Button(String(localized: "Open in Calendar"), systemImage: "calendar") {
+                    Button("Open in Calendar", systemImage: "calendar") {
                         coordinator.openInCalendar(meeting)
                     }
-                    Button(String(localized: "Dismiss Event"), systemImage: "xmark.circle") {
+                    Button("Dismiss Event", systemImage: "xmark.circle") {
                         coordinator.dismissMenuBarEvent(meeting)
                     }
                 }
             }
             MenuBarAgenda()
             Section {
-                Button(String(localized: "My Schedule"), systemImage: "calendar.day.timeline.left") {
+                Button("My Schedule", systemImage: "calendar.day.timeline.left") {
                     coordinator.showSchedule()
                 }
                 .keyboardShortcut("o")
-                Button(String(localized: "Calendar Settings…"), systemImage: "gearshape") {
+                Button("Calendar Settings…", systemImage: "gearshape") {
                     AppCore.shared.settingsCoordinator.showSettings(tab: .calendar)
                 }
                 .keyboardShortcut(",")
@@ -80,7 +80,6 @@ struct CalendarMenuBarMenu: View {
     }
 }
 
-/// The span's remaining meetings by day; a click joins, or opens a linkless one in Calendar.
 private struct MenuBarAgenda: View {
     var body: some View {
         let now = AppCore.shared.meetingClock.now
@@ -91,7 +90,7 @@ private struct MenuBarAgenda: View {
                         AppCore.shared.calendarCoordinator.join(meeting)
                     } label: {
                         Label {
-                            Text("\(MeetingTimeFormat.range(of: meeting)) \(meeting.title)")
+                            Text(verbatim: "\(MeetingTimeFormat.range(of: meeting)) \(meeting.title)")
                         } icon: {
                             CalendarSymbol(
                                 name: meeting.isInProgress(now: now) ? "circle.fill" : "circle",

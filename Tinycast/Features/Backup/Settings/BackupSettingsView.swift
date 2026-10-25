@@ -40,7 +40,9 @@ struct BackupSettingsView: View {
         guard let name = raycastFile?.lastPathComponent else {
             return String(localized: "A .rayconfig file from Raycast 2.0 or later.")
         }
-        return "\(name) — \(isRaycastExport ? "Raycast export" : "not a Raycast export")"
+        return isRaycastExport
+            ? String(localized: "\(name) — Raycast export")
+            : String(localized: "\(name) — not a Raycast export")
     }
 
     var body: some View {
@@ -50,11 +52,11 @@ struct BackupSettingsView: View {
                     if exporting {
                         ProgressView().controlSize(.small)
                     } else {
-                        Button(String(localized: "Export…")) { runExport() }.disabled(exportSelection.isEmpty)
+                        Button("Export…") { runExport() }.disabled(exportSelection.isEmpty)
                     }
                 } label: {
                     SettingsRowTitle(.backupExport, "Export Backup")
-                    Text(String(localized: "The ticked items, as one .tinycast file."))
+                    Text("The ticked items, as one .tinycast file.")
                 }
                 BackupCategorySelection(selection: $exportSelection)
                 if let backupStatus { statusRow(backupStatus) }
@@ -64,7 +66,7 @@ struct BackupSettingsView: View {
 
             Section {
                 LabeledContent {
-                    Button(String(localized: "Choose…")) { chooseBackupFile() }
+                    Button("Choose…") { chooseBackupFile() }
                 } label: {
                     SettingsRowTitle(.backupImport, "Backup File")
                     Text(backupFileSubtitle)
@@ -76,11 +78,11 @@ struct BackupSettingsView: View {
                         if importingBackup {
                             ProgressView().controlSize(.small)
                         } else {
-                            Button(String(localized: "Import")) { runBackupImport() }
+                            Button("Import") { runBackupImport() }
                                 .disabled(importSelection.isEmpty)
                         }
                     } label: {
-                        Text(String(localized: "Import"))
+                        Text("Import")
                     }
                 }
             } header: {
@@ -89,18 +91,15 @@ struct BackupSettingsView: View {
 
             Section {
                 LabeledContent {
-                    Button(String(localized: "Choose…")) { chooseRaycastFile() }
+                    Button("Choose…") { chooseRaycastFile() }
                 } label: {
                     SettingsRowTitle(.backupImportFromRaycast, "Raycast Export")
                     Text(raycastFileSubtitle)
                 }
                 LabeledContent {
                     RevealableSecureField(
-                        title: String(
-                            localized: "Passphrase"
-                        ), text: $passphrase, prompt: Text(String(
-                            localized: "Export password"
-                        ))
+                        title: String(localized: "Passphrase"), text: $passphrase,
+                        prompt: Text("Export password")
                     )
                     .labelsHidden()
                     .textFieldStyle(.roundedBorder)
@@ -109,7 +108,7 @@ struct BackupSettingsView: View {
                     .frame(width: 160)
                     .onSubmit(runRaycastImport)
                 } label: {
-                    Text(String(localized: "Passphrase"))
+                    Text("Passphrase")
                 }
                 RaycastImportSelection(selection: $selection)
                 conflictNotice
@@ -117,11 +116,11 @@ struct BackupSettingsView: View {
                     if importing {
                         ProgressView().controlSize(.small)
                     } else {
-                        Button(String(localized: "Import")) { runRaycastImport() }
+                        Button("Import") { runRaycastImport() }
                             .disabled(!isRaycastExport || passphrase.isEmpty || selection.isEmpty)
                     }
                 } label: {
-                    Text(String(localized: "Import"))
+                    Text("Import")
                 }
                 if let status { statusRow(status) }
             } header: {
@@ -135,9 +134,9 @@ struct BackupSettingsView: View {
                 }
                 if core.settings.settingsFileEnabled {
                     LabeledContent {
-                        Button(String(localized: "Show in Finder"), action: BackupActions.revealSettingsFile)
+                        Button("Show in Finder", action: BackupActions.revealSettingsFile)
                     } label: {
-                        Text(String(localized: "Settings changed here are written to the file, and edits to it apply here."))
+                        Text("Settings changed here are written to the file, and edits to it apply here.")
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -154,17 +153,17 @@ struct BackupSettingsView: View {
     private var conflictNotice: some View {
         if raycastRunning {
             LabeledContent {
-                Button(String(localized: "Quit Raycast")) { BackupActions.quitRaycast() }
+                Button("Quit Raycast") { BackupActions.quitRaycast() }
             } label: {
                 Label(
-                    String(localized: "Raycast is running — quit it to avoid hotkey conflicts."),
+                    "Raycast is running — quit it to avoid hotkey conflicts.",
                     systemImage: "exclamationmark.triangle.fill"
                 )
                 .foregroundStyle(.orange)
             }
         } else {
             Label(
-                String(localized: "Unset matching Raycast shortcuts to avoid conflicts."),
+                "Unset matching Raycast shortcuts to avoid conflicts.",
                 systemImage: "info.circle"
             )
             .foregroundStyle(.secondary)

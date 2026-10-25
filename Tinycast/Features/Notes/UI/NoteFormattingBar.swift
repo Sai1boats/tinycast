@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// The title bar capsule's recipe along the bottom, one button per Markdown edit.
 struct NoteFormattingBar: View {
     @Environment(NotesCoordinator.self) private var notes
 
@@ -13,10 +12,16 @@ struct NoteFormattingBar: View {
     }
 
     private static let styles = [
-        Control(symbol: "bold", title: String(localized: "Bold"), shortcut: "⌘B", action: .toggleInline(.bold)) {
+        Control(
+            symbol: "bold", title: String(localized: "Bold"), shortcut: "⌘B",
+            action: .toggleInline(.bold)
+        ) {
             $0.inlineStyles.contains(.bold)
         },
-        Control(symbol: "italic", title: String(localized: "Italic"), shortcut: "⌘I", action: .toggleInline(.italic)) {
+        Control(
+            symbol: "italic", title: String(localized: "Italic"), shortcut: "⌘I",
+            action: .toggleInline(.italic)
+        ) {
             $0.inlineStyles.contains(.italic)
         },
         Control(
@@ -24,28 +29,44 @@ struct NoteFormattingBar: View {
             action: .toggleInline(.strikethrough)
         ) { $0.inlineStyles.contains(.strikethrough) },
         Control(
-            symbol: "chevron.left.forwardslash.chevron.right", title: String(localized: "Inline Code"), shortcut: "⌘E",
-            action: .toggleInline(.code)
+            symbol: "chevron.left.forwardslash.chevron.right", title: String(localized: "Inline Code"),
+            shortcut: "⌘E", action: .toggleInline(.code)
         ) { $0.inlineStyles.contains(.code) },
-        Control(symbol: "link", title: String(localized: "Link"), shortcut: "⌘K", action: .toggleLink) { $0.isLink }
+        Control(symbol: "link", title: String(localized: "Link"), shortcut: "⌘K", action: .toggleLink) {
+            $0.isLink
+        }
     ]
 
     private static let blocks = [
-        Control(symbol: "curlybraces", title: String(localized: "Code Block"), shortcut: "⌥⌘C", action: .toggleCodeBlock) {
+        Control(
+            symbol: "curlybraces", title: String(localized: "Code Block"), shortcut: "⌥⌘C",
+            action: .toggleCodeBlock
+        ) {
             $0.isCodeBlock
         },
-        Control(symbol: "text.quote", title: String(localized: "Quote"), shortcut: "⇧⌘B", action: .toggleQuote) { $0.isQuote }
+        Control(
+            symbol: "text.quote", title: String(localized: "Quote"), shortcut: "⇧⌘B",
+            action: .toggleQuote
+        ) { $0.isQuote }
     ]
 
     private static let lists = [
-        Control(symbol: "list.number", title: String(localized: "Numbered List"), shortcut: "⇧⌘7", action: .toggleList(.ordered))
-        {
+        Control(
+            symbol: "list.number", title: String(localized: "Numbered List"), shortcut: "⇧⌘7",
+            action: .toggleList(.ordered)
+        ) {
             $0.list == .ordered
         },
-        Control(symbol: "list.bullet", title: String(localized: "Bullet List"), shortcut: "⇧⌘8", action: .toggleList(.bullet)) {
+        Control(
+            symbol: "list.bullet", title: String(localized: "Bullet List"), shortcut: "⇧⌘8",
+            action: .toggleList(.bullet)
+        ) {
             $0.list == .bullet
         },
-        Control(symbol: "checklist", title: String(localized: "Task List"), shortcut: "⇧⌘9", action: .toggleList(.task)) {
+        Control(
+            symbol: "checklist", title: String(localized: "Task List"), shortcut: "⇧⌘9",
+            action: .toggleList(.task)
+        ) {
             $0.list == .task
         }
     ]
@@ -75,7 +96,7 @@ struct NoteFormattingBar: View {
         // Behind the buttons, not around them: glass clips content, tooltips draw outside it.
         .background { Capsule().fill(Color.clear).frosted(in: Capsule()) }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(String(localized: "Formatting"))
+        .accessibilityLabel("Formatting")
     }
 
     private func group(_ controls: [Control], _ formatting: NoteFormatting) -> some View {
@@ -94,7 +115,6 @@ struct NoteFormattingBar: View {
     }
 }
 
-/// The bar's handle: one round button that shows and hides every other control.
 private struct NoteFormattingToggle: View {
     let isExpanded: Bool
     let action: () -> Void
@@ -104,8 +124,8 @@ private struct NoteFormattingToggle: View {
             NoteBarGlyph(name: "paintbrush")
         }
         .focusable(false)
-        .accessibilityLabel(String(localized: "Formatting"))
-        .accessibilityValue(isExpanded ? String(localized: "Expanded") : String(localized: "Collapsed"))
+        .accessibilityLabel("Formatting")
+        .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
         // Against the window's trailing edge, so a centred label would run off it.
         .tooltip(String(localized: "Formatting  ⌥⌘T"), alignment: .trailing)
     }
@@ -148,7 +168,7 @@ private struct NoteHeadingButton: View {
             onFrameChange($0)
         }
         .focusable(false)
-        .accessibilityLabel(String(localized: "Heading"))
+        .accessibilityLabel("Heading")
         .accessibilityValue(accessibilityValue)
         .accessibilityAddTraits(isHeading ? .isSelected : [])
         // The leading end of an expanded capsule, which a narrow note pushes against the edge.

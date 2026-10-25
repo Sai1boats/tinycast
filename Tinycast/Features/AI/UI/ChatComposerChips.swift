@@ -22,11 +22,10 @@ struct ComposerChip: View {
             .padding(.vertical, metrics.spacing.xxs)
             .background(Capsule().fill(Theme.Colors.controlSurface))
             .tooltip(String(localized: "Offers only \(label)'s tools"), edge: .bottom)
-            .accessibilityLabel(String(localized: "Addressed to \(label)"))
+            .accessibilityLabel("Addressed to \(label)")
     }
 }
 
-/// The window composer's staged file: an image shows itself, a document its name, both an ✕.
 struct AttachmentChip: View {
     @Environment(\.metrics) private var metrics
     let attachment: ChatAttachment
@@ -61,7 +60,7 @@ struct AttachmentChip: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .help(String(localized: "Remove \(attachment.name)"))
+            .help("Remove \(attachment.name)")
         }
         // Inset under the inner gap, so the thumbnail reads as filling the pill.
         .padding(.horizontal, metrics.size.chatAttachmentInset)
@@ -72,7 +71,7 @@ struct AttachmentChip: View {
         )
         .onHover { hovered = $0 }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(String(localized: "Attached \(attachment.name)"))
+        .accessibilityLabel("Attached \(attachment.name)")
     }
 
     @ViewBuilder private var leading: some View {

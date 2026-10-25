@@ -12,7 +12,8 @@ struct ExtensionInstaller: Sendable {
         var message: String {
             switch self {
             case .downloading: return String(localized: "Downloading…")
-            case .installingDependencies(let manager): return String(localized: "Installing dependencies with \(manager)…")
+            case .installingDependencies(let manager):
+                return String(localized: "Installing dependencies with \(manager)…")
             case .building: return String(localized: "Building…")
             case .installing: return String(localized: "Installing…")
             }
@@ -250,7 +251,8 @@ struct ExtensionInstaller: Sendable {
                     Self.stop(process)
                     guard state.claim() else { return }
                     continuation.resume(
-                        returning: CommandResult(status: -1, output: String(localized: "timed out after 5 minutes")))
+                        returning: CommandResult(
+                            status: -1, output: String(localized: "timed out after 5 minutes")))
                 }
             }
         } onCancel: {

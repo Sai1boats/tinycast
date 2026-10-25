@@ -93,21 +93,27 @@ struct AppleIntelligenceProvider: AIProvider {
         switch error {
         case .exceededContextWindowSize:
             return .responseFailed(
-                String(localized: "This conversation is longer than the on-device model can hold. Start a new chat."))
+                String(
+                    localized: """
+                        This conversation is longer than the on-device model can hold. Start a new chat.
+                        """))
         case .guardrailViolation, .refusal:
             return .responseFailed(String(localized: "Apple Intelligence declined to answer that."))
         case .unsupportedLanguageOrLocale:
-            return .responseFailed(String(localized: "Apple Intelligence does not support this language yet."))
+            return .responseFailed(
+                String(localized: "Apple Intelligence does not support this language yet."))
         case .assetsUnavailable:
             return .unavailable(String(localized: "Apple Intelligence is still downloading its model."))
         case .rateLimited:
             return .responseFailed(String(localized: "Apple Intelligence is busy. Try again shortly."))
         case .concurrentRequests:
-            return .responseFailed(String(localized: "Apple Intelligence is already answering. Try again shortly."))
+            return .responseFailed(
+                String(localized: "Apple Intelligence is already answering. Try again shortly."))
         case .decodingFailure, .unsupportedGuide:
             return .malformedResponse
         @unknown default:
-            return .responseFailed(String(localized: "Apple Intelligence could not complete the response."))
+            return .responseFailed(
+                String(localized: "Apple Intelligence could not complete the response."))
         }
     }
 }

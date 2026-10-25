@@ -87,7 +87,7 @@ struct MCPServerEditor: View {
     var body: some View {
         VStack(spacing: 0) {
             SettingsEditorHeader(
-                title: target.isNew ? String(localized: "Add MCP Server") : String(localized: "Edit MCP Server")
+                title: target.isNew ? "Add MCP Server" : "Edit MCP Server"
             )
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, Theme.Spacing.dialogInset)
@@ -96,15 +96,15 @@ struct MCPServerEditor: View {
 
             Form {
                 Section {
-                    field(String(localized: "Name")) {
-                        TextField(String(localized: "Name"), text: $name, prompt: Text("GitHub"))
+                    field("Name") {
+                        TextField("Name", text: $name, prompt: Text(verbatim: "GitHub"))
                             .settingsEditorTextField()
                     }
-                    field(String(localized: "Handle")) {
-                        Text("@\(MCPSlug.normalize(name.isEmpty ? target.server.slug : name))")
+                    field("Handle") {
+                        Text(verbatim: "@\(MCPSlug.normalize(name.isEmpty ? target.server.slug : name))")
                             .foregroundStyle(.secondary)
                     }
-                    field(String(localized: "Connection")) {
+                    field("Connection") {
                         SteadySegmentedPicker(
                             title: String(localized: "Connection"),
                             options: Kind.allCases.map { .init(value: $0, title: $0.title) },
@@ -112,46 +112,49 @@ struct MCPServerEditor: View {
                     }
                     if kind == .http {
                         field("URL") {
-                            TextField("URL", text: $url, prompt: Text("https://example.com/mcp"))
+                            TextField("URL", text: $url, prompt: Text(verbatim: "https://example.com/mcp"))
                                 .settingsEditorTextField()
                         }
-                        field(String(localized: "Authentication")) {
-                            Picker(String(localized: "Authentication"), selection: $usesOAuth) {
-                                Text(String(localized: "Header")).tag(false)
-                                Text("OAuth").tag(true)
+                        field("Authentication") {
+                            Picker("Authentication", selection: $usesOAuth) {
+                                Text("Header").tag(false)
+                                Text(verbatim: "OAuth").tag(true)
                             }
                             .labelsHidden()
                         }
                         if usesOAuth {
                             oauthFields
                         } else {
-                            field(String(localized: "Header")) {
-                                TextField(String(localized: "Header"), text: $headerName, prompt: Text("Authorization"))
-                                    .settingsEditorTextField()
+                            field("Header") {
+                                TextField(
+                                    "Header", text: $headerName, prompt: Text(verbatim: "Authorization")
+                                )
+                                .settingsEditorTextField()
                             }
-                            field(String(localized: "Value")) {
+                            field("Value") {
                                 RevealableSecureField(
-                                    title: String(localized: "Value"), text: $headerValue, prompt: Text("Bearer …")
+                                    title: String(localized: "Value"), text: $headerValue,
+                                    prompt: Text(verbatim: "Bearer …")
                                 )
                                 .settingsEditorTextField()
                             }
                         }
                     } else {
-                        field(String(localized: "Command")) {
-                            TextField(String(localized: "Command"), text: $command, prompt: Text("npx"))
+                        field("Command") {
+                            TextField("Command", text: $command, prompt: Text(verbatim: "npx"))
                                 .settingsEditorTextField()
                         }
-                        field(String(localized: "Arguments")) {
+                        field("Arguments") {
                             TextField(
-                                String(localized: "Arguments"), text: $argumentText,
-                                prompt: Text("-y @modelcontextprotocol/server-filesystem ~/Desktop")
+                                "Arguments", text: $argumentText,
+                                prompt: Text(verbatim: "-y @modelcontextprotocol/server-filesystem ~/Desktop")
                             )
                             .settingsEditorTextField()
                         }
-                        field(String(localized: "Environment")) {
+                        field("Environment") {
                             TextField(
-                                String(localized: "Environment"), text: $environmentText,
-                                prompt: Text("GITHUB_TOKEN=…"), axis: .vertical
+                                "Environment", text: $environmentText,
+                                prompt: Text(verbatim: "GITHUB_TOKEN=…"), axis: .vertical
                             )
                             .textFieldStyle(.plain)
                             .lineLimit(2...5)
@@ -161,25 +164,29 @@ struct MCPServerEditor: View {
                 } footer: {
                     Text(
                         kind == .http
-                            ? String(localized: "Remote endpoints must use HTTPS. Credentials are stored in your ")
-                                + String(localized: "login Keychain, never in preferences.")
-                            : String(localized: "The command runs on this Mac with your own account. One ")
-                                + String(localized: "NAME=value per line; values are stored in your login Keychain.")
+                            ? """
+                            Remote endpoints must use HTTPS. Credentials are stored in your login \
+                            Keychain, never in preferences.
+                            """
+                            : """
+                            The command runs on this Mac with your own account. One NAME=value per \
+                            line; values are stored in your login Keychain.
+                            """
                     )
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 }
 
                 Section {
-                    Toggle(String(localized: "Offer this server's tools"), isOn: $isEnabled)
-                    field(String(localized: "Trust")) {
-                        Picker(String(localized: "Trust"), selection: $trust) {
+                    Toggle("Offer this server's tools", isOn: $isEnabled)
+                    field("Trust") {
+                        Picker("Trust", selection: $trust) {
                             ForEach(MCPTrust.allCases) { Text(LocalizedStringKey($0.title)).tag($0) }
                         }
                         .labelsHidden()
                     }
                     HStack(spacing: Theme.Spacing.lg) {
-                        Button(String(localized: "Test Connection"), action: test)
+                        Button("Test Connection", action: test)
                             .disabled(operation != nil)
                         probeLabel
                     }
@@ -188,8 +195,10 @@ struct MCPServerEditor: View {
                     }
                 } footer: {
                     Text(
-                        String(localized: "Ask Each Chat puts the first tool call of every conversation through a ")
-                            + String(localized: "confirmation. Never Allow withholds the server without removing it.")
+                        """
+                        Ask Each Chat puts the first tool call of every conversation through a \
+                        confirmation. Never Allow withholds the server without removing it.
+                        """
                     )
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -200,10 +209,10 @@ struct MCPServerEditor: View {
 
             Divider()
             HStack(spacing: Theme.Spacing.md) {
-                Button(String(localized: "Cancel"), action: onCancel)
+                Button("Cancel", action: onCancel)
                     .buttonStyle(.modalAction(.cancel))
                     .keyboardShortcut(.cancelAction)
-                Button(String(localized: "Save"), action: save)
+                Button("Save", action: save)
                     .disabled(operation != nil)
                     .buttonStyle(.modalAction(.primary))
                     .keyboardShortcut(.defaultAction)
@@ -226,28 +235,23 @@ struct MCPServerEditor: View {
 
     private var oauthFields: some View {
         Group {
-            field(String(localized: "Client ID")) {
-                TextField(String(
-                    localized: "Client ID"
-                ), text: $clientID, prompt: Text(String(
-                    localized: "Optional — register automatically"
-                )))
+            field("Client ID") {
+                TextField("Client ID", text: $clientID, prompt: Text("Optional — register automatically"))
                     .settingsEditorTextField()
             }
-            field(String(localized: "Client secret")) {
-                RevealableSecureField(title: String(
-                    localized: "Client secret"
-                ), text: $clientSecret, prompt: Text(String(
-                    localized: "Optional"
-                )))
-                    .settingsEditorTextField()
+            field("Client secret") {
+                RevealableSecureField(
+                    title: String(localized: "Client secret"), text: $clientSecret,
+                    prompt: Text("Optional")
+                )
+                .settingsEditorTextField()
             }
-            field(String(localized: "Sign-in")) {
+            field("Sign-in") {
                 HStack(spacing: Theme.Spacing.lg) {
                     switch authenticationStatus {
                     case .signedIn: Button("Sign Out", action: signOut).disabled(operation != nil)
-                    case .signingIn: Button(String(localized: "Cancel"), action: cancelOperation)
-                    default: Button(String(localized: "Sign In"), action: signIn).disabled(operation != nil)
+                    case .signingIn: Button("Cancel", action: cancelOperation)
+                    default: Button("Sign In", action: signIn).disabled(operation != nil)
                     }
                     Text(authenticationStatus.label)
                         .font(.caption).foregroundStyle(.secondary)
@@ -299,7 +303,9 @@ struct MCPServerEditor: View {
             storedOAuth?.token = nil
             probe = .idle
             error = nil
-        } catch { self.error = String(localized: "The credentials could not be removed from your login Keychain.") }
+        } catch {
+            self.error = String(localized: "The credentials could not be removed from your login Keychain.")
+        }
     }
 
     private func cancelOperation() {
@@ -315,7 +321,7 @@ struct MCPServerEditor: View {
         case .running:
             ProgressView().controlSize(.small)
         case .found(let count):
-            Label(count == 1 ? String(localized: "1 tool") : String(localized: "\(count) tools"), systemImage: "checkmark.circle")
+            Label("\(count) tools", systemImage: "checkmark.circle")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         case .failed(let message):
@@ -326,7 +332,7 @@ struct MCPServerEditor: View {
     }
 
     private func field<Content: View>(
-        _ label: String, @ViewBuilder content: () -> Content
+        _ label: LocalizedStringResource, @ViewBuilder content: () -> Content
     ) -> some View {
         SettingsEditorField(label, content: content)
     }

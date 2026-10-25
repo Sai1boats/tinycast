@@ -17,7 +17,7 @@ struct SettingsSidebarView: View {
                 found
             }
         }
-        .searchable(text: $query, isPresented: $searching, placement: .sidebar, prompt: String(localized: "Search"))
+        .searchable(text: $query, isPresented: $searching, placement: .sidebar, prompt: "Search")
         .onExitCommand { query = "" }
         .background(focusShortcut)
     }
@@ -54,14 +54,13 @@ struct SettingsSidebarView: View {
         } else {
             // A second `List`, so result IDs and `SettingsTab` never share a selection namespace.
             List(selection: $highlighted) {
-                Section(String(localized: "Results")) {
+                Section("Results") {
                     ForEach(results) { entry in
                         SettingsSearchResultRow(entry: entry).tag(entry.id)
                     }
                 }
             }
             .listStyle(.sidebar)
-            // Arrowing through results moves the pane with the selection, as System Settings does.
             .onChange(of: highlighted) { _, id in
                 guard let entry = results.first(where: { $0.id == id }) else { return }
                 navigation.select(entry.tab, revealing: entry.target)
@@ -71,7 +70,7 @@ struct SettingsSidebarView: View {
 
     /// ⌘F with no menu item to hang it on; zero-sized so it only ever contributes the shortcut.
     private var focusShortcut: some View {
-        Button(String(localized: "Search Settings")) { searching = true }
+        Button("Search Settings") { searching = true }
             .keyboardShortcut("f", modifiers: .command)
             .buttonStyle(.plain)
             .frame(width: 0, height: 0)

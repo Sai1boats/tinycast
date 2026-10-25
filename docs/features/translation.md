@@ -100,3 +100,6 @@ and selection/paste in Safari, a text editor and an app that cannot expose its s
 or go offline, to see Apple answer with the reason in the footer. These need credentials, installed
 Apple language pairs and app-level Accessibility grants and are not implied by a passing build or
 mocked harness.
+
+Apple translation resolves installed language pairs across regional spellings while keeping scripts
+distinct. Long-text requests still translate paragraph batches and preserve paragraph identifiers.

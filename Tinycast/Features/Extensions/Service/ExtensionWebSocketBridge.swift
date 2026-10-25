@@ -19,7 +19,7 @@ final class ExtensionWebSocketBridge: NSObject, Sendable, URLSessionWebSocketDel
         var errorDescription: String? {
             switch self {
             case .badURL(let url): return "Invalid WebSocket URL: \(url)"
-            case .closed: return String(localized: "The WebSocket is closed.")
+            case .closed: return "The WebSocket is closed."
             case .unknown(let method): return "Unknown host call 'websocket.\(method)'."
             }
         }

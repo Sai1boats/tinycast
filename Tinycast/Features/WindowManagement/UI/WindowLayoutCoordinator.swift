@@ -50,7 +50,6 @@ final class WindowLayoutCoordinator {
 
     // MARK: - Running
 
-    /// The one funnel for a palette row, a global shortcut and the pane's Apply alike.
     func runWindowLayout(id: UUID) {
         guard settings.windowManagementEnabled, let layout = store.layout(id: id) else { return }
         // Never restoreFocus: an opened app activates itself, and handing focus back races that.
@@ -144,14 +143,13 @@ final class WindowLayoutCoordinator {
         guard let detail = detail(for: outcome) else { return }
         guard outcome.didAnything else {
             await core.showNotice(
-                title: String(localized: "Couldn't Run “\(layout.name)”"), message: detail, symbol: layout.symbol,
-                tone: .danger)
+                title: String(localized: "Couldn't Run “\(layout.name)”"), message: detail,
+                symbol: layout.symbol, tone: .danger)
             return
         }
         core.showMessage("\(layout.name) — \(detail)", tone: .neutral)
     }
 
-    /// What went wrong, or nil when everything the layout asked for happened.
     private func detail(for outcome: WindowLayoutRunner.Outcome) -> String? {
         var parts: [String] = []
         if let skipped = WindowLayoutPlan(placements: [], skipped: outcome.skipped).skippedSummary {
@@ -159,15 +157,11 @@ final class WindowLayoutCoordinator {
         }
         if !outcome.neverAppeared.isEmpty {
             let count = outcome.neverAppeared.count
-            parts.append(count == 1 ? String(localized: "1 app didn't open") : String(localized: "\(count) apps didn't open"))
+            parts.append(String(localized: "\(count) apps didn't open"))
         }
         let failed = outcome.openFailures.count
         if failed > 0 {
-            parts.append(failed == 1 ? String(
-                localized: "1 app couldn't open"
-            ) : String(
-                localized: "\(failed) apps couldn't open"
-            ))
+            parts.append(String(localized: "\(failed) apps couldn't open"))
         }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
     }
@@ -175,7 +169,7 @@ final class WindowLayoutCoordinator {
     private func report(failure: WindowLayoutValidationError) async {
         await core.showNotice(
             title: String(localized: "Couldn't Save the Layout"),
-            message: failure.errorDescription.map { NSLocalizedString($0, comment: "Error message") } ?? String(localized: "The layout could not be saved."),
+            message: failure.errorDescription ?? String(localized: "The layout could not be saved."),
             symbol: WindowLayout.sfSymbol, tone: .danger)
     }
 

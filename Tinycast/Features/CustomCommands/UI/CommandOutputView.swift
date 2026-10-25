@@ -45,7 +45,6 @@ struct CommandOutputView: View {
         .padding(.bottom, Theme.Spacing.lg)
     }
 
-    /// One control for one job: Stop while it runs, Run Again once it has.
     private func actions(_ run: CommandRun) -> some View {
         HStack(spacing: Theme.Spacing.xs) {
             CopyLogButton(log: run.log)
@@ -77,12 +76,12 @@ struct CommandOutputView: View {
                 .frame(width: Self.statusDot, height: Self.statusDot)
             if let outcome = run.outcome {
                 Text(outcome.summary)
-                Text("·")
+                Text(verbatim: "·")
                     .foregroundStyle(Theme.Colors.textTertiary)
                 Text(CommandDuration.text(from: run.startedAt, to: outcome.finishedAt))
             } else {
-                Text(String(localized: "Running"))
-                Text("·")
+                Text("Running")
+                Text(verbatim: "·")
                     .foregroundStyle(Theme.Colors.textTertiary)
                 elapsed(from: run.startedAt)
             }
@@ -114,7 +113,7 @@ struct CommandOutputView: View {
         if let hint = run.outcome?.hint {
             HStack(spacing: Theme.Spacing.sm) {
                 Text(hint)
-                Button(String(localized: "Open Settings")) { presenter.showCommandSettings() }
+                Button("Open Settings") { presenter.showCommandSettings() }
                     .buttonStyle(.link)
             }
             .font(.callout)
@@ -133,7 +132,6 @@ struct CommandOutputView: View {
     }
 }
 
-/// Copies the whole log, then shows a checkmark long enough to be believed.
 private struct CopyLogButton: View {
     let log: String
     @State private var copiedAt: Date?
@@ -156,13 +154,18 @@ private struct CopyLogButton: View {
     }
 }
 
-/// Elapsed time, in the one place a duration becomes text.
 enum CommandDuration {
     static func text(from start: Date, to end: Date) -> String {
         let seconds = max(0, end.timeIntervalSince(start))
-        if seconds < 10 { return String(format: "%.1fs", seconds) }
-        if seconds < 60 { return "\(Int(seconds))s" }
-        let whole = Int(seconds)
-        return "\(whole / 60)m \(whole % 60)s"
+        let duration = Duration.seconds(seconds)
+        if seconds < 10 {
+            return duration.formatted(
+                .units(allowed: [.seconds], width: .narrow, fractionalPart: .show(length: 1)))
+        }
+        let units: Set<Duration.UnitsFormatStyle.Unit> = seconds < 60 ? [.seconds] : [.minutes, .seconds]
+        return duration.formatted(
+            .units(
+                allowed: units, width: .narrow, zeroValueUnits: .show(length: 1),
+                fractionalPart: .hide(rounded: .down)))
     }
 }

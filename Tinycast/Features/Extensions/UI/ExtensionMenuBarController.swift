@@ -71,7 +71,8 @@ final class ExtensionMenuBarController: NSObject, NSMenuDelegate {
         self.snapshot = snapshot
         if previous?.title != snapshot.title { status.button?.title = snapshot.title ?? "" }
         if previous?.tooltip != snapshot.tooltip { status.button?.toolTip = snapshot.tooltip }
-        status.button?.setAccessibilityLabel(snapshot.tooltip ?? snapshot.title ?? String(localized: "Extension menu"))
+        status.button?.setAccessibilityLabel(
+            snapshot.tooltip ?? snapshot.title ?? String(localized: "Extension menu"))
         // A menu-bar extra with no rows has nothing to open, so it detaches rather than show one.
         if previous?.hasMenu != snapshot.hasMenu { status.menu = snapshot.hasMenu ? menu : nil }
         let iconChanged = previous?.iconJSON != snapshot.iconJSON || previous == nil

@@ -26,8 +26,8 @@ struct CustomQuickActionEditorPanel: View {
         "paintbrush", "hammer", "heart", "star"
     ]
 
-    private static let placeholder =
-        "Make the text more concise, keeping the writer's voice and meaning."
+    private static let placeholder = String(
+        localized: "Make the text more concise, keeping the writer's voice and meaning.")
 
     init(request: CustomQuickActionEditRequest, model: AIModelSelection?) {
         existing = request.action
@@ -40,12 +40,8 @@ struct CustomQuickActionEditorPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
             SettingsEditorHeader(
-                title: existing == nil ? String(
-                    localized: "New Quick Action"
-                ) : String(
-                    localized: "Edit \(existing?.name ?? "")"
-                ),
-                subtitle: String(localized: "Tinycast sends your selected text to the model with these instructions.")
+                title: existing == nil ? "New Quick Action" : "Edit \(existing?.name ?? "")",
+                subtitle: "Tinycast sends your selected text to the model with these instructions."
             )
 
             HStack(alignment: .bottom, spacing: Theme.Spacing.lg) {
@@ -65,17 +61,17 @@ struct CustomQuickActionEditorPanel: View {
 
             HStack(spacing: Theme.Spacing.md) {
                 if let existing {
-                    Button(String(localized: "Delete"), role: .destructive) {
+                    Button("Delete", role: .destructive) {
                         dismiss()
                         Task { await core.quickActionCoordinator.deleteCustomQuickAction(id: existing.id) }
                     }
                     .buttonStyle(.modalAction(.destructive, fillsWidth: false))
                 }
                 Spacer()
-                Button(String(localized: "Cancel")) { dismiss() }
+                Button("Cancel") { dismiss() }
                     .buttonStyle(.modalAction(.cancel))
                     .keyboardShortcut(.cancelAction)
-                Button(String(localized: "Save"), action: save)
+                Button("Save", action: save)
                     .buttonStyle(.modalAction(.primary))
                     .keyboardShortcut(.defaultAction)
                     .disabled(!canSave)
@@ -88,23 +84,23 @@ struct CustomQuickActionEditorPanel: View {
 
     private var nameField: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            Text(String(localized: "Name"))
+            Text("Name")
                 .font(.callout.weight(.medium))
-            TextField(String(localized: "Make Concise"), text: $name)
+            TextField("Make Concise", text: $name)
                 .settingsEditorTextField()
         }
     }
 
     private var iconField: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            Text(String(localized: "Icon"))
+            Text("Icon")
                 .font(.callout.weight(.medium))
             Button {
                 showingIconPicker = true
             } label: {
                 HStack(spacing: Theme.Spacing.sm) {
                     SymbolImage(name: iconSymbol ?? CustomQuickAction.sfSymbol, size: 14)
-                    Text(iconSymbol == nil ? String(localized: "Automatic") : String(localized: "Custom"))
+                    Text(iconSymbol == nil ? "Automatic" : "Custom")
                         .lineLimit(1)
                     Spacer(minLength: 0)
                 }
@@ -123,7 +119,7 @@ struct CustomQuickActionEditorPanel: View {
 
     private var instructionsField: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            Text(String(localized: "Instructions"))
+            Text("Instructions")
                 .font(.callout.weight(.medium))
             TextEditor(text: $instructions)
                 .font(.body)
@@ -137,8 +133,10 @@ struct CustomQuickActionEditorPanel: View {
                     }
                 }
             Text(
-                String(localized: "Tinycast always tells the model to return only the transformed text, and to treat ")
-                    + String(localized: "your selection as material rather than as instructions.")
+                """
+                Tinycast always tells the model to return only the transformed text, and to treat \
+                your selection as material rather than as instructions.
+                """
             )
             .font(.caption)
             .foregroundStyle(.secondary)

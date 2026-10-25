@@ -13,7 +13,7 @@ struct ClipboardSettingsView: View {
                 Toggle(isOn: $settings.clipboardEnabled) {
                     SettingsFeatureToggleLabel(
                         anchor: .clipboardClipboard, title: "Enable Clipboard History",
-                        subtitle: String(localized: "Keep copied items ready to reuse."))
+                        subtitle: "Keep copied items ready to reuse.")
                 }
             }
             .settingsAnchor(.clipboardClipboard)
@@ -31,7 +31,7 @@ struct ClipboardSettingsView: View {
                 }
                 Toggle(isOn: $settings.clipboardTextSearchEnabled) {
                     SettingsRowTitle(.clipboardHistory, "Search text in images and PDFs")
-                    Text(String(localized: "Recognized on this Mac while idle."))
+                    Text("Recognized on this Mac while idle.")
                 }
                 Picker(selection: $settings.clipboardDefaultAction) {
                     ForEach(ClipboardDefaultAction.allCases) { action in
@@ -39,7 +39,7 @@ struct ClipboardSettingsView: View {
                     }
                 } label: {
                     SettingsRowTitle(.clipboardHistory, "Default action")
-                    Text(String(localized: "↵ does this, and Paste takes its shortcut."))
+                    Text("↵ does this, and Paste takes its shortcut.")
                 }
             } header: {
                 SettingsSectionHeader(.clipboardHistory)
@@ -55,26 +55,26 @@ struct ClipboardSettingsView: View {
 
             Section {
                 LabeledContent {
-                    Button(String(localized: "Clear…"), role: .destructive) { confirmingClear = true }
+                    Button("Clear…", role: .destructive) { confirmingClear = true }
                 } label: {
                     SettingsRowTitle(.clipboardDisabledApplications, "Clear history")
-                    Text(String(localized: "Removes every clip and image."))
+                    Text("Removes every item in the history.")
                 }
             }
         }
         .formStyle(.grouped)
         .settingsScrollTarget(.clipboard)
         .confirmationDialog(
-            String(localized: "Clear clipboard history?"),
+            "Clear clipboard history?",
             isPresented: $confirmingClear,
             titleVisibility: .visible
         ) {
-            Button(String(localized: "Clear History"), role: .destructive) {
+            Button("Clear History", role: .destructive) {
                 core.clipboardCoordinator.clearHistory()
             }
-            Button(String(localized: "Cancel"), role: .cancel) {}
+            Button("Cancel", role: .cancel) {}
         } message: {
-            Text(String(localized: "This can't be undone."))
+            Text("This can't be undone.")
         }
     }
 }

@@ -21,10 +21,10 @@ struct SearchScopesSection: View {
             }
 
             HStack(spacing: Theme.Spacing.lg) {
-                Button(String(localized: "Add…"), action: addScopes)
-                    .help(String(localized: "Add a folder or application to search."))
+                Button("Add…", action: addScopes)
+                    .help("Add a folder or application to search.")
                 if !isDefault {
-                    Button(String(localized: "Restore Defaults")) { settings.searchScopes = SearchScopes.defaults }
+                    Button("Restore Defaults") { settings.searchScopes = SearchScopes.defaults }
                 }
             }
         } header: {

@@ -7,7 +7,6 @@ struct HyperKeySettingsSection: View {
 
     private var manager: HyperKeyManager { core.hyperKey }
 
-    /// The Hyper modifier chord as prose glyphs, tracking the Include Shift toggle.
     private var hyperGlyphs: String { settings.hyperKeyIncludesShift ? "⌃⌥⇧⌘" : "⌃⌥⌘" }
 
     /// Only a choice made here resets Quick Press: settings.json may set both keys at once.
@@ -29,12 +28,10 @@ struct HyperKeySettingsSection: View {
 
     private var hyperSubtitle: String {
         guard settings.hyperKey != .none else {
-            return String(localized: "Remap one key to \(hyperGlyphs) held together.")
+            return String(localized: "Use one key to hold \(hyperGlyphs) together.")
         }
         return String(
-            localized:
-                "\(physicalKeyTitle) sends \(hyperGlyphs), shown as ✦ in shortcuts."
-        )
+            localized: "\(settings.hyperKey.title) sends \(hyperGlyphs), shown as ✦ in shortcuts.")
     }
 
     var body: some View {
@@ -57,18 +54,14 @@ struct HyperKeySettingsSection: View {
 
             if settings.hyperKey.hasOriginalFunction {
                 Picker(selection: $settings.hyperKeyQuickPress) {
-                    Text(String(localized: "Does Nothing")).tag(HyperKeyQuickPress.none)
+                    Text("Does Nothing").tag(HyperKeyQuickPress.none)
                     if let original = settings.hyperKey.quickPressOriginalTitle {
                         Text(LocalizedStringKey(original)).tag(HyperKeyQuickPress.originalKey)
                     }
-                    Text(String(localized: "Trigger Escape")).tag(HyperKeyQuickPress.escape)
+                    Text("Trigger Escape").tag(HyperKeyQuickPress.escape)
                 } label: {
                     SettingsRowTitle(.generalHyperKey, "Quick Press")
-                    Text(
-                        String(
-                            localized:
-                                "When \(physicalKeyTitle) is pressed alone."
-                        ))
+                    Text("When you press and release \(settings.hyperKey.title) on its own.")
                 }
             }
 
@@ -82,12 +75,11 @@ struct HyperKeySettingsSection: View {
                 Toggle(isOn: $settings.hyperKeySecureInputCompatibility) {
                     SettingsRowTitle(.generalHyperKey, "Secure Input Compatibility")
                     Text(
-                        String(
-                            localized: """
-                                Tinycast's Hyper shortcuts also work in password fields and secure terminals, \
-                                where Right Control (⌃) with the same key triggers them. \
-                                While on, Right Control (⌃) acts as the Hyper Key too.
-                                """))
+                        """
+                        Tinycast's Hyper shortcuts also work in password fields and secure terminals, \
+                        where Right Control (⌃) with the same key triggers them. \
+                        While on, Right Control (⌃) acts as the Hyper Key too.
+                        """)
                 }
             }
         } header: {
@@ -119,12 +111,10 @@ struct HyperKeySettingsSection: View {
                     ColorDot(color: tint)
                     Text(title).foregroundStyle(.secondary)
                     if status == .needsAccessibility {
-                        Button(String(localized: "Grant Access…")) { Permissions.openAccessibilitySettings() }
+                        Button("Grant Access…") { Permissions.openAccessibilitySettings() }
                     }
                     Button(
-                        isShowingDiagnostics
-                            ? String(localized: "Hide Diagnostics") : String(localized: "Diagnostics…"),
-                        action: toggleDiagnostics)
+                        isShowingDiagnostics ? "Hide Diagnostics" : "Diagnostics…", action: toggleDiagnostics)
                 }
             }
         }
@@ -146,7 +136,8 @@ struct HyperKeySettingsSection: View {
                 return String(localized: "\(appName) runs its own Hyper Key. Quit it to use this one.")
             case .remapUnavailable: return String(localized: "macOS refused to remap the keyboard.")
             case .paused:
-                return String(localized: "Handed back while the Mac sleeps, locks or switches user.")
+                return String(
+                    localized: "The key works normally during sleep, screen lock or user switching.")
             case .off, .active, .needsAccessibility: return nil
             }
         }

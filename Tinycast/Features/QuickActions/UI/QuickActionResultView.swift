@@ -41,7 +41,6 @@ struct QuickActionResultView: View {
         .background(Theme.Colors.panelScrim)
         .background(GlassEffectView())
         .clipShape(RoundedRectangle(cornerRadius: metrics.radius.dialog, style: .continuous))
-        .panelEntrance()
         // Reported, not measured: the frame above is ours, so reading it back would feed itself.
         .onChange(of: panelHeight, initial: true) { onHeight(panelHeight) }
     }
@@ -111,7 +110,7 @@ struct QuickActionResultView: View {
         case .running where state.output.isEmpty:
             HStack(spacing: metrics.spacing.md) {
                 ProgressView().controlSize(.small)
-                Text(String(localized: "Working…")).foregroundStyle(Theme.Colors.textSecondary)
+                Text("Working…").foregroundStyle(Theme.Colors.textSecondary)
             }
             .font(metrics.typography.rowTitle)
         case .running, .finished:
@@ -131,7 +130,7 @@ struct QuickActionResultView: View {
         if !chunks.isEmpty {
             // One `Text` per chunk would break the wrap, so the runs are styled inside one string.
             prose(Text(attributed(chunks)))
-        } else if state.action == .summarize {
+        } else if state.action.rendersMarkdown {
             ChatMarkdownText(blocks: MarkdownBlock.parse(state.output, midStream: state.isRunning))
         } else {
             prose(Text(state.output))
@@ -169,14 +168,14 @@ struct QuickActionResultView: View {
         let language = TextTranslator.displayName(of: state.targetLanguage)
         return VStack(alignment: .leading, spacing: metrics.spacing.lg) {
             VStack(alignment: .leading, spacing: metrics.spacing.xs) {
-                Text(String(localized: "\(language) hasn't been downloaded yet."))
+                Text("\(language) hasn't been downloaded yet.")
                     .font(metrics.typography.rowTitle)
                     .foregroundStyle(Theme.Colors.textSecondary)
-                Text(String(localized: "Click **Translation Languages…** in Language & Region, then download it."))
+                Text("Click **Translation Languages…** in Language & Region, then download it.")
                     .font(metrics.typography.rowTrailing)
                     .foregroundStyle(Theme.Colors.textTertiary)
             }
-            Button(String(localized: "Open Language & Region"), action: onOpenLanguageSettings)
+            Button("Open Language & Region", action: onOpenLanguageSettings)
                 .buttonStyle(.modalAction(.standard, fillsWidth: false))
         }
     }
@@ -195,12 +194,12 @@ struct QuickActionResultView: View {
     private var footer: some View {
         HStack(spacing: metrics.spacing.md) {
             Spacer(minLength: metrics.spacing.md)
-            Button(String(localized: "Dismiss"), action: onCancel)
+            Button("Dismiss", action: onCancel)
                 .buttonStyle(.modalAction(.cancel, fillsWidth: false))
-            Button(String(localized: "Copy"), action: onCopy)
+            Button("Copy", action: onCopy)
                 .buttonStyle(.modalAction(.standard, fillsWidth: false))
                 .disabled(!state.canReplace)
-            Button(String(localized: "Replace"), action: onReplace)
+            Button("Replace", action: onReplace)
                 .buttonStyle(.modalAction(.primary, fillsWidth: false))
                 .disabled(!state.canReplace)
         }

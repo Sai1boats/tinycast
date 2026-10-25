@@ -1,9 +1,16 @@
+import Foundation
+
 /// One `Section` inside a pane, named once so the catalog and the pane cannot disagree: the search
 /// result carries the anchor, the pane's `.settingsAnchor(_:)` marks the section it scrolls to.
 struct SettingsAnchor: Hashable, Sendable {
     let tab: SettingsTab
     /// The `Section`'s own header text, which is also what a result's breadcrumb reads.
     let title: String
+
+    init(tab: SettingsTab, title: LocalizedStringResource) {
+        self.tab = tab
+        self.title = title.resolved()
+    }
 }
 
 // Named `<pane><Section>` throughout, so the constant for a section is always guessable from it.
@@ -32,7 +39,9 @@ extension SettingsAnchor {
     static let quicklinksImportExport = Self(tab: .quicklinks, title: "Import & Export")
 
     static let appleShortcutsAppleShortcuts = Self(tab: .appleShortcuts, title: "Apple Shortcuts")
-    static let appleShortcutsShortcuts = Self(tab: .appleShortcuts, title: "Shortcuts")
+    static let appleShortcutsShortcuts = Self(
+        tab: .appleShortcuts,
+        title: LocalizedStringResource("apple-shortcuts-section", defaultValue: "Shortcuts"))
 
     static let fallbacksFallbacks = Self(tab: .fallbacks, title: "Fallbacks")
 
@@ -57,6 +66,8 @@ extension SettingsAnchor {
     static let dictationOutput = Self(tab: .dictation, title: "Output")
 
     static let fileSearchFileSearch = Self(tab: .fileSearch, title: "File Search")
+    static let fileSearchFullDiskAccess = Self(tab: .fileSearch, title: "Full Disk Access")
+    static let fileSearchIndex = Self(tab: .fileSearch, title: "Index")
     static let fileSearchCommands = Self(tab: .fileSearch, title: "Commands")
     static let fileSearchSearchScopes = Self(tab: .fileSearch, title: "Search Scopes")
     static let fileSearchIgnorePatterns = Self(tab: .fileSearch, title: "Ignore Patterns")
@@ -93,7 +104,7 @@ extension SettingsAnchor {
     static let clipboardCommands = Self(tab: .clipboard, title: "Commands")
     static let clipboardHistory = Self(tab: .clipboard, title: "History")
     static let clipboardDisabledApplications = Self(
-        tab: .clipboard, title: "Disabled Applications")
+        tab: .clipboard, title: "Excluded Applications")
 
     static let emojiCommands = Self(tab: .emoji, title: "Commands")
     static let emojiAppearance = Self(tab: .emoji, title: "Appearance")
@@ -106,11 +117,16 @@ extension SettingsAnchor {
 
     static let extensionsExtensions = Self(tab: .extensions, title: "Extensions")
     static let extensionsCompatibility = Self(tab: .extensions, title: "Compatibility")
-    static let extensionsInstalled = Self(tab: .extensions, title: "Installed")
-    static let extensionsInstall = Self(tab: .extensions, title: "Install")
+    static let extensionsInstalled = Self(
+        tab: .extensions,
+        title: LocalizedStringResource("extensions-installed-section", defaultValue: "Installed"))
+    static let extensionsInstall = Self(
+        tab: .extensions,
+        title: LocalizedStringResource("extensions-install-section", defaultValue: "Install"))
     static let extensionsStorage = Self(tab: .extensions, title: "Storage")
 
     static let permissionsAccessibility = Self(tab: .permissions, title: "Accessibility")
+    static let permissionsFullDiskAccess = Self(tab: .permissions, title: "Full Disk Access")
     static let permissionsCalendars = Self(tab: .permissions, title: "Calendars")
     static let permissionsMicrophone = Self(tab: .permissions, title: "Microphone")
 
@@ -123,7 +139,6 @@ extension SettingsAnchor {
     static let aboutLinks = Self(tab: .about, title: "Links")
 }
 
-/// Where a search result lands: a whole section, or one row inside it.
 enum SettingsTarget: Hashable, Sendable {
     case section(SettingsAnchor)
     /// The row's visible title, which is also the catalog entry's — they are the same string.

@@ -1,10 +1,16 @@
 import SwiftUI
 
 @main
+enum TinycastLaunch {
+    static func main() {
+        AppSettings.pinLanguage()
+        TinycastApp.main()
+    }
+}
+
 struct TinycastApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
-    // Channel-aware: "Tinycast", "Tinycast Dev", or "Tinycast Beta".
     private let appName = Bundle.main.appDisplayName
 
     /// Two independent items: one preference each, no state either can read off the other.
@@ -46,7 +52,7 @@ struct TinycastApp: App {
                     guard settings.calendarMenuBarDisplay == .disabled else { return }
                     settings.calendarMenuBarDisplay = .meetingIcon
                 } else {
-                    // SwiftUI echoes our own removal back here; only a drag-out means "turn it off".
+                    // SwiftUI echoes our own removal back; only a drag-out means "turn it off".
                     guard !isCalendarMenuBarHiddenWhenEmpty, settings.calendarMenuBarDisplay != .disabled
                     else { return }
                     settings.calendarMenuBarDisplay = .disabled
@@ -64,14 +70,14 @@ struct TinycastApp: App {
     @CommandsBuilder
     private var menuBarCommands: some Commands {
         CommandGroup(replacing: .appInfo) {
-            Button(String(localized: "About \(appName)")) { AppCore.shared.settingsCoordinator.showAbout() }
+            Button("About \(appName)") { AppCore.shared.settingsCoordinator.showAbout() }
         }
         CommandGroup(replacing: .appSettings) {
-            Button(String(localized: "Settings…")) { AppCore.shared.settingsCoordinator.showSettings() }
+            Button("Settings…") { AppCore.shared.settingsCoordinator.showSettings() }
                 .keyboardShortcut(",")
         }
         CommandGroup(replacing: .appTermination) {
-            Button(String(localized: "Close Window")) {
+            Button("Close Window") {
                 // The chat window closes itself when it is in front; otherwise ⌘Q is Settings'.
                 guard !AppCore.shared.aiChatCoordinator.closeWindowIfKey() else { return }
                 AppCore.shared.settingsCoordinator.closeSettings()

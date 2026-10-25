@@ -65,23 +65,32 @@ struct RoomsScreen: PaletteScreen {
         return PopoverMenuContent(
             header: room.name,
             items: [
-                PopoverMenuItem(title: String(localized: "Enter Room"), systemImage: Room.sfSymbol, shortcut: "↵") {
+                PopoverMenuItem(
+                    title: String(localized: "Enter Room"), systemImage: Room.sfSymbol, shortcut: "↵"
+                ) {
                     coordinator.enterRoom(id: room.id)
                 },
-                PopoverMenuItem(title: String(localized: "Next Layout"), systemImage: "rectangle.3.group", shortcut: "⇥") {
+                PopoverMenuItem(
+                    title: String(localized: "Next Layout"), systemImage: "rectangle.3.group",
+                    shortcut: "⇥"
+                ) {
                     coordinator.cycleLayout(of: room, backwards: false)
                 },
                 PopoverMenuItem(
-                    title: String(localized: "Remember Arrangement"), systemImage: "rectangle.dashed.badge.record",
+                    title: String(localized: "Remember Arrangement"),
+                    systemImage: "rectangle.dashed.badge.record",
                     startsSection: true
                 ) {
                     coordinator.rememberArrangement(of: room)
                 },
-                PopoverMenuItem(title: String(localized: "Choose Windows…"), systemImage: "macwindow.badge.plus") {
+                PopoverMenuItem(
+                    title: String(localized: "Choose Windows…"), systemImage: "macwindow.badge.plus"
+                ) {
                     coordinator.editWindows(of: room)
                 },
                 PopoverMenuItem(
-                    title: String(localized: "Delete Room"), systemImage: "trash", startsSection: true, shortcut: "⌃X",
+                    title: String(localized: "Delete Room"), systemImage: "trash", startsSection: true,
+                    shortcut: "⌃X",
                     isDestructive: true
                 ) {
                     coordinator.deleteRoom(room)

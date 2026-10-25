@@ -83,7 +83,7 @@ final class SystemActionCoordinator {
     private func presentFailure(action: SystemAction, failure: SystemActionFailure) async {
         guard
             await core.reportFailure(
-                title: String(localized: "“\(NSLocalizedString(action.name, comment: "System action"))” Failed"), message: failure.message,
+                title: String(localized: "“\(action.name)” Failed"), message: failure.message,
                 symbol: action.sfSymbol,
                 recovery: failure.settings == nil ? nil : String(localized: "Open System Settings…")),
             let settings = failure.settings
@@ -104,8 +104,7 @@ final class SystemActionCoordinator {
         let targets = AppLauncher.quitAllTargets()
         guard !targets.isEmpty,
             await core.confirm(
-                title: targets.count == 1
-                    ? String(localized: "Quit 1 application?") : String(localized: "Quit \(targets.count) applications?"),
+                title: String(localized: "Quit \(targets.count) applications?"),
                 message: String(localized: "Applications with unsaved changes will ask you to save."),
                 symbol: SystemActionCatalog.action(id: .quitAllApps).sfSymbol,
                 confirmTitle: String(localized: "Quit All"))

@@ -163,22 +163,17 @@ final class InstalledAIManager {
         toolServers: AIToolServerSession? = nil
     ) throws -> any AIProvider {
         guard kind != .codex else {
-            throw AIProviderError.unavailable("Codex is handled by its app-server connection.")
+            throw AIProviderError.unavailable(
+                String(localized: "Codex is handled by its app-server connection."))
         }
         let status = status(for: kind)
         guard status.phase != .notInstalled else {
-            throw AIProviderError.unavailable(String(
-                localized: "Install "
-            ) + kind.title + String(
-                localized: " before using this model."
-            ))
+            throw AIProviderError.unavailable(
+                String(localized: "Install \(kind.title) before using this model."))
         }
         guard status.phase != .signInRequired else {
-            throw AIProviderError.unavailable(String(
-                localized: "Sign in with `"
-            ) + kind.signInCommand + String(
-                localized: "` first."
-            ))
+            throw AIProviderError.unavailable(
+                String(localized: "Sign in with `\(kind.signInCommand)` first."))
         }
         return InstalledCLIProvider(
             kind: kind, executable: status.executable, model: model, effort: effort,
@@ -251,15 +246,32 @@ final class InstalledAIManager {
                 kind,
                 InstalledAIStatus(
                     phase: models.isEmpty
-                        ? .failed(String(localized: "Claude listed no models. Update Claude Code, then Check Again."))
+                        ? .failed(
+                            String(
+                                localized: """
+                                    Claude listed no models. Update Claude Code, then Check Again.
+                                    """))
                         : .ready,
                     version: version, executable: executable, models: models,
                     account: InstalledAIModel.claudeAccount(catalog.output))
             )
         case .openCode:
+            guard let version, let major = Int(version.prefix(while: \.isNumber)), major >= 2 else {
+                return (
+                    kind,
+                    InstalledAIStatus(
+                        phase: .failed(
+                            String(
+                                localized: """
+                                    Tinycast needs OpenCode 2. Update OpenCode, then Check Again.
+                                    """)),
+                        version: version, executable: executable)
+                )
+            }
+            // A private server boots, and settles its plugins, before it answers.
             let models = await InstalledAIProbe.run(
-                executable: executable, arguments: ["models", "--pure", "--verbose"],
-                workspace: workspace, environment: environment)
+                executable: executable, arguments: ["api", "GET", "/api/model", "--standalone"],
+                workspace: workspace, environment: environment, timeout: .seconds(30))
             let catalog = InstalledAIModel.openCodeCatalog(models.output)
             return (
                 kind,

@@ -1,6 +1,0 @@
-"NSAppleEventsUsageDescription" = "Tinycast 使用自动化执行你主动运行的系统操作，并向你选择的终端发送命令。";
-"NSCameraUsageDescription" = "Tinycast 显示摄像头预览以便你检查画面，并可拍照复制到剪贴板。";
-"NSMicrophoneUsageDescription" = "Tinycast 仅在你使用听写时录制音频，并在本机转写。";
-"NSCalendarsFullAccessUsageDescription" = "Tinycast 读取日程，以便你通过启动器加入会议。";
-"NSRemindersFullAccessUsageDescription" = "Tinycast 允许你运行的扩展读取和编辑提醒事项。";
-"NSBluetoothAlwaysUsageDescription" = "Tinycast 仅在你运行「切换蓝牙」操作时使用蓝牙权限。";

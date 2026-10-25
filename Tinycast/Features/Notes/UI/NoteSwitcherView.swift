@@ -43,11 +43,11 @@ struct NoteSwitcherView: View {
         HStack(spacing: Theme.Spacing.md) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(Theme.Colors.textSecondary)
-            TextField(String(localized: "Search notes…"), text: notes.searchQueryBinding)
+            TextField("Search notes…", text: notes.searchQueryBinding)
                 .textFieldStyle(.plain)
                 .focused($searchFocused)
                 .onExitCommand { notes.closeSwitcher() }
-                .accessibilityLabel(String(localized: "Search Notes"))
+                .accessibilityLabel("Search Notes")
             if !notes.searchQueryBinding.wrappedValue.isEmpty {
                 Button {
                     notes.searchQueryBinding.wrappedValue = ""
@@ -56,7 +56,7 @@ struct NoteSwitcherView: View {
                         .foregroundStyle(Theme.Colors.textTertiary)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(String(localized: "Clear Search"))
+                .accessibilityLabel("Clear Search")
             }
         }
         .padding(.horizontal, Theme.Spacing.xl)
@@ -72,7 +72,7 @@ struct NoteSwitcherView: View {
                     size: Theme.Size.noteGlyph
                 )
                 .foregroundStyle(Theme.Colors.textSecondary)
-                Text(notes.isSearching ? String(localized: "Searching notes…") : String(localized: "No notes found"))
+                Text(notes.isSearching ? "Searching notes…" : "No notes found")
                     .foregroundStyle(Theme.Colors.textSecondary)
             }
             .frame(maxWidth: .infinity)
@@ -155,7 +155,7 @@ private struct NoteSwitcherRow: View {
                 .foregroundStyle(Theme.Colors.textSecondary)
                 .frame(width: Theme.Size.rowIcon, height: Theme.Size.rowIcon)
             if editing {
-                TextField(String(localized: "Note title"), text: $titleDraft)
+                TextField("Note title", text: $titleDraft)
                     .textFieldStyle(.plain)
                     .focused($titleFocused)
                     .onSubmit(onCommitRename)
@@ -167,9 +167,14 @@ private struct NoteSwitcherRow: View {
             }
             Spacer(minLength: Theme.Spacing.md)
             if !editing, selected || hovered {
-                rowButton(title: String(localized: "Rename \(summary.displayTitle)"), symbol: "pencil", action: onBeginRename)
-                rowButton(title: String(localized: "Move \(summary.displayTitle) to Trash"), symbol: "trash", action: onTrash)
-                    .foregroundStyle(Theme.Colors.destructive)
+                rowButton(
+                    title: String(localized: "Rename \(summary.displayTitle)"), symbol: "pencil",
+                    action: onBeginRename)
+                rowButton(
+                    title: String(localized: "Move \(summary.displayTitle) to Trash"), symbol: "trash",
+                    action: onTrash
+                )
+                .foregroundStyle(Theme.Colors.destructive)
             }
         }
         .padding(.horizontal, Theme.Spacing.md)
@@ -191,11 +196,11 @@ private struct NoteSwitcherRow: View {
             guard !editing else { return }
             onActivate()
         }
-        .accessibilityAction(named: String(localized: "Rename \(summary.displayTitle)")) {
+        .accessibilityAction(named: "Rename \(summary.displayTitle)") {
             guard !editing else { return }
             onBeginRename()
         }
-        .accessibilityAction(named: String(localized: "Move \(summary.displayTitle) to Trash")) {
+        .accessibilityAction(named: "Move \(summary.displayTitle) to Trash") {
             guard !editing else { return }
             onTrash()
         }

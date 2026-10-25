@@ -61,7 +61,7 @@ struct OnboardingView: View {
             VStack(spacing: Theme.Spacing.xs) {
                 Text(title)
                     .font(.title2.weight(.bold))
-                Text(subtitle)
+                subtitle
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -94,11 +94,11 @@ struct OnboardingView: View {
         }
     }
 
-    private var subtitle: String {
+    private var subtitle: Text {
         switch step {
-        case 0: String(localized: "Set a shortcut to summon the launcher from anywhere.")
-        case 1: String(localized: "Let Tinycast paste items back into the app you were using.")
-        case 2: String(localized: "Bring your shortcuts, favorites, and clipboard history along.")
+        case 0: Text("Set a shortcut to summon the launcher from anywhere.")
+        case 1: Text("Let Tinycast paste items back into the app you were using.")
+        case 2: Text("Bring your shortcuts, favorites, and clipboard history along.")
         default: readyMessage
         }
     }
@@ -119,11 +119,11 @@ struct OnboardingView: View {
         }
     }
 
-    private var readyMessage: String {
+    private var readyMessage: Text {
         if let caps = hotKeys.binding(for: .togglePalette)?.keycaps {
-            return String(localized: "Press \(caps.joined()) anytime to start using Tinycast.")
+            return Text("Press \(KeyCapChip.inlineText(caps)) anytime to start using Tinycast.")
         }
-        return String(localized: "Tinycast is ready. Set a shortcut in Settings to summon it.")
+        return Text("Tinycast is ready. Set a shortcut in Settings to summon it.")
     }
 
     // MARK: - Step content
@@ -143,7 +143,7 @@ struct OnboardingView: View {
         return VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             OnboardingCard {
                 OnboardingRow(
-                    title: String(localized: "App Launcher"),
+                    title: String(localized: "onboarding-open-launcher", defaultValue: "App Launcher"),
                     subtitle: String(localized: "Press this shortcut to open Tinycast."),
                     systemImage: "magnifyingglass", tint: .blue
                 ) {
@@ -168,8 +168,8 @@ struct OnboardingView: View {
             OnboardingCard {
                 OnboardingRow(
                     title: String(localized: "Accessibility"),
-                    subtitle:
-                        String(localized: "Allows pasting clipboard items and expanded snippets into active apps."),
+                    subtitle: String(
+                        localized: "Allows pasting clipboard items and expanded snippets into active apps."),
                     systemImage: "accessibility", tint: .blue
                 ) {
                     statusBadge
@@ -187,7 +187,7 @@ struct OnboardingView: View {
                     subtitle: model.fileSubtitle,
                     systemImage: "doc.badge.gearshape", tint: .orange
                 ) {
-                    Button(String(localized: "Choose…")) { model.chooseFile() }.controlSize(.small)
+                    Button("Choose…") { model.chooseFile() }.controlSize(.small)
                 }
                 OnboardingDivider()
                 OnboardingRow(
@@ -206,7 +206,7 @@ struct OnboardingView: View {
             if let status = model.status {
                 importStatus(status)
             } else {
-                caption("Optional — you can import later in Settings › Backup.")
+                caption(String(localized: "Optional — you can import later in Settings › Backup."))
             }
         }
     }
@@ -232,14 +232,14 @@ struct OnboardingView: View {
                     Button {
                         step -= 1
                     } label: {
-                        Label(String(localized: "Back"), systemImage: "chevron.left")
+                        Label("Back", systemImage: "chevron.left")
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                 }
                 Spacer()
                 if showsSkip {
-                    Button(String(localized: "Skip")) { advance() }
+                    Button("Skip") { advance() }
                         .buttonStyle(.plain)
                         .foregroundStyle(.secondary)
                 }
@@ -248,7 +248,7 @@ struct OnboardingView: View {
                     } label: {
                         HStack(spacing: Theme.Spacing.sm) {
                             ProgressView().controlSize(.small)
-                            Text(String(localized: "Importing…"))
+                            Text("Importing…")
                         }
                     }
                     .buttonStyle(.borderedProminent)
@@ -339,7 +339,7 @@ struct OnboardingView: View {
             Image(
                 systemName: accessibilityTrusted
                     ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-            Text(accessibilityTrusted ? String(localized: "Granted") : String(localized: "Not granted"))
+            Text(accessibilityTrusted ? "Granted" : "Not granted")
         }
         .font(.caption.weight(.semibold))
         .foregroundStyle(accessibilityTrusted ? Color.green : Color.orange)
@@ -389,7 +389,9 @@ final class OnboardingModel {
         guard let name = file?.lastPathComponent else {
             return String(localized: "Choose a .rayconfig file exported from Raycast v2.0 or newer.")
         }
-        return "\(name) — \(isRaycastExport ? "Raycast export" : "not a Raycast export")"
+        return isRaycastExport
+            ? String(localized: "\(name) — Raycast export")
+            : String(localized: "\(name) — not a Raycast export")
     }
 
     func chooseFile() {

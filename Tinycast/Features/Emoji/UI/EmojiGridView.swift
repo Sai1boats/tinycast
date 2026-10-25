@@ -29,14 +29,18 @@ enum EmojiGrid {
             switch filter {
             case .all:
                 append(String(localized: "Pinned"), pinned.glyphs.compactMap(index.entry(for:)))
-                append(String(localized: "Frequently Used"), frequentlyUsed(frequent, in: index, columns: columns))
+                append(
+                    String(localized: "Frequently Used"),
+                    frequentlyUsed(frequent, in: index, columns: columns))
                 for section in index.categorySections {
                     append(NSLocalizedString(section.category.title, comment: "Built-in label"), section.entries)
                 }
             case .pinned:
                 append(String(localized: "Pinned"), pinned.glyphs.compactMap(index.entry(for:)))
             case .frequentlyUsed:
-                append(String(localized: "Frequently Used"), frequentlyUsed(frequent, in: index, columns: columns))
+                append(
+                    String(localized: "Frequently Used"),
+                    frequentlyUsed(frequent, in: index, columns: columns))
             case .category(let category):
                 if let section = index.categorySections.first(where: { $0.category == category }) {
                     append(NSLocalizedString(section.category.title, comment: "Built-in label"), section.entries)
@@ -83,7 +87,6 @@ private struct EmojiGridRow: Identifiable {
     }
 }
 
-/// Flat render order for one query: section headers and grid rows interleaved.
 private enum EmojiGridItem: Identifiable {
     case header(id: String, title: String, count: Int)
     case row(EmojiGridRow)
@@ -265,7 +268,6 @@ private struct EmojiGridRowView: View {
         .onRightClick { point in
             if let column = column(at: point) { onActions(row.start + column) }
         }
-        // Column hover, gated on real pointer movement like `armedHover`.
         .onContinuousHover(coordinateSpace: .local) { phase in
             switch phase {
             case .active(let point):

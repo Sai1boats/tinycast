@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// The palette's extension screen: whichever root component the running command rendered.
 struct ExtensionCommandView: View {
     let screen: ExtensionScreen
     let state: ExtensionSessionState
@@ -49,11 +48,11 @@ struct ExtensionCommandView: View {
                     EmptyResults(text: String(localized: "Nothing to show"))
                 } else {
                     ExtensionFailureView(
-                        message:
-                            String(
-                                localized: "This command renders \(type), which Tinycast doesn't support yet. See docs/extensions.md."
-                            )
-                    )
+                        message: String(
+                            localized: """
+                                This command renders \(type), which Tinycast doesn't support yet. See \
+                                docs/extensions.md.
+                                """))
                 }
             }
         }
@@ -136,8 +135,8 @@ struct ExtensionToastPill: View {
                     } label: {
                         // The wider word holds the width, so the pill never twitches on copy.
                         ZStack {
-                            Text(String(localized: "Copied")).hidden()
-                            Text(copiedAt == nil ? String(localized: "Copy") : String(localized: "Copied"))
+                            Text("Copied").hidden()
+                            Text(copiedAt == nil ? "Copy" : "Copied")
                         }
                     }
                 } else if let action = toast.primaryAction {
@@ -228,7 +227,6 @@ struct ExtensionToastPill: View {
     }
 }
 
-/// The ⌘K panel's content for the running command's current selection.
 @MainActor
 enum ExtensionActionsMenu {
     /// What the panel belongs to: the selected row, or the screen when the selection has outrun it.
@@ -250,7 +248,7 @@ enum ExtensionActionsMenu {
                     // Read rather than injected: a panel is rebuilt each time it opens.
                     isDark: NSApp.effectiveAppearance.isDark,
                     isDestructive: action.isDestructive),
-                shortcut: action.shortcutCaps?.joined(),
+                shortcutCaps: action.shortcutCaps ?? [],
                 isDestructive: action.isDestructive,
                 startsSection: action.startsSection)
         }

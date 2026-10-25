@@ -87,25 +87,32 @@ final class HyperKeyManager: HealthCheckable {
             return stop(.off)
         }
         if let blocker = HyperKeyConflictScanner.runningBlocker() {
-            if status != .blocked(appName: blocker) { onProblem?(String(localized: "Quit \(blocker) to use the Hyper Key")) }
+            if status != .blocked(appName: blocker) {
+                onProblem?(String(localized: "Quit \(blocker) to use the Hyper Key"))
+            }
             return stop(.blocked(appName: blocker))
         }
         guard pauseReasons.isEmpty else { return stop(.paused) }
         if route.remap != nil, remapper.mapping == nil { tap.unlatchCapsLock() }
         guard remapper.apply(route.remap) else { return stop(.remapUnavailable) }
-        tap.route = route
+        setRoute(route)
         healthTicker?.subscribe(self)
         status = tap.install() ? .active : .needsAccessibility
         syncSecureInputHotKeys()
     }
 
     private func stop(_ status: Status) {
-        tap.route = nil
+        setRoute(nil)
         tap.tearDown()
         remapper.apply(nil)
         healthTicker?.unsubscribe(self)
         self.status = status
         syncSecureInputHotKeys()
+    }
+
+    private func setRoute(_ route: HyperKeyRoute?) {
+        tap.route = route
+        hotKeys.capture.hyperRoute = route
     }
 
     /// That press latched Caps Lock on a keyboard that lost the remap, so undo it once repaired.
@@ -238,6 +245,6 @@ final class HyperKeyManager: HealthCheckable {
         if identity.isDefault { return String(localized: "All keyboards") }
         return keyboards.first {
             $0.vendorID == identity.vendorID && $0.productID == identity.productID
-        }?.name ?? String(localized: "Keyboard \(identity.vendorID)-\(identity.productID)")
+        }?.name ?? String(localized: "Keyboard \(String(identity.vendorID))-\(String(identity.productID))")
     }
 }

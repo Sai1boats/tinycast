@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Settings › Extensions: the master switch, then a row per extension that expands in place.
 struct ExtensionsSettingsView: View {
     @Environment(AppCore.self) private var core
     @Environment(SettingsNavigationState.self) private var navigation
@@ -25,7 +24,7 @@ struct ExtensionsSettingsView: View {
             FeatureSwitchSection(
                 anchor: .extensionsExtensions,
                 enableTitle: "Enable extensions",
-                enableSubtitle: String(localized: "Run Raycast extensions natively."),
+                enableSubtitle: "Run Raycast extensions natively.",
                 // Enabling is consent to run third-party code, so the setter confirms.
                 isEnabled: Binding(
                     get: { settings.extensionsEnabled },
@@ -46,7 +45,6 @@ struct ExtensionsSettingsView: View {
         .formStyle(.grouped)
         .settingsScrollTarget(.extensions)
         .releasesFocusOnOutsideClick()
-        // Escape and Return are the keyboard way out of the same field.
         .onExitCommand { NSApp.keyWindow?.makeFirstResponder(nil) }
         .onSubmit { NSApp.keyWindow?.makeFirstResponder(nil) }
         // By item: `isPresented` builds the panel from a snapshot taken before the write.
@@ -92,8 +90,11 @@ struct ExtensionsSettingsView: View {
         Section {
             SettingsRow(
                 title: String(localized: "What works"),
-                subtitle:
-                    String(localized: "List, detail, form, grid, no-view and menu-bar commands, plus preferences and storage."),
+                subtitle: String(
+                    localized: """
+                        List, detail, form, grid, no-view and menu-bar commands, preferences, storage \
+                        and OAuth.
+                        """),
                 subtitleLineLimit: 2
             ) {
                 ExtensionSettingsIcon(systemName: "checkmark.circle")
@@ -119,14 +120,14 @@ struct ExtensionsSettingsView: View {
     private var library: some View {
         Section {
             if core.extensions.installed.isEmpty {
-                Text(String(localized: "Nothing installed yet."))
+                Text("Nothing installed yet.")
                     .foregroundStyle(.secondary)
             } else {
                 if core.extensions.installed.count > 3 {
-                    SettingsFilterField(prompt: String(localized: "Filter extensions…"), query: $filter)
+                    SettingsFilterField(prompt: "Filter extensions…", query: $filter)
                 }
                 if matching.isEmpty {
-                    Text(String(localized: "No extension matches \u{201C}\(filter)\u{201D}."))
+                    Text("No extension matches \u{201C}\(filter)\u{201D}.")
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)
                 } else {
@@ -165,12 +166,13 @@ struct ExtensionsSettingsView: View {
     private var install: some View {
         Section {
             SettingsRow(
-                title: "Search extensions", subtitle: String(localized: "Ready-built from the Raycast Store."),
+                title: "Search extensions",
+                subtitle: String(localized: "Ready-built from the Raycast Store."),
                 anchor: .extensionsInstall
             ) {
                 ExtensionSettingsIcon(systemName: "magnifyingglass")
             } trailing: {
-                Button(String(localized: "Search…")) { browsingStore = true }
+                Button("Search…") { browsingStore = true }
             }
             SettingsRow(
                 title: "Install from GitHub",
@@ -179,7 +181,7 @@ struct ExtensionsSettingsView: View {
             ) {
                 ExtensionSettingsIcon(systemName: "hammer")
             } trailing: {
-                Button(String(localized: "Install…")) { installingFromGitHub = true }
+                Button("Install…") { installingFromGitHub = true }
             }
             // A state of this row, not a card: the same job as the button beside it.
             SettingsRow(
@@ -191,10 +193,10 @@ struct ExtensionsSettingsView: View {
                 if importProgress != nil {
                     ProgressView().controlSize(.small)
                 } else {
-                    Button(String(localized: "Import…"), action: openImport)
+                    Button("Import…", action: openImport)
                         .disabled(!raycastAvailable)
                     if !pending.isEmpty {
-                        Button(String(localized: "Import All")) { Task { await importAll(pending.map(\.installed)) } }
+                        Button("Import All") { Task { await importAll(pending.map(\.installed)) } }
                     }
                 }
             }
@@ -205,13 +207,12 @@ struct ExtensionsSettingsView: View {
             ) {
                 ExtensionSettingsIcon(systemName: "folder")
             } trailing: {
-                Button(String(localized: "Choose…"), action: addFolder)
+                Button("Choose…", action: addFolder)
             }
         } header: {
             SettingsSectionHeader(.extensionsInstall)
         } footer: {
             if let error {
-                // Under the buttons that caused it.
                 Label(error, systemImage: "exclamationmark.triangle")
                     .font(.caption)
                     .foregroundStyle(.orange)
@@ -228,7 +229,7 @@ struct ExtensionsSettingsView: View {
             ) {
                 ExtensionSettingsIcon(systemName: "internaldrive")
             } trailing: {
-                Button(String(localized: "Clean Up…")) {
+                Button("Clean Up…") {
                     Task {
                         await core.extensionCoordinator.confirmCleanup(reclaimable)
                         await measureReclaimable()
@@ -243,8 +244,8 @@ struct ExtensionsSettingsView: View {
 
     private var reclaimableSubtitle: String {
         guard !reclaimable.isEmpty else { return String(localized: "Nothing to clean up.") }
-        let items = reclaimable.items == 1 ? String(localized: "1 item") : String(localized: "\(reclaimable.items) items")
-        return String(localized: "Reclaims \(ExtensionCleanup.formatted(bytes: reclaimable.bytes)) from \(items).")
+        let size = ExtensionCleanup.formatted(bytes: reclaimable.bytes)
+        return String(localized: "Reclaims \(size) from \(reclaimable.items) items.")
     }
 
     /// Off-main: measuring walks a `node_modules`, which is tens of thousands of files.
@@ -267,7 +268,8 @@ struct ExtensionsSettingsView: View {
         guard !pending.isEmpty else {
             return String(localized: "Copies what Raycast has already built.")
         }
-        return String(localized: "\(pending.count) not here yet — \(listed(pending.map(\.installed.title))).")
+        let names = listed(pending.map(\.installed.title))
+        return String(localized: "\(pending.count) not here yet — \(names).")
     }
 
     /// The first three in list order, then a count, so a long batch still fits one subtitle.
@@ -322,9 +324,7 @@ struct ExtensionsSettingsView: View {
         await findPending()
         let imported = chosen.count - failed.count
         if failed.isEmpty {
-            importSummary = (imported == 1
-            ? String(localized: "Imported 1 extension.")
-            : String(localized: "Imported \(imported) extensions."))
+            importSummary = String(localized: "Imported \(imported) extensions.")
         } else {
             importSummary = String(localized: "Imported \(imported); \(failed.count) failed.")
             error = String(localized: "Couldn't import \(failed.joined(separator: ", ")).")
@@ -380,8 +380,8 @@ private struct ExtensionDisclosure: View {
                     .foregroundStyle(Theme.Colors.destructive)
             }
             .buttonStyle(.plain)
-            .help(String(localized: "Uninstall"))
-            .accessibilityLabel(String(localized: "Uninstall \(installed.title)"))
+            .help("Uninstall")
+            .accessibilityLabel("Uninstall \(installed.title)")
             Image(systemName: "chevron.down")
                 .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 .foregroundStyle(.secondary)
@@ -392,7 +392,7 @@ private struct ExtensionDisclosure: View {
         .onTapGesture(perform: onToggle)
         .accessibilityAddTraits(.isButton)
         .accessibilityLabel(
-            isExpanded ? String(localized: "Hide \(installed.title) settings") : String(localized: "Configure \(installed.title)")
+            isExpanded ? "Hide \(installed.title) settings" : "Configure \(installed.title)"
         )
         .id(SettingsTarget.row(.extensionsInstalled, installed.manifest.name))
     }
@@ -409,7 +409,7 @@ private struct ExtensionDisclosure: View {
 
             if !installed.manifest.preferences.isEmpty {
                 rule
-                heading("Preferences")
+                heading(String(localized: "Preferences"))
                 ForEach(
                     Array(installed.manifest.preferences.enumerated()), id: \.element.name
                 ) { index, schema in
@@ -420,7 +420,9 @@ private struct ExtensionDisclosure: View {
             }
 
             rule
-            heading(installed.manifest.commands.count == 1 ? String(localized: "Command") : String(localized: "Commands"))
+            heading(
+                installed.manifest.commands.count == 1
+                    ? String(localized: "Command") : String(localized: "Commands"))
             ForEach(Array(installed.manifest.commands.enumerated()), id: \.element.id) {
                 index, command in
                 if index > 0 { rule }
@@ -432,7 +434,6 @@ private struct ExtensionDisclosure: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// A step below the pane's section headers; nothing here sets a heading in caps.
     private func heading(_ title: String) -> some View {
         GridRow {
             Text(title)
@@ -444,7 +445,6 @@ private struct ExtensionDisclosure: View {
         }
     }
 
-    /// The hairline every other multi-row group in the app puts between its rows.
     private var rule: some View {
         GridRow {
             Divider()
@@ -454,15 +454,12 @@ private struct ExtensionDisclosure: View {
 
     private var subtitle: String {
         let count = installed.manifest.commands.count
-        let commands = (count == 1
-            ? String(localized: "1 command")
-            : String(localized: "\(count) commands"))
+        let commands = String(localized: "\(count) commands")
         let author = installed.manifest.author
         return author.isEmpty ? commands : "\(commands) · \(author)"
     }
 }
 
-/// One card row: the label left, the control right, columns aligned by the enclosing `Grid`.
 private struct SettingsCardRow<Control: View>: View {
     /// Wide enough for a path field, and the trailing edge every control in the column shares.
     static var controlWidth: CGFloat { 200 }
@@ -510,7 +507,6 @@ private struct SettingsCardRow<Control: View>: View {
     }
 }
 
-/// One command: alias, shortcut and launcher checkbox on the title row, then its own preferences.
 private struct CommandRows: View {
     let installed: InstalledExtension
     let command: ExtensionCommand
@@ -542,14 +538,14 @@ private struct CommandRows: View {
                 )
                 .labelsHidden()
                 .toggleStyle(.checkbox)
-                .help(String(localized: "Show in launcher"))
-                .accessibilityLabel(String(localized: "Show \(command.title) in launcher"))
+                .help("Show in launcher")
+                .accessibilityLabel("Show \(command.title) in launcher")
             }
         }
         if command.mode == .menuBar {
             SettingsCardRow(title: String(localized: "Show in menu bar"), indent: Theme.Spacing.lg) {
                 Toggle(
-                    String(localized: "Show in menu bar"),
+                    "Show in menu bar",
                     isOn: Binding(
                         get: { core.extensionCoordinator.menuBarIsEnabled(reference) },
                         set: { core.extensionCoordinator.setMenuBarEnabled($0, reference: reference) })
@@ -589,7 +585,9 @@ private struct ExtensionRefreshRow: View {
 
     var body: some View {
         let info = core.extensions.backgroundInfo(extension: extensionName, command: command.name)
-        SettingsCardRow(title: String(localized: "Background refresh"), detail: detail(for: info), indent: indent) {
+        SettingsCardRow(
+            title: String(localized: "Background refresh"), detail: detail(for: info), indent: indent
+        ) {
             Toggle(
                 "",
                 isOn: Binding(
@@ -602,12 +600,13 @@ private struct ExtensionRefreshRow: View {
     private func detail(for info: ExtensionCommandMetadata) -> String {
         var detail = String(localized: "Every \(schedule).")
         if let lastRun = info.lastRun {
-            detail += String(localized: " Last refresh \(Self.relative.localizedString(for: lastRun, relativeTo: Date())).")
+            let when = Self.relative.localizedString(for: lastRun, relativeTo: Date())
+            detail += " " + String(localized: "Last refresh \(when).")
         } else {
-            detail += String(localized: " Hasn't refreshed yet.")
+            detail += " " + String(localized: "Hasn't refreshed yet.")
         }
         if let error = info.lastError {
-            detail += String(localized: " Last error: \(ExtensionRefreshPolicy.headline(error)).")
+            detail += " " + String(localized: "Last error: \(ExtensionRefreshPolicy.headline(error)).")
         }
         return detail
     }
@@ -625,7 +624,10 @@ private struct ExtensionLauncherRow: View {
     var body: some View {
         let entries = installed.manifest.commands.map(installed.launcherEntry)
         let visibleCount = entries.count(where: visibility.isItemVisible)
-        SettingsCardRow(title: String(localized: "Show in launcher"), detail: detail(visible: visibleCount, of: entries.count)) {
+        SettingsCardRow(
+            title: String(localized: "Show in launcher"),
+            detail: detail(visible: visibleCount, of: entries.count)
+        ) {
             // A closure, not `set: setVisible`: an actor-isolated method as a setter crashes IRGen.
             Toggle(
                 "",
@@ -646,7 +648,6 @@ private struct ExtensionLauncherRow: View {
     }
 }
 
-/// The launcher icon, and the picker that replaces it.
 private struct ExtensionIconRow: View {
     let installed: InstalledExtension
     @Environment(AppCore.self) private var core
@@ -664,7 +665,7 @@ private struct ExtensionIconRow: View {
         ) {
             HStack(spacing: Theme.Spacing.md) {
                 preview
-                Button(String(localized: "Change…")) { picking = true }
+                Button("Change…") { picking = true }
                     .popover(isPresented: $picking, arrowEdge: .bottom) {
                         ExtensionAppearancePicker(
                             current: appearance ?? .fallback,
@@ -711,7 +712,8 @@ private struct ExtensionPreferenceRow: View {
     private var detail: String? {
         let description = schema.description ?? ""
         guard schema.required else { return description }
-        return description.isEmpty ? String(localized: "Required.") : description + String(localized: " Required.")
+        let requirement = String(localized: "Required.")
+        return description.isEmpty ? requirement : description + " " + requirement
     }
 
     @ViewBuilder
@@ -744,7 +746,7 @@ private struct ExtensionPreferenceRow: View {
                     .foregroundStyle(text.isEmpty ? .secondary : .primary)
                     .lineLimit(1)
                     .truncationMode(.middle)
-                Button(String(localized: "Choose…"), action: choosePath)
+                Button("Choose…", action: choosePath)
             }
         case .textfield:
             TextField("", text: $text, prompt: schema.placeholder.map(Text.init))
@@ -781,7 +783,6 @@ private struct ExtensionPreferenceRow: View {
     }
 }
 
-/// One candidate from a local Raycast install, and whether we already have it.
 struct RaycastImportCandidate: Identifiable {
     let installed: InstalledExtension
     let isInstalled: Bool
@@ -789,7 +790,6 @@ struct RaycastImportCandidate: Identifiable {
     var id: String { installed.id }
 }
 
-/// One scan of the local Raycast install, carried as the import panel's presentation item.
 private struct ImportCandidates: Identifiable {
     let id = UUID()
     let entries: [RaycastImportCandidate]
@@ -806,7 +806,6 @@ private struct ExtensionImportPanel: View {
 
     private var fresh: [RaycastImportCandidate] { candidates.filter { !$0.isInstalled } }
 
-    /// Thirty-odd rows is past the point where scanning beats filtering.
     private var matching: [RaycastImportCandidate] {
         guard !filter.isEmpty else { return candidates }
         return candidates.filter {
@@ -816,10 +815,11 @@ private struct ExtensionImportPanel: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
-            ExtensionSettingsEditorHeader(title: String(localized: "Import from Raycast"), subtitle: subtitle)
+            ExtensionSettingsEditorHeader(
+                title: String(localized: "Import from Raycast"), subtitle: subtitle)
 
             if candidates.count > 6 {
-                SettingsFilterField(prompt: String(localized: "Filter…"), query: $filter)
+                SettingsFilterField(prompt: "Filter…", query: $filter)
             }
 
             ScrollView {
@@ -854,7 +854,7 @@ private struct ExtensionImportPanel: View {
 
             HStack {
                 // Reads against what is selected, so it is never a button that does nothing.
-                Button(allChosen ? String(localized: "Deselect All") : String(localized: "Select All")) {
+                Button(allChosen ? "Deselect All" : "Select All") {
                     chosen = allChosen ? [] : Set(candidates.map(\.installed.manifest.name))
                 }
                 .buttonStyle(
@@ -862,10 +862,10 @@ private struct ExtensionImportPanel: View {
                 )
                 .disabled(candidates.isEmpty)
                 Spacer()
-                Button(String(localized: "Cancel"), action: onCancel)
+                Button("Cancel", action: onCancel)
                     .buttonStyle(ExtensionSettingsEditorButtonStyle(role: .cancel))
                     .keyboardShortcut(.cancelAction)
-                Button(String(localized: "Import \(chosen.isEmpty ? "" : "(\(chosen.count))")")) {
+                Button(chosen.isEmpty ? "Import" : "Import (\(chosen.count))") {
                     onImport(
                         candidates.map(\.installed).filter { chosen.contains($0.manifest.name) })
                 }
@@ -892,21 +892,23 @@ private struct ExtensionImportPanel: View {
             return String(localized: "No built extensions found in ~/.config/raycast/extensions.")
         }
         guard !fresh.isEmpty else {
-            return String(localized: "Everything Raycast has built is already here. Import one again to update it.")
+            return String(
+                localized: """
+                    Everything Raycast has built is already here. Import one again to update it.
+                    """)
         }
-        let count = "\(fresh.count)"
-        return (fresh.count == 1
-            ? String(localized: "The \(count) you don't have yet is already ticked. ")
-            : String(localized: "The \(count) you don't have yet are already ticked. "))
-            + String(localized: "Ticking one you have updates it.")
+        return String(
+            localized: """
+                The \(fresh.count) you don't have yet are already ticked. Ticking one you have \
+                updates it.
+                """)
     }
 
     private func detail(for candidate: RaycastImportCandidate) -> String {
         let count = candidate.installed.manifest.commands.count
-        let commands = (count == 1
-            ? String(localized: "1 command")
-            : String(localized: "\(count) commands"))
-        return candidate.isInstalled ? String(localized: "\(commands) · installed — tick to update") : commands
+        return candidate.isInstalled
+            ? String(localized: "\(count) commands · installed — tick to update")
+            : String(localized: "\(count) commands")
     }
 
     private func binding(for candidate: RaycastImportCandidate) -> Binding<Bool> {

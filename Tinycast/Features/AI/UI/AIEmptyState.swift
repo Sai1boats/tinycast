@@ -14,17 +14,17 @@ struct AIEmptyState: View {
                 .font(.largeTitle)
                 .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(.tertiary)
-            Text(String(localized: "Ask anything"))
+            Text("Ask anything")
                 .foregroundStyle(.secondary)
             if let message {
                 Text(message)
                     .font(metrics.typography.rowTrailing)
                     .foregroundStyle(Theme.Colors.textTertiary)
                     .multilineTextAlignment(.center)
-                if canConfigure { Button(String(localized: "Configure AI"), action: onConfigure) }
+                if canConfigure { Button("Configure AI", action: onConfigure) }
             } else {
                 HStack(spacing: metrics.spacing.sm) {
-                    Text(String(localized: "Send a message"))
+                    Text("Send a message")
                     KeyCapChip(text: "↵")
                 }
                 .font(metrics.typography.rowTrailing)

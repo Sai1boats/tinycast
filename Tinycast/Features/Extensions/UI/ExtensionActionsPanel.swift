@@ -39,7 +39,7 @@ private struct Metrics {
 struct ExtensionActionItem {
     let title: String
     let icon: ExtensionImage.Resolved
-    var shortcut: String?
+    var shortcutCaps: [String] = []
     var isDestructive = false
     var startsSection = false
 }
@@ -98,7 +98,7 @@ struct ExtensionActionsPanel: View {
         if items.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
                 headerLabel
-                Text(String(localized: "No Results"))
+                Text("No Results")
                     .font(metrics.typography.menuRow)
                     .foregroundStyle(Theme.Colors.textTertiary)
                     .frame(maxWidth: .infinity)
@@ -208,11 +208,9 @@ private struct ExtensionActionRow: View {
                     .foregroundStyle(item.isDestructive ? Color.red : Color.primary)
                     .lineLimit(1)
                 Spacer(minLength: metrics.spacing.sm)
-                if let shortcut = item.shortcut {
-                    HStack(spacing: metrics.spacing.xxs) {
-                        ForEach(Array(shortcut.enumerated()), id: \.offset) { _, glyph in
-                            KeyCapChip(text: String(glyph), style: .outline)
-                        }
+                HStack(spacing: metrics.spacing.xxs) {
+                    ForEach(Array(item.shortcutCaps.enumerated()), id: \.offset) { _, cap in
+                        KeyCapChip(text: cap, style: .outline)
                     }
                 }
             }

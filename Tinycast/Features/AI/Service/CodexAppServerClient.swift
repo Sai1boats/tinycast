@@ -140,7 +140,8 @@ final class CodexAppServerClient {
             stop(error: ClientError.processExited(String(localized: "Codex stopped.")))
         }
         guard let secrets = CodexMCPLaunch.environment(servers: toolServers) else {
-            throw ClientError.launchFailed(String(localized: "Two MCP servers' secrets would share one variable."))
+            throw ClientError.launchFailed(
+                String(localized: "Two MCP servers' secrets would share one variable."))
         }
         do {
             try FileManager.default.createDirectory(
@@ -154,7 +155,8 @@ final class CodexAppServerClient {
             try FileManager.default.setAttributes(
                 [.posixPermissions: 0o700], ofItemAtPath: workspace.path)
         } catch {
-            throw ClientError.launchFailed(String(localized: "Its private support folder could not be prepared."))
+            throw ClientError.launchFailed(
+                String(localized: "Its private support folder could not be prepared."))
         }
 
         // Unread, the reader's servers would start inside the chat; so Codex does not start either.
@@ -164,21 +166,30 @@ final class CodexAppServerClient {
                 inherited: inherited)
         else {
             throw ClientError.launchFailed(
-                String(localized: "Tinycast could not read which MCP servers your Codex configuration runs, so it ")
-                    + String(localized: "could not keep them out of the chat. Run \u{201C}codex mcp list\u{201D} ")
-                    + String(localized: "in Terminal to see why."))
+                String(
+                    localized: """
+                        Tinycast could not read which MCP servers your Codex configuration runs, so it \
+                        could not keep them out of the chat. Run \u{201C}codex mcp list\u{201D} in \
+                        Terminal to see why.
+                        """))
         }
         try checkNotStopped(since: generation)
         if let name = CodexMCPLaunch.unaddressableName(foreign) {
             throw ClientError.launchFailed(
-                String(localized: "Your Codex MCP server \u{201C}\(name)\u{201D} cannot be kept out of a Tinycast ")
-                    + "chat, because a dot or an equals sign in its name cannot be addressed. "
-                    + String(localized: "Rename it in your Codex configuration."))
+                String(
+                    localized: """
+                        Your Codex MCP server \u{201C}\(name)\u{201D} cannot be kept out of a Tinycast \
+                        chat, because a dot or an equals sign in its name cannot be addressed. Rename it \
+                        in your Codex configuration.
+                        """))
         }
         if let taken = CodexMCPLaunch.takenName(servers: toolServers, foreignNames: foreign) {
             throw ClientError.launchFailed(
-                String(localized: "Your Codex configuration has its own MCP server named \u{201C}\(taken)\u{201D}. ")
-                    + String(localized: "Rename it to use this Tinycast server with Codex."))
+                String(
+                    localized: """
+                        Your Codex configuration has its own MCP server named \u{201C}\(taken)\u{201D}. \
+                        Rename it to use this Tinycast server with Codex.
+                        """))
         }
         let process = Process()
         let stdin = Pipe()
@@ -250,7 +261,9 @@ final class CodexAppServerClient {
     func request(
         method: String, params: [String: Any] = [:], timeout: Duration = .seconds(15)
     ) async throws -> [String: JSONValue] {
-        guard isRunning else { throw ClientError.processExited(String(localized: "Codex is not running.")) }
+        guard isRunning else {
+            throw ClientError.processExited(String(localized: "Codex is not running."))
+        }
         let id = nextID
         nextID += 1
         return try await withTaskCancellationHandler {
@@ -306,7 +319,9 @@ final class CodexAppServerClient {
     }
 
     private func send(_ data: Data) throws {
-        guard let input else { throw ClientError.processExited(String(localized: "Codex is not running.")) }
+        guard let input else {
+            throw ClientError.processExited(String(localized: "Codex is not running."))
+        }
         try input.write(contentsOf: data)
     }
 
@@ -320,7 +335,8 @@ final class CodexAppServerClient {
         }
         // An unterminated multi-megabyte line means whatever is talking is not the app server.
         guard outputBuffer.count > Self.outputLimit else { return }
-        let message = String(localized: "Codex sent an unterminated oversized response and was disconnected.")
+        let message = String(
+            localized: "Codex sent an unterminated oversized response and was disconnected.")
         onExit?(message)
         stop(error: ClientError.processExited(message))
     }
@@ -375,7 +391,7 @@ final class CodexAppServerClient {
         default:
             try? send(
                 CodexAppServerProtocol.errorResponse(
-                    id: id, message: String(localized: "Tinycast does not expose Codex tools.")))
+                    id: id, message: "Tinycast does not expose Codex tools."))
             return
         }
         try? send(CodexAppServerProtocol.response(id: id, result: result))

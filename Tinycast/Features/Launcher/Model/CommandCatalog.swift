@@ -29,7 +29,7 @@ enum CommandCatalog {
     /// The row a typed web address earns; unlike a catalog entry, its URL is the real destination.
     static func openInBrowser(for query: String) -> AppEntry? {
         guard case .web(let url)? = QuicklinkDestination.detect(query) else { return nil }
-        return makeEntry(.openInBrowser, url: url, subtitle: "URL")
+        return makeEntry(.openInBrowser, url: url, subtitle: String(localized: "URL"))
     }
 
     /// A pasted token or document earns its tool's row; both checks bail on the first character.
@@ -50,7 +50,8 @@ enum CommandCatalog {
     ) -> AppEntry {
         AppEntry(
             id: id.rawValue, name: id.name, url: url ?? placeholderURL(id), bundleID: nil,
-            kind: id.entryKind, settingsOwner: id.owner, subtitle: subtitle, keywords: id.searchKeywords)
+            kind: id.entryKind, settingsOwner: id.owner, subtitle: subtitle,
+            alternateTitles: [id.englishName], keywords: id.searchKeywords)
     }
 
     nonisolated private static func placeholderURL(_ id: CommandID) -> URL {
@@ -71,7 +72,7 @@ extension SettingsTab {
         case .notes: [.showNotes, .createNote, .searchNotes]
         case .todos: [.showTodos, .createTodo]
         case .snippets: [.searchSnippets, .createSnippet]
-        case .navigation: [.switchWindows, .searchMenuItems]
+        case .navigation: [.switchWindows, .switchWindowsBackwards, .searchMenuItems]
         case .windowManagement:
             [.createWindowLayout, .captureWindowLayout, .switchRoom, .createRoom]
         case .clipboard: [.clipboardHistory, .pasteSequentially]

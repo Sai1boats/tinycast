@@ -1,7 +1,6 @@
 import AppKit
 import Foundation
 
-/// What the palette is showing for the running command.
 enum ExtensionSessionState: Equatable {
     case idle
     case launching
@@ -18,8 +17,9 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
     private(set) var installed: [InstalledExtension] = []
     private(set) var menuBars: ExtensionMenuBarManager?
     private(set) var state: ExtensionSessionState = .idle
-    /// The command whose session is live, if any.
     private(set) var running: ExtensionCommandRef?
+    /// The command waits on a browser sign-in; resetting the palette now would end it.
+    var isSigningIn: Bool { bridge.isSigningIn }
     /// Toasts the running command asked for, newest last.
     private(set) var toasts: [ExtensionToast] = []
     /// Depth of the extension's own navigation stack; >1 means Escape should pop rather than close.
@@ -192,7 +192,6 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
         publishLauncherEntries()
     }
 
-    /// An appearance wins, else the shipped artwork; the launcher gets the answer.
     private func icon(
         for command: ExtensionCommand, in owner: InstalledExtension,
         appearance: ExtensionAppearance?
@@ -292,7 +291,6 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
 
     // MARK: - Running a command
 
-    /// Resolve a launcher row to a command, or nil when the row isn't an extension command.
     func resolve(_ entry: AppEntry) -> (InstalledExtension, ExtensionCommand)? {
         guard let reference = ExtensionCommandRef(entryID: entry.id),
             let owner = extensionNamed(reference.extensionName),
@@ -474,7 +472,6 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
         menuBars?.run(owner, command: command)
     }
 
-    /// Whether the Actions menu can offer refresh controls for this row.
     func isBackgroundSchedulable(for entry: AppEntry) -> Bool {
         guard let (_, command) = resolve(entry) else { return false }
         return ExtensionRefreshPolicy.isSchedulable(mode: command.mode, interval: command.interval)
@@ -525,7 +522,6 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
         backgroundTask = Task { [weak self] in await self?.backgroundLoop() }
     }
 
-    /// Whether any installed command currently wants background ticks.
     private var hasEnabledBackgroundCommands: Bool {
         schedulableCommands().contains { owner, command in
             commandMetadata.metadata(extension: owner.manifest.name, command: command.name)
@@ -627,7 +623,8 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
             if extensionNamed(reference.extensionName) != nil {
                 commandMetadata.recordBackgroundResult(
                     extension: reference.extensionName, command: reference.commandName,
-                    success: succeeded, error: succeeded ? nil : (backgroundFailure ?? String(localized: "Timed out.")),
+                    success: succeeded,
+                    error: succeeded ? nil : (backgroundFailure ?? String(localized: "Timed out.")),
                     now: Date())
             }
             backgroundSessionID = nil
@@ -930,9 +927,9 @@ final class ExtensionManager: ExtensionRuntimeDelegate, ExtensionHostContext {
         guard let owningName, let owner = extensionNamed(owningName),
             let command = owner.command(named: name)
         else { throw ExtensionLaunchError.unknownCommand(name) }
-        guard isEnabled else { throw ExtensionLaunchError.unsupported(String(localized: "Extensions are disabled.")) }
+        guard isEnabled else { throw ExtensionLaunchError.unsupported("Extensions are disabled.") }
         guard launchType != .background || command.mode != .view else {
-            throw ExtensionLaunchError.unsupported(String(localized: "A view command cannot run in the background."))
+            throw ExtensionLaunchError.unsupported("A view command cannot run in the background.")
         }
         coordinator?.runExtensionCommand(
             entry(for: command, in: owner), arguments: arguments, fallbackText: fallbackText,

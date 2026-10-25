@@ -7,7 +7,6 @@ struct CustomWindowSizeEditRequest: Identifiable {
     var size: CustomWindowSize?
 }
 
-/// Add / edit panel for one custom size, presented from the Window Management pane.
 struct CustomWindowSizeEditorPanel: View {
     private let isNew: Bool
     /// What a unit switch converts against; a run measures the window's own display.
@@ -27,33 +26,35 @@ struct CustomWindowSizeEditorPanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
             SettingsEditorHeader(
-                title: isNew ? String(localized: "New Custom Size") : String(localized: "Edit Custom Size"),
-                subtitle: String(localized: "Resizes the window you were last in, on the display it is already on."))
+                title: isNew ? "New Custom Size" : "Edit Custom Size",
+                subtitle: "Resizes the window you were last in, on the display it is already on.")
 
-            field(String(localized: "Name")) {
-                TextField(String(localized: "Wide Center"), text: $size.name)
+            field("Name") {
+                TextField("Wide Center", text: $size.name)
                     .settingsEditorTextField()
             }
 
-            field(String(localized: "Size")) {
+            field("Size") {
                 HStack(spacing: Theme.Spacing.lg) {
                     dimensionField(
-                        label: "W", name: String(localized: "Width"), dimension: $size.width,
+                        label: String(localized: "W"), name: String(localized: "Width"),
+                        dimension: $size.width,
                         available: reference.width)
                     dimensionField(
-                        label: "H", name: String(localized: "Height"), dimension: $size.height,
+                        label: String(localized: "H"), name: String(localized: "Height"),
+                        dimension: $size.height,
                         available: reference.height)
                 }
             }
 
-            field(String(localized: "Offset")) {
+            field("Offset") {
                 HStack(spacing: Theme.Spacing.lg) {
                     offsetField(label: "X", name: String(localized: "Horizontal offset"), value: \.x)
                     offsetField(label: "Y", name: String(localized: "Vertical offset"), value: \.y)
                 }
             }
 
-            field(String(localized: "Position")) {
+            field("Position") {
                 WindowLayoutPositionGrid(selection: size.anchor) { size.anchor = $0 }
             }
 
@@ -64,10 +65,10 @@ struct CustomWindowSizeEditorPanel: View {
             }
 
             HStack(spacing: Theme.Spacing.md) {
-                Button(String(localized: "Cancel")) { dismiss() }
+                Button("Cancel") { dismiss() }
                     .buttonStyle(.modalAction(.cancel))
                     .keyboardShortcut(.cancelAction)
-                Button(String(localized: "Save"), action: save)
+                Button("Save", action: save)
                     .buttonStyle(.modalAction(.primary))
                     .keyboardShortcut(.defaultAction)
                     .disabled(!canSave)
@@ -78,7 +79,9 @@ struct CustomWindowSizeEditorPanel: View {
         .settingsEditorPanelSurface()
     }
 
-    private func field(_ title: String, @ViewBuilder content: () -> some View) -> some View {
+    private func field(
+        _ title: LocalizedStringResource, @ViewBuilder content: () -> some View
+    ) -> some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             Text(title)
                 .font(.callout.weight(.medium))
@@ -97,7 +100,7 @@ struct CustomWindowSizeEditorPanel: View {
                 value: dimension.wrappedValue.value,
                 onCommit: { dimension.wrappedValue = .init($0, unit) })
             Picker(
-                String(localized: "\(name) unit"),
+                "\(name) unit",
                 selection: Binding(
                     get: { unit },
                     set: {

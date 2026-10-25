@@ -29,7 +29,8 @@ enum MCPTransportError: LocalizedError, Equatable {
         case .launchFailed(let detail): return detail
         case .invalidEndpoint(let detail): return detail
         case .requestFailed(let detail): return detail
-        case .malformedResponse: return String(localized: "The server sent a response Tinycast could not read.")
+        case .malformedResponse:
+            return String(localized: "The server sent a response Tinycast could not read.")
         case .timedOut: return String(localized: "The server did not respond in time.")
         }
     }
@@ -53,7 +54,7 @@ enum MCPServerStatus: Equatable, Sendable {
         case .stopped: return String(localized: "Stopped")
         case .signInRequired: return String(localized: "Sign-in required")
         case .connecting: return String(localized: "Connecting…")
-        case .ready(let tools): return tools == 1 ? String(localized: "1 tool") : String(localized: "\(tools) tools")
+        case .ready(let tools): return String(localized: "\(tools) tools")
         case .failed(let message): return message
         }
     }

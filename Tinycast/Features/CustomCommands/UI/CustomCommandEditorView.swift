@@ -22,9 +22,8 @@ struct CustomCommandEditorView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: metrics.spacing.xxl) {
-                    FormRow(String(localized: "Name & Icon")) { nameField }.id(
-                        CustomCommandEditorSession.Field.name)
-                    FormRow(String(localized: "Command"), alignment: .top) {
+                    FormRow("Name & Icon") { nameField }.id(CustomCommandEditorSession.Field.name)
+                    FormRow("Command", alignment: .top) {
                         VStack(alignment: .leading, spacing: metrics.spacing.md) {
                             FormTextArea(
                                 text: $editor.shellCommand, selection: $editor.selection,
@@ -37,24 +36,27 @@ struct CustomCommandEditorView: View {
                         }
                     }
                     .id(CustomCommandEditorSession.Field.command)
-                    FormRow(String(localized: "Run In"), alignment: .top) { workingDirectoryField }
+                    FormRow("Run In", alignment: .top) { workingDirectoryField }
                         .id(CustomCommandEditorSession.Field.workingDirectory)
                     FormRow(
-                        String(localized: "Arguments"), alignment: .top,
+                        "Arguments", alignment: .top,
                         labelInset: editor.arguments.isEmpty ? 0 : metrics.spacing.lg
                     ) { argumentsSection }
-                    FormRow("") {
+                    FormRow {
                         VStack(alignment: .leading, spacing: metrics.spacing.lg) {
                             option(
                                 String(localized: "Show in root search"),
                                 detail: String(
-                                    localized: "List this command alongside apps and other commands."),
+                                    localized: """
+                                        List this command alongside apps and other commands.
+                                        """),
                                 value: $editor.showsInRootSearch, focus: .rootSearch)
                             option(
                                 String(localized: "Load shell environment"),
                                 detail: String(
-                                    localized:
-                                        "Sources ~/.zshrc for aliases, functions and PATH. Slower to start."),
+                                    localized: """
+                                        Sources ~/.zshrc for aliases, functions and PATH. Slower to start.
+                                        """),
                                 value: $editor.loadsShellEnvironment, focus: .shellEnvironment)
                             option(
                                 String(localized: "Needs confirmation"),
@@ -67,7 +69,9 @@ struct CustomCommandEditorView: View {
                             option(
                                 String(localized: "Show output"),
                                 detail: String(
-                                    localized: "Open a window with everything the command prints."),
+                                    localized: """
+                                        Open a window with everything the command prints.
+                                        """),
                                 value: $editor.showsOutput, focus: .output)
                             if let errorMessage = editor.errorMessage {
                                 detail(errorMessage).foregroundStyle(.orange)
@@ -165,7 +169,7 @@ struct CustomCommandEditorView: View {
         }
         .tooltip(String(localized: "Choose an icon"), alignment: .trailing, dismissOnPress: true)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(String(localized: "Command icon"))
+        .accessibilityLabel("Command icon")
         .accessibilityAddTraits(.isButton)
         .accessibilityAction { showIconMenu() }
     }
@@ -193,10 +197,8 @@ struct CustomCommandEditorView: View {
                     text: $editor.workingDirectory, focused: focusBinding(.workingDirectory),
                     placeholder: String(localized: "Home folder"), label: String(localized: "Run In"),
                     moveFocus: editor.advanceFocus)
-                action(.chooseDirectory, perform: coordinator.chooseWorkingDirectory) {
-                    Text(String(localized: "Choose…"))
-                }
-                .padding(.horizontal, metrics.spacing.xl)
+                action(.chooseDirectory, perform: coordinator.chooseWorkingDirectory) { Text("Choose…") }
+                    .padding(.horizontal, metrics.spacing.xl)
             }
             .frame(height: metrics.size.dialogButtonHeight)
             .formFieldChrome(focused: focusedField == .workingDirectory || focusedField == .chooseDirectory)
@@ -209,7 +211,7 @@ struct CustomCommandEditorView: View {
             ForEach($editor.arguments) { $argument in
                 let id = argument.id
                 HStack(spacing: metrics.spacing.md) {
-                    Text("$\((editor.arguments.firstIndex { $0.id == id } ?? 0) + 1)")
+                    Text(verbatim: "$\((editor.arguments.firstIndex { $0.id == id } ?? 0) + 1)")
                         .foregroundStyle(Theme.Colors.textSecondary)
                     FormTextInput(
                         text: $argument.name, focused: focusBinding(.argumentName(id)),
@@ -218,7 +220,7 @@ struct CustomCommandEditorView: View {
                     )
                     .frame(height: metrics.size.dialogButtonHeight)
                     .formFieldChrome(focused: focusedField == .argumentName(id))
-                    Toggle(String(localized: "Optional"), isOn: $argument.isOptional)
+                    Toggle("Optional", isOn: $argument.isOptional)
                         .toggleStyle(.checkbox)
                         .focusable()
                         .focused($focusedControl, equals: .argumentOptional(id))
@@ -229,7 +231,7 @@ struct CustomCommandEditorView: View {
                     action(.removeArgument(id), perform: { editor.removeArgument(id: id) }) {
                         Image(systemName: "minus.circle")
                     }
-                    .accessibilityLabel(String(localized: "Remove argument"))
+                    .accessibilityLabel("Remove argument")
                 }
                 .id(CustomCommandEditorSession.Field.argumentName(id))
             }
@@ -237,7 +239,7 @@ struct CustomCommandEditorView: View {
                 HStack(spacing: metrics.spacing.sm) {
                     SymbolImage(name: "plus", size: metrics.scaled(Theme.Typography.menuSymbolSize))
                         .accessibilityHidden(true)
-                    Text(String(localized: "Add Argument"))
+                    Text("Add Argument")
                 }
             }
             .id(CustomCommandEditorSession.Field.addArgument)
@@ -249,8 +251,9 @@ struct CustomCommandEditorView: View {
             detail(
                 editor.arguments.isEmpty
                     ? String(
-                        localized:
-                            "Add up to three, filled in beside the search field before the command runs.")
+                        localized: """
+                            Add up to three, filled in beside the search field before the command runs.
+                            """)
                     : String(localized: "Passed to the command in order as $1, $2 …"))
         }
     }

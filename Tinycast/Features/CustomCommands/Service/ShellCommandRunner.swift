@@ -32,7 +32,6 @@ struct ShellCommandResult: Sendable, Equatable {
 
     var succeeded: Bool { termination.succeeded }
 
-    /// What a command said about itself, for a report with room for one line.
     var lastOutputLine: String? {
         standardOutput?
             .split(whereSeparator: \.isNewline).last
@@ -311,7 +310,8 @@ enum ShellCommandRunner {
         workingDirectory: String?
     ) throws(LaunchFailure) -> Launch {
         guard let directory = resolvedWorkingDirectory(workingDirectory) else {
-            throw LaunchFailure(reason: String(localized: "The folder “\(workingDirectory ?? "")” no longer exists."))
+            throw LaunchFailure(
+                reason: String(localized: "The folder “\(workingDirectory ?? "")” no longer exists."))
         }
         // zsh reads `.zshrc` only for interactive shells, so `-l` alone sees no aliases.
         let flag = loadingShellEnvironment ? "-ilc" : "-lc"

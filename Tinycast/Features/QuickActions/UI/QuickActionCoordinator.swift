@@ -88,11 +88,14 @@ final class QuickActionCoordinator {
             guard
                 await core.confirm(
                     title: String(localized: "Enable Quick Actions?"),
-                    message:
-                        String(localized: "Tinycast needs the Accessibility permission to read the text you have ")
-                        + String(localized: "selected in other apps and replace it. Nothing is read until you press ")
-                        + String(localized: "a shortcut."),
-                    symbol: "wand.and.sparkles", confirmTitle: String(localized: "Continue"), tone: .neutral,
+                    message: String(
+                        localized: """
+                            Tinycast needs the Accessibility permission to read the text you have \
+                            selected in other apps and replace it. Nothing is read until you press \
+                            a shortcut.
+                            """),
+                    symbol: "wand.and.sparkles", confirmTitle: String(localized: "Continue"),
+                    tone: .neutral,
                     confirmRole: .standard)
             else { return }
             settings.quickActionsEnabled = true
@@ -151,9 +154,7 @@ final class QuickActionCoordinator {
     private func report(_ error: CustomQuickActionError) {
         Task {
             await core.showNotice(
-                title: String(
-                    localized: "Couldn’t Save the Change"
-                ), message: NSLocalizedString(error.localizedDescription, comment: "Error message"),
+                title: String(localized: "Couldn’t Save the Change"), message: error.localizedDescription,
                 symbol: CustomQuickAction.sfSymbol, tone: .danger)
         }
     }
@@ -250,10 +251,12 @@ final class QuickActionCoordinator {
             guard
                 await core.reportFailure(
                     title: String(localized: "Quick Actions can't read your selection"),
-                    message:
-                        String(localized: "Tinycast needs the Accessibility permission to read the text you have ")
-                        + String(localized: "selected and replace it. If Tinycast is already listed, switch it off ")
-                        + String(localized: "and on again — a rebuilt app keeps a stale entry."),
+                    message: String(
+                        localized: """
+                            Tinycast needs the Accessibility permission to read the text you have \
+                            selected and replace it. If Tinycast is already listed, switch it off \
+                            and on again — a rebuilt app keeps a stale entry.
+                            """),
                     symbol: "wand.and.sparkles", recovery: String(localized: "Open System Settings"))
             else { return }
             Permissions.openAccessibilitySettings()
@@ -317,12 +320,12 @@ final class QuickActionCoordinator {
     /// A replacement that never lands would otherwise lose the reply, so the clipboard keeps it.
     private func deliver(_ text: String, to target: Target, action: QuickAction) {
         let onDelivered: @MainActor @Sendable () -> Void = { [weak self] in
-            self?.core.showMessage(String(localized: "\(action.localizedTitle) applied"))
+            self?.core.showMessage(String(localized: "\(action.title) applied"))
         }
         let onFailed: @MainActor @Sendable () -> Void = { [weak self] in
             Paster.copyPlainText(text)
             self?.core.showMessage(
-                String(localized: "\(action.localizedTitle) couldn't replace the selection — copied instead"),
+                String(localized: "\(action.title) couldn't replace the selection — copied instead"),
                 tone: .danger)
         }
         switch target {

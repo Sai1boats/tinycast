@@ -24,8 +24,6 @@ enum SettingsTab: CaseIterable, Identifiable {
         case .dictation: return "Dictation"
         case .fileSearch: return "File Search"
         case .notes: return "Notes"
-        case .todos: return "Todos"
-        case .planote: return "Planote"
         case .snippets: return "Snippets"
         case .navigation: return "Navigation"
         case .windowManagement: return "Window Management"
@@ -36,6 +34,8 @@ enum SettingsTab: CaseIterable, Identifiable {
         case .permissions: return "Permissions"
         case .backup: return "Backup"
         case .about: return "About"
+        case .todos: return "Todos"
+        case .planote: return "Planote"
         }
     }
 

@@ -20,7 +20,6 @@ struct FeatureCommandsSection: View {
     }
 }
 
-/// One command's controls — alias, shortcut, launcher visibility — wherever its pane seats them.
 struct FeatureCommandRow: View {
     let entry: AppEntry
     @Environment(VisibilityStore.self) private var visibility
@@ -41,7 +40,7 @@ struct FeatureCommandRow: View {
                 .labelsHidden()
                 .toggleStyle(.checkbox)
                 .launcherVisibilityHelp()
-                .accessibilityLabel(String(localized: "Show \(entry.name) in launcher"))
+                .accessibilityLabel("Show \(entry.name) in launcher")
         }
     }
 

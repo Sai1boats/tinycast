@@ -87,7 +87,8 @@ final class ChatGPTSubscriptionManager {
         try await client.start(toolServers: toolServers)
         guard access == nil else { return }
         guard try await verifyAccess() else {
-            throw AIProviderError.unavailable(String(localized: "Sign in with `codex login`, then check Codex again."))
+            throw AIProviderError.unavailable(
+                String(localized: "Sign in with `codex login`, then check Codex again."))
         }
     }
 

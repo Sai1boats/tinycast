@@ -19,10 +19,10 @@ struct QuicklinkEditorView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: metrics.spacing.xxl) {
-                FormRow(String(localized: "Link"), alignment: .top) { linkEditor }
-                FormRow(String(localized: "Name & Icon")) { nameField }
-                FormRow(String(localized: "Open With")) { applicationMenu }
-                FormRow("") {
+                FormRow("Link", alignment: .top) { linkEditor }
+                FormRow("Name & Icon") { nameField }
+                FormRow("Open With") { applicationMenu }
+                FormRow {
                     VStack(alignment: .leading, spacing: metrics.spacing.lg) {
                         option(
                             String(localized: "Show in root search"),
@@ -101,7 +101,7 @@ struct QuicklinkEditorView: View {
             if value.isEmpty {
                 EmptyView()
             } else if QuicklinkDestination.containsPlaceholder(value) {
-                Text(String(localized: "Resolved when you open it — placeholders are filled in first."))
+                Text("Resolved when you open it — placeholders are filled in first.")
             } else if let destination = QuicklinkDestination.detect(value) {
                 Label {
                     Text(destination.displayText).lineLimit(1).truncationMode(.middle)
@@ -109,7 +109,7 @@ struct QuicklinkEditorView: View {
                     SymbolImage(name: destination.defaultSymbol, size: metrics.size.menuIcon)
                 }
             } else {
-                Text(String(localized: "This doesn't look like a URL, file path, or deeplink."))
+                Text("This doesn't look like a URL, file path, or deeplink.")
                     .foregroundStyle(.orange)
             }
         }
@@ -118,7 +118,7 @@ struct QuicklinkEditorView: View {
     }
 
     private var insertMenu: some View {
-        Button(String(localized: "Insert…")) {
+        Button("Insert…") {
             let items = [
                 placeholder(String(localized: "Argument"), "{argument}"),
                 placeholder(String(localized: "Named Argument"), "{argument name=\"Query\"}"),
@@ -128,7 +128,7 @@ struct QuicklinkEditorView: View {
                 placeholder(String(localized: "Time"), "{time}"),
                 placeholder(String(localized: "Date & Time"), "{datetime}"),
                 placeholder(String(localized: "Custom Date Format"), "{date format=\"yyyy-MM-dd\"}"),
-                placeholder(String(localized: "UUID"), "{uuid}", startsSection: true)
+                placeholder("UUID", "{uuid}", startsSection: true)
             ]
             openInputMenu(PopoverMenuContent(items: items), .belowControl(insertMenuFrame), 0)
         }
@@ -140,9 +140,10 @@ struct QuicklinkEditorView: View {
             insertMenuFrame = $0
         }
         .tooltip(
-            String(localized: "Insert a dynamic placeholder"), alignment: .trailing, dismissOnPress: true
+            String(localized: "Insert a dynamic placeholder"), alignment: .trailing,
+            dismissOnPress: true
         )
-        .accessibilityLabel(String(localized: "Insert a placeholder"))
+        .accessibilityLabel("Insert a placeholder")
     }
 
     private func placeholder(
@@ -206,7 +207,7 @@ struct QuicklinkEditorView: View {
         }
         .tooltip(String(localized: "Choose an icon"), alignment: .trailing, dismissOnPress: true)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(String(localized: "Quicklink icon"))
+        .accessibilityLabel("Quicklink icon")
         .accessibilityAddTraits(.isButton)
         .accessibilityAction { showIconMenu() }
     }
@@ -244,7 +245,7 @@ struct QuicklinkEditorView: View {
                     .frame(width: metrics.size.menuIcon, height: metrics.size.menuIcon)
                 Text(application.name).lineLimit(1)
             } else {
-                Text(String(localized: "Default app"))
+                Text("Default app")
             }
             Spacer(minLength: 0)
             menuChevron(for: applicationMenuFrame)
@@ -267,7 +268,7 @@ struct QuicklinkEditorView: View {
         }
         .formFieldChrome(focused: focusedField == .application)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(String(localized: "Open With"))
+        .accessibilityLabel("Open With")
         .accessibilityValue(application?.name ?? String(localized: "Default app"))
         .accessibilityAddTraits(.isButton)
         .accessibilityAction { showApplicationMenu() }

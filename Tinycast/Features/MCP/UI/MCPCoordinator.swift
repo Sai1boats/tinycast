@@ -112,10 +112,10 @@ final class MCPCoordinator {
             let server = server(slug: route.slug),
             let connection = manager.connection(slug: route.slug)
         else {
-            return .failure(call.id, String(localized: "That tool is no longer connected."))
+            return .failure(call.id, "That tool is no longer connected.")
         }
         guard await isPermitted(server, tool: route.tool, in: chat) else {
-            return .failure(call.id, String(localized: "The user declined this tool call."))
+            return .failure(call.id, "The user declined this tool call.")
         }
         manager.markUsed()
         do {
@@ -207,8 +207,11 @@ final class MCPCoordinator {
         let choices: [MCPTrustChoice] = [.always, .thisChat, .refuse]
         let index = await core.choose(
             title: String(localized: "Let \(server.title) run its tools?"),
-            message: String(localized: "The model wants to call \u{201C}\(tool)\u{201D}. Tinycast did not write this ")
-                + String(localized: "server and cannot vouch for what it does."),
+            message: String(
+                localized: """
+                    The model wants to call \u{201C}\(tool)\u{201D}. Tinycast did not write this \
+                    server and cannot vouch for what it does.
+                    """),
             symbol: "wrench.and.screwdriver",
             options: [
                 DialogAction(title: String(localized: "Always Allow")),

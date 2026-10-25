@@ -101,7 +101,8 @@ final class CustomCommandCoordinator {
                 try addCustomCommand(draft)
             } else {
                 guard let current = store.command(id: editor.id) else {
-                    editor.errorMessage = String(localized: "This command was deleted. Copy your changes before closing.")
+                    editor.errorMessage = String(
+                        localized: "This command was deleted. Copy your changes before closing.")
                     return
                 }
                 draft.isEnabled = current.isEnabled
@@ -167,7 +168,8 @@ final class CustomCommandCoordinator {
             await core.confirm(
                 title: String(localized: "Delete “\(command.name)”?"),
                 message: String(localized: "Its shortcut, favorite slot and learned ranking go with it."),
-                symbol: command.iconSymbol ?? CustomCommand.sfSymbol, confirmTitle: String(localized: "Delete"))
+                symbol: command.iconSymbol ?? CustomCommand.sfSymbol,
+                confirmTitle: String(localized: "Delete"))
         else { return }
         removeCustomCommandReferences(ids: [id], entryIDs: [command.entryID])
         store.remove(id: id)
@@ -231,16 +233,22 @@ final class CustomCommandCoordinator {
     /// Scripts run arbitrary code, so this warns the way a backup of custom commands does.
     private func confirmScriptImport(count: Int) async -> Bool {
         await core.confirm(
-            title: count == 1 ? String(localized: "Import 1 script?") : String(localized: "Import \(count) scripts?"),
-            message:
-                String(localized: "Imported commands run these files with your user account. Only import scripts you trust."),
-            symbol: CustomCommand.sfSymbol, confirmTitle: String(localized: "Import"), confirmRole: .standard)
+            title: String(localized: "Import \(count) scripts?"),
+            message: String(
+                localized: """
+                    Imported commands run these files with your user account. Only import scripts you \
+                    trust.
+                    """),
+            symbol: CustomCommand.sfSymbol, confirmTitle: String(localized: "Import"),
+            confirmRole: .standard)
     }
 
     private func importSummary(added: Int, offered: Int) -> String {
-        let imported = added == 1 ? String(localized: "Imported 1 command.") : String(localized: "Imported \(added) commands.")
-        guard offered > added else { return imported }
-        return imported + String(localized: " Skipped \(offered - added) already in your library.")
+        guard offered > added else { return String(localized: "Imported \(added) commands.") }
+        return String(
+            localized: """
+                Imported \(added) commands. Skipped \(offered - added) already in your library.
+                """)
     }
 
     // MARK: - Running
@@ -385,7 +393,8 @@ final class CustomCommandCoordinator {
                     // Neutral, not destructive: their own command just wants a second tap.
                     await core.confirm(
                         title: command.name,
-                        message: String(localized: "Are you sure you want to run this command?\n\n\(command.command)"),
+                        message: String(
+                            localized: "Are you sure you want to run this command?\n\n\(command.command)"),
                         symbol: command.symbol, confirmTitle: String(localized: "Run"),
                         tone: .neutral, confirmRole: .standard)
                 else { return }
@@ -474,11 +483,9 @@ final class CustomCommandCoordinator {
         case .launchFailed: return String(localized: "The shell could not be started.")
         case .stopped: return String(localized: "Stopped")
         case .exited(let status):
-            return status == 0 ? String(
-                localized: "Finished successfully."
-            ) : String(
-                localized: "The command exited with status \(status)."
-            )
+            return status == 0
+                ? String(localized: "Finished successfully.")
+                : String(localized: "The command exited with status \(status).")
         }
     }
 
@@ -497,6 +504,9 @@ final class CustomCommandCoordinator {
         guard case .exited(status: 127) = result.termination, !command.loadsShellEnvironment else {
             return nil
         }
-        return String(localized: "If this is a shell alias or function, turn on Load Shell Environment for this command.")
+        return String(
+            localized: """
+                If this is a shell alias or function, turn on Load Shell Environment for this command.
+                """)
     }
 }

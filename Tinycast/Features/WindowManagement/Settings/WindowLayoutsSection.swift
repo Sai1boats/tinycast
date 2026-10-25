@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// The layout library, inside the Window Management pane: layouts belong to window management.
 struct WindowLayoutsSection: View {
     let onEdit: (WindowLayout?) -> Void
     let onDelete: (WindowLayout) -> Void
@@ -21,7 +20,7 @@ struct WindowLayoutsSection: View {
             }
 
             if store.layouts.count > Self.filterThreshold {
-                SettingsFilterField(prompt: String(localized: "Search layouts…"), query: $query)
+                SettingsFilterField(prompt: "Search layouts…", query: $query)
             }
 
             if results.isEmpty {
@@ -64,7 +63,6 @@ struct WindowLayoutsSection: View {
     }
 }
 
-/// One layout's alias, shortcut, launcher checkbox and actions, shaped like the window-command row.
 private struct WindowLayoutSettingsRow: View {
     let layout: WindowLayout
     let showsInLauncher: Bool
@@ -91,15 +89,15 @@ private struct WindowLayoutSettingsRow: View {
                 Image(systemName: "play")
             }
             .buttonStyle(.plain)
-            .help(String(localized: "Run this layout"))
-            .accessibilityLabel(String(localized: "Run \(layout.name)"))
+            .help("Run this layout")
+            .accessibilityLabel("Run \(layout.name)")
 
             Button(action: onEdit) {
                 Image(systemName: "pencil")
             }
             .buttonStyle(.plain)
-            .help(String(localized: "Edit"))
-            .accessibilityLabel(String(localized: "Edit \(layout.name)"))
+            .help("Edit")
+            .accessibilityLabel("Edit \(layout.name)")
 
             Button {
                 core.windowLayoutCoordinator.duplicateWindowLayout(id: layout.id)
@@ -107,16 +105,16 @@ private struct WindowLayoutSettingsRow: View {
                 Image(systemName: "plus.square.on.square")
             }
             .buttonStyle(.plain)
-            .help(String(localized: "Duplicate"))
-            .accessibilityLabel(String(localized: "Duplicate \(layout.name)"))
+            .help("Duplicate")
+            .accessibilityLabel("Duplicate \(layout.name)")
 
             Button(action: onDelete) {
                 Image(systemName: "trash")
                     .foregroundStyle(Theme.Colors.destructive)
             }
             .buttonStyle(.plain)
-            .help(String(localized: "Delete"))
-            .accessibilityLabel(String(localized: "Delete \(layout.name)"))
+            .help("Delete")
+            .accessibilityLabel("Delete \(layout.name)")
 
             Toggle(
                 "", isOn: Binding(get: { isVisible }, set: { visibility.setItemVisible($0, for: entry) })
@@ -124,7 +122,7 @@ private struct WindowLayoutSettingsRow: View {
             .labelsHidden()
             .toggleStyle(.checkbox)
             .launcherVisibilityHelp()
-            .accessibilityLabel(String(localized: "Show \(layout.name) in launcher"))
+            .accessibilityLabel("Show \(layout.name) in launcher")
         }
     }
 }

@@ -20,9 +20,9 @@ struct SettingsRootView: View {
         .toolbar {
             ToolbarItem(placement: .navigation) {
                 ControlGroup {
-                    Button(String(localized: "Back"), systemImage: "chevron.backward") { navigation.goBack() }
+                    Button("Back", systemImage: "chevron.backward") { navigation.goBack() }
                         .disabled(!navigation.canGoBack)
-                    Button(String(localized: "Forward"), systemImage: "chevron.forward") { navigation.goForward() }
+                    Button("Forward", systemImage: "chevron.forward") { navigation.goForward() }
                         .disabled(!navigation.canGoForward)
                 }
                 .controlGroupStyle(.navigation)

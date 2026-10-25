@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Settings ▸ Fallbacks: which commands a typed query is offered to, and in what order.
 struct FallbacksSettingsView: View {
     @Environment(AppCore.self) private var core
     /// Observed so a reorder or a checkbox redraws the list under the button that moved it.
@@ -13,7 +12,7 @@ struct FallbacksSettingsView: View {
             Section {
                 let fallbacks = fallbacks
                 if fallbacks.isEmpty {
-                    Text(String(localized: "Nothing to offer — their features are off."))
+                    Text("Nothing to offer — their features are off.")
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .center)
                 } else {
@@ -24,7 +23,7 @@ struct FallbacksSettingsView: View {
             } header: {
                 SettingsSectionHeader(.fallbacksFallbacks)
             } footer: {
-                Text(String(localized: "Shown below every search as “Use … with”. Includes quicklinks with an {argument}."))
+                Text("Shown below every search as “Use … with”. Includes quicklinks with an {argument}.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -56,18 +55,18 @@ private struct FallbackRow: View {
                     Image(systemName: "chevron.up")
                 }
                 .disabled(index == 0)
-                .accessibilityLabel(String(localized: "Move \(entry.name) up"))
+                .accessibilityLabel("Move \(entry.name) up")
                 Button {
                     move(by: 1)
                 } label: {
                     Image(systemName: "chevron.down")
                 }
                 .disabled(index == order.count - 1)
-                .accessibilityLabel(String(localized: "Move \(entry.name) down"))
+                .accessibilityLabel("Move \(entry.name) down")
                 Toggle("", isOn: enabledBinding)
                     .labelsHidden()
                     .toggleStyle(.checkbox)
-                    .accessibilityLabel(String(localized: "Offer \(entry.name) as a fallback"))
+                    .accessibilityLabel("Offer \(entry.name) as a fallback")
             }
         }
     }

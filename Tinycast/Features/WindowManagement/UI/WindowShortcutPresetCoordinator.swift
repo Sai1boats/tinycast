@@ -28,12 +28,7 @@ final class WindowShortcutPresetCoordinator {
             let confirmed = Set(plan.overwritten)
             guard
                 await core.confirm(
-                    title: plan.overwritten.count == 1
-                        ? String(
-                            localized: "Replace 1 shortcut?"
-                        ) : String(
-                            localized: "Replace \(plan.overwritten.count) shortcuts?"
-                        ),
+                    title: String(localized: "Replace \(plan.overwritten.count) shortcuts?"),
                     message: replacementMessage(plan.overwritten, preset: preset),
                     symbol: "keyboard", confirmTitle: String(localized: "Replace"))
             else { return }
@@ -69,7 +64,8 @@ final class WindowShortcutPresetCoordinator {
             core.showMessage(String(localized: "Applied \(preset.title) shortcuts"))
         } else {
             core.showMessage(
-                String(localized: "Applied \(preset.title) shortcuts — \(skipped.count) skipped, keys in use"),
+                String(
+                    localized: "Applied \(preset.title) shortcuts — \(skipped.count) skipped, keys in use"),
                 tone: .danger)
         }
     }
@@ -86,8 +82,16 @@ final class WindowShortcutPresetCoordinator {
         _ ids: [WindowCommand.ID], preset: WindowShortcutPreset
     ) -> String {
         let names = ids.compactMap { WindowCommandCatalog.command(id: $0)?.name }
+        guard names.count > 3 else {
+            let listed = names.formatted(.list(type: .and))
+            return String(
+                localized: "\(listed) will use the \(preset.title) keys instead of the ones you set.")
+        }
         let listed = names.prefix(3).joined(separator: ", ")
-        let rest = names.count > 3 ? String(localized: " and \(names.count - 3) more") : ""
-        return String(localized: "\(listed)\(rest) will use the \(preset.title) keys instead of the ones you set.")
+        let more = names.count - 3
+        return String(
+            localized: """
+                \(listed) and \(more) more will use the \(preset.title) keys instead of the ones you set.
+                """)
     }
 }

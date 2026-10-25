@@ -291,3 +291,9 @@ enum UtilityClipboard {
 enum Paster {
     static func copyPlainText(_ text: String) {}
 }
+
+enum SystemSymbolName {
+    static func resolve(_ name: String, isDark: Bool) -> String {
+        name == "face.smiling" && isDark ? "face.smiling.inverse" : name
+    }
+}

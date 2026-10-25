@@ -21,7 +21,7 @@ final class DictationModelStore {
 
     init(
         idleRelease: DictationIdleRelease,
-        root: URL = AppPaths.caches().appending(path: String(localized: "Dictation")),
+        root: URL = AppPaths.caches().appending(path: "Dictation"),
         makeWorker: @escaping () throws -> DictationWorker = { try DictationWorker() }
     ) {
         self.idleRelease = idleRelease

@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// Settings → AI's MCP half: the switch, the servers, and what each one is doing right now.
 struct MCPSettingsSection: View {
     @Environment(MCPCoordinator.self) private var coordinator
     @Environment(AppSettings.self) private var appSettings
@@ -17,7 +16,7 @@ struct MCPSettingsSection: View {
             }
             Group {
                 if store.servers.isEmpty {
-                    Text(String(localized: "No MCP servers yet."))
+                    Text("No MCP servers yet.")
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(store.servers) { server in
@@ -46,7 +45,7 @@ struct MCPSettingsSection: View {
         } header: {
             SettingsSectionHeader(.aiMCPServers)
         } footer: {
-            Text(String(localized: "Type @slug to address one server. A chat asks before its first tool call."))
+            Text("Type @slug to address one server. A chat asks before its first tool call.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -54,12 +53,13 @@ struct MCPSettingsSection: View {
             MCPServerEditor(target: target, onSave: save, onCancel: { editor = nil })
         }
         .confirmationDialog(
-            String(localized: "Remove \(pendingRemoval?.title ?? "this server")?"), isPresented: removalBinding,
-            presenting: pendingRemoval
+            pendingRemoval.map { String(localized: "Remove \($0.title)?") }
+                ?? String(localized: "Remove this server?"),
+            isPresented: removalBinding, presenting: pendingRemoval
         ) { server in
-            Button(String(localized: "Remove"), role: .destructive) { remove(server) }
+            Button("Remove", role: .destructive) { remove(server) }
         } message: { _ in
-            Text(String(localized: "Its tools stop being offered, and its stored credentials are deleted."))
+            Text("Its tools stop being offered, and its stored credentials are deleted.")
         }
     }
 
@@ -84,8 +84,11 @@ struct MCPSettingsSection: View {
             try coordinator.remove(server.id)
             removalError = nil
         } catch {
-            removalError =
-                String(localized: "\(server.title) was kept: its credentials could not be removed from your login Keychain.")
+            removalError = String(
+                localized: """
+                    \(server.title) was kept: its credentials could not be removed from your login \
+                    Keychain.
+                    """)
         }
     }
 }
@@ -103,14 +106,14 @@ private struct MCPServerRow: View {
         } trailing: {
             Button(action: onEdit) { Image(systemName: "pencil") }
                 .buttonStyle(.plain)
-                .help(String(localized: "Edit \(server.title)"))
-                .accessibilityLabel(String(localized: "Edit \(server.title)"))
+                .help("Edit \(server.title)")
+                .accessibilityLabel("Edit \(server.title)")
             Button(action: onRemove) {
                 Image(systemName: "trash").foregroundStyle(.red)
             }
             .buttonStyle(.plain)
-            .help(String(localized: "Remove \(server.title)"))
-            .accessibilityLabel(String(localized: "Remove \(server.title)"))
+            .help("Remove \(server.title)")
+            .accessibilityLabel("Remove \(server.title)")
         }
     }
 

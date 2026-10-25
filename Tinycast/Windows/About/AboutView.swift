@@ -59,6 +59,7 @@ struct AboutView: View {
                 Text(Self.version)
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
+                    .textSelection(.enabled)
                     .padding(.horizontal, Theme.Spacing.md)
                     .padding(.vertical, Theme.Spacing.xs / 2)
                     .background(
@@ -69,7 +70,7 @@ struct AboutView: View {
                     )
             }
 
-            Text(String(localized: "A tiny, native macOS launcher."))
+            Text("A tiny, native macOS launcher.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }
@@ -100,13 +101,13 @@ struct AboutView: View {
                 VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                     SettingsRowTitle(.aboutLinks, "Support")
                         .font(.body.weight(.medium))
-                    Text(String(localized: "Free and open source, funded out of pocket."))
+                    Text("Free and open source, funded out of pocket.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: Theme.Spacing.lg)
-                Button(String(localized: "Support…")) { core.supportCoordinator.showSupport() }
+                Button("Support…") { core.supportCoordinator.showSupport() }
                     .buttonStyle(.borderedProminent)
                     .tint(Theme.Colors.brand)
             }
@@ -115,13 +116,12 @@ struct AboutView: View {
     }
 
     private var footer: some View {
-        Text(String(localized: "© 2026 Abue Ammar · Released under AGPL-3.0"))
+        Text("© 2026 Abue Ammar · Released under AGPL-3.0")
             .font(.caption2)
             .foregroundStyle(.tertiary)
     }
 }
 
-/// One external destination in the About "Links" card.
 private struct AboutLink: Identifiable {
     enum Glyph {
         case symbol(String)
@@ -157,7 +157,6 @@ private struct AboutLink: Identifiable {
     ]
 }
 
-/// A row in the About "Links" card: glyph, title, destination and the arrow.
 private struct AboutLinkRow: View {
     let link: AboutLink
 

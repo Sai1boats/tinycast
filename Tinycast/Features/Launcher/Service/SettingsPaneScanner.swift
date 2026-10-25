@@ -8,8 +8,8 @@ enum SettingsPaneScanner {
 
     /// Panes whose bundle carries a junk or missing display name; keyed by CFBundleIdentifier.
     private static let nameOverrides: [String: String] = [
-        "com.apple.Battery-Settings.extension": String(localized: "Battery"),
-        "com.apple.HeadphoneSettings": String(localized: "Headphones")
+        "com.apple.Battery-Settings.extension": "Battery",
+        "com.apple.HeadphoneSettings": "Headphones"
     ]
 
     /// Panes whose bundle icon is ExtensionKit's placeholder brick; keyed by CFBundleIdentifier.

@@ -67,7 +67,8 @@ private struct RoomRowView: View {
             let apps = room.windows.map(\.appName).reduce(into: [String]()) { names, name in
                 if !names.contains(name) { names.append(name) }
             }
-            return ([isCurrent ? String(localized: "Current") : nil, String(localized: "\(room.windows.count) windows")] + [apps.joined(separator: ", ")])
+            let current = isCurrent ? String(localized: "Current") : nil
+            return ([current, room.summary] + [apps.joined(separator: ", ")])
                 .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · ")
         case .edit, .create:
             return String(localized: "Pick the open windows that belong in it")
@@ -114,7 +115,9 @@ private struct RoomRowView: View {
         .armedHover($hovered)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(title)
-        .accessibilityValue(layout.map { String(localized: "\(subtitle), \($0.title) layout") } ?? subtitle)
+        .accessibilityValue(
+            layout.map { String(localized: "\(subtitle), \($0.title) layout") } ?? subtitle
+        )
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }

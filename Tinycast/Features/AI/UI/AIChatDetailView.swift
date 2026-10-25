@@ -1,7 +1,6 @@
 import AppKit
 import SwiftUI
 
-/// The window's right-hand side: the open conversation, and its composer beneath it.
 struct AIChatDetailView: View {
     @Environment(AIChatCoordinator.self) private var coordinator
     @Environment(ChatFindState.self) private var find
@@ -12,8 +11,8 @@ struct AIChatDetailView: View {
 
     /// The last reply's options, once it has finished; typing or sending moves past them.
     private var suggestions: [String] {
-        guard !chat.isStreaming, let last = chat.session.messages.last, last.role == .assistant,
-            last.state == .complete
+        guard coordinator.aiSettings.choicesEnabled, !chat.isStreaming,
+            let last = chat.session.messages.last, last.role == .assistant, last.state == .complete
         else { return [] }
         return ChatChoices.split(last.text).choices
     }
@@ -119,7 +118,6 @@ struct AIChatDetailView: View {
     }
 }
 
-/// Staged files, the text, then the chat's options and Send, on one pane of Liquid Glass.
 private struct AIChatComposer: View {
     let chat: AIChatState
     let coordinator: AIChatCoordinator
@@ -146,7 +144,7 @@ private struct AIChatComposer: View {
             chips
             ZStack(alignment: .topLeading) {
                 if chat.draft.isEmpty {
-                    Text(String(localized: "Ask anything…"))
+                    Text("Ask anything…")
                         .foregroundStyle(.tertiary)
                         .allowsHitTesting(false)
                 }
@@ -237,11 +235,10 @@ private struct AIChatComposer: View {
         .buttonStyle(.plain)
         .disabled(!enabled)
         .animation(.easeOut(duration: Theme.Duration.hover), value: enabled)
-        .help(chat.isStreaming ? String(localized: "Stop Response") : String(localized: "Send  ↵"))
-        .accessibilityLabel(chat.isStreaming ? String(localized: "Stop Response") : String(localized: "Send"))
+        .help(chat.isStreaming ? "Stop Response" : "Send  ↵")
+        .accessibilityLabel(chat.isStreaming ? "Stop Response" : "Send")
     }
 
-    /// Return and the button are one action: Send, or Stop while a reply streams.
     private func submit() {
         if chat.isStreaming {
             coordinator.stopResponse(in: chat)
@@ -251,7 +248,6 @@ private struct AIChatComposer: View {
     }
 }
 
-/// A composer control's face: one glyph slot, the callout title, then the menu's chevron.
 private struct ComposerControlLabel<Icon: View>: View {
     var title: String?
     var showsChevron = true
@@ -337,19 +333,19 @@ private struct AIAddMenu: View {
     var body: some View {
         @Bindable var settings = settings
         Menu {
-            Button(String(localized: "Attach Files…"), systemImage: "paperclip") { coordinator.chooseFiles(for: chat) }
+            Button("Attach Files…", systemImage: "paperclip") { coordinator.chooseFiles(for: chat) }
                 .help(attachHelp)
             Divider()
             if offersSearch {
-                Toggle(String(localized: "Web Search"), systemImage: "globe", isOn: $settings.webSearchEnabled)
+                Toggle("Web Search", systemImage: "globe", isOn: $settings.webSearchEnabled)
             }
             AIToolsMenu(chat: chat, coordinator: coordinator)
         } label: {
             ComposerControlLabel(showsChevron: false) { ComposerSymbol(name: "plus") }
         }
         .composerMenu()
-        .help(String(localized: "Attach files, search the web, choose tools"))
-        .accessibilityLabel(String(localized: "Add"))
+        .help("Attach files, search the web, choose tools")
+        .accessibilityLabel("Add")
     }
 
     /// One entry for every kind; what this chat's model can read is what the help says.
@@ -396,17 +392,19 @@ private struct DictationButton: View {
         .composerControl()
         .disabled(session?.isTranscribing == true)
         .help(help(session))
-        .accessibilityLabel(session == nil ? String(localized: "Dictate") : String(localized: "Stop Dictating"))
+        .accessibilityLabel(session == nil ? "Dictate" : "Stop Dictating")
     }
 
     private func help(_ session: DictationField?) -> String {
-        guard dictation.hasModel else { return String(localized: "Download a dictation model in Settings") }
+        guard dictation.hasModel else {
+            return String(localized: "Download a dictation model in Settings")
+        }
         guard let session else { return String(localized: "Dictate") }
-        return session.isTranscribing ? String(localized: "Transcribing…") : String(localized: "Stop and insert the text  ↵")
+        return session.isTranscribing
+            ? String(localized: "Transcribing…") : String(localized: "Stop and insert the text  ↵")
     }
 }
 
-/// Web search is on beside the +; a click turns it off, the + menu turns it back on.
 private struct WebSearchPill: View {
     let settings: AISettingsStore
     let isCompact: Bool
@@ -418,7 +416,7 @@ private struct WebSearchPill: View {
             HStack(spacing: Theme.Spacing.xs) {
                 ComposerSymbol(name: "globe")
                     .frame(width: Theme.Size.aiChatComposerGlyph, height: Theme.Size.aiChatComposerGlyph)
-                if !isCompact { Text(String(localized: "Search")).font(.callout) }
+                if !isCompact { Text("Search").font(.callout) }
             }
             .foregroundStyle(Color.accentColor)
             .padding(.horizontal, isCompact ? 0 : Theme.Spacing.md)
@@ -428,8 +426,8 @@ private struct WebSearchPill: View {
         }
         .buttonStyle(.plain)
         .composerControl()
-        .help(String(localized: "Web search is on; click to turn it off"))
-        .accessibilityLabel(String(localized: "Web search is on"))
+        .help("Web search is on; click to turn it off")
+        .accessibilityLabel("Web search is on")
     }
 }
 
@@ -444,7 +442,7 @@ private struct AIModelPicker: View {
         let groups = coordinator.modelGroups
         Menu {
             if coordinator.isModelCatalogLoading {
-                Text(String(localized: "Loading models…"))
+                Text("Loading models…")
             }
             ForEach(groups) { group in
                 Section(group.title) {
@@ -464,7 +462,7 @@ private struct AIModelPicker: View {
                 }
             }
             if groups.isEmpty, !coordinator.isModelCatalogLoading {
-                Button(String(localized: "Configure AI…"), action: coordinator.showSettings)
+                Button("Configure AI…", action: coordinator.showSettings)
             }
         } label: {
             ComposerControlLabel(
@@ -475,7 +473,7 @@ private struct AIModelPicker: View {
             }
         }
         .composerMenu()
-        .help(String(localized: "Switch this chat's model"))
+        .help("Switch this chat's model")
     }
 }
 
@@ -498,15 +496,12 @@ private struct AIReasoningPicker: View {
         } label: {
             // A word, not a glyph: beside the model's name it already reads as that model's setting.
             ComposerControlLabel(
-                title: efforts.isEmpty ? String(localized: "Reasoning") : coordinator.selectedReasoningTitle(for: chat))
+                title: efforts.isEmpty
+                    ? String(localized: "Reasoning") : coordinator.selectedReasoningTitle(for: chat))
         }
         .composerMenu()
         .disabled(efforts.isEmpty)
-        .help(efforts.isEmpty ? String(
-            localized: "This model has no reasoning setting"
-        ) : String(
-            localized: "Change reasoning effort"
-        ))
+        .help(efforts.isEmpty ? "This model has no reasoning setting" : "Change reasoning effort")
     }
 }
 
@@ -522,14 +517,14 @@ private struct AIToolsMenu: View {
         let active = servers.filter { scope.allows($0.slug) }.count
         Menu {
             if servers.isEmpty {
-                Text(String(localized: "No MCP servers are connected"))
+                Text("No MCP servers are connected")
             } else {
                 Toggle(
-                    String(localized: "Use Tools"),
+                    "Use Tools",
                     isOn: Binding(
                         get: { scope.isEnabled },
                         set: { coordinator.setToolsEnabled($0, in: chat) }))
-                Section(String(localized: "Servers")) {
+                Section("Servers") {
                     ForEach(servers) { server in
                         Toggle(
                             server.name.isEmpty ? server.slug : server.name,
@@ -542,20 +537,19 @@ private struct AIToolsMenu: View {
                 }
             }
             Divider()
-            Button(String(localized: "MCP Settings…"), action: coordinator.showMCPSettings)
+            Button("MCP Settings…", action: coordinator.showMCPSettings)
         } label: {
             Label(
                 !takesTools
-                    ? String(localized: "Tools · Not with this model")
+                    ? "Tools · Not with this model"
                     : servers.isEmpty || !scope.isEnabled
-                        ? String(localized: "Tools · Off") : String(localized: "Tools · \(active) of \(servers.count)"),
+                        ? "Tools · Off" : "Tools · \(active) of \(servers.count)",
                 systemImage: "wrench.and.screwdriver")
         }
         .disabled(!takesTools)
     }
 }
 
-/// Where find is in the open chat, with the same steps ⌘G and ⇧⌘G take.
 private struct FindCounter: View {
     let position: Int
     let count: Int
@@ -563,7 +557,7 @@ private struct FindCounter: View {
 
     var body: some View {
         HStack(spacing: Theme.Spacing.sm) {
-            Text(count == 0 ? String(localized: "No matches") : String(localized: "\(position) of \(count)"))
+            Text(count == 0 ? "No matches" : "\(position) of \(count)")
                 .font(.callout)
                 .monospacedDigit()
                 .foregroundStyle(.secondary)
@@ -572,14 +566,14 @@ private struct FindCounter: View {
             } label: {
                 Image(systemName: "chevron.up")
             }
-            .help(String(localized: "Previous Match  ⇧⌘G"))
+            .help("Previous Match  ⇧⌘G")
             .disabled(count == 0)
             Button {
                 step(1)
             } label: {
                 Image(systemName: "chevron.down")
             }
-            .help(String(localized: "Next Match  ⌘G"))
+            .help("Next Match  ⌘G")
             .disabled(count == 0)
         }
         .buttonStyle(.borderless)
@@ -589,7 +583,6 @@ private struct FindCounter: View {
     }
 }
 
-/// A ring for the share of the context in use; hovering it raises the composer's context card.
 private struct ContextGauge: View {
     let report: ChatContextReport
     @Binding var hovered: Bool
@@ -628,7 +621,7 @@ private struct ContextCard: View {
         let shape = RoundedRectangle(cornerRadius: Theme.Radius.menuPanel, style: .continuous)
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             HStack {
-                Text(String(localized: "Context")).font(.headline)
+                Text("Context").font(.headline)
                 Spacer(minLength: Theme.Spacing.xxl)
                 Text(report.fill.formatted(.percent.precision(.fractionLength(0))))
                     .font(.headline)
@@ -638,7 +631,7 @@ private struct ContextCard: View {
             ProgressView(value: min(report.fill, 1))
                 .tint(report.tint)
             if report.historyBytes > report.budget {
-                Text(String(localized: "The oldest messages no longer fit and are left out."))
+                Text("The oldest messages are no longer sent to the model.")
                     .font(.caption)
                     .foregroundStyle(Theme.Colors.destructive)
             }
@@ -646,32 +639,43 @@ private struct ContextCard: View {
                 alignment: .leading, horizontalSpacing: Theme.Spacing.xl,
                 verticalSpacing: Theme.Spacing.xs
             ) {
-                section(String(localized: "Tokens"))
+                section("Tokens")
                 if let usage = report.usage, let context = usage.contextTokens {
-                    row(String(localized: "In context"), tokens(context, of: usage.contextWindow))
-                    row(String(localized: "Input"), input(usage))
-                    row(String(localized: "Output"), output(usage))
+                    row("In context", tokens(context, of: usage.contextWindow))
+                    row("Input", input(usage))
+                    row("Output", output(usage))
                     if let cost = usage.costUSD {
                         row(
-                            String(localized: "Cost"),
+                            "Cost",
                             cost.formatted(
-                                .currency(code: String(localized: "USD")).precision(.significantDigits(2))))
+                                .currency(code: "USD").precision(.significantDigits(2))))
                     }
                 } else {
-                    row(String(localized: "Last reply"), String(localized: "Not reported yet"))
+                    row("Last reply", String(localized: "Not reported yet"))
                 }
-                section(String(localized: "Next message"))
-                row(String(localized: "Model"), report.modelTitle)
-                row(String(localized: "History"), String(localized: "\(bytes(report.historyBytes)) of \(bytes(report.budget))"))
-                row(String(localized: "Messages"), String(localized: "\(report.sentMessages) of \(report.totalMessages)"))
-                if report.stagedFiles > 0 {
-                    row(String(localized: "Attached"), "\(report.stagedFiles) · \(bytes(report.stagedBytes))")
-                }
-                row(String(localized: "System prompt"), report.systemPrompt ? String(localized: "On") : String(localized: "Off"))
-                row(String(localized: "Web search"), report.webSearch ? String(localized: "On") : String(localized: "Off"))
+                section("Next message")
+                row("Model", report.modelTitle)
                 row(
-                    String(localized: "MCP servers"),
-                    report.toolServers == 0 ? String(localized: "None") : String(localized: "\(report.toolServers) in reach"))
+                    "History",
+                    String(localized: "\(bytes(report.historyBytes)) of \(bytes(report.budget))"))
+                row("Messages", String(localized: "\(report.sentMessages) of \(report.totalMessages)"))
+                if report.stagedFiles > 0 {
+                    row("Attached", "\(report.stagedFiles) · \(bytes(report.stagedBytes))")
+                }
+                row(
+                    "System prompt",
+                    report.systemPrompt
+                        ? String(localized: "ai-system-prompt-on", defaultValue: "On")
+                        : String(localized: "ai-system-prompt-off", defaultValue: "Off"))
+                row(
+                    "Web search",
+                    report.webSearch
+                        ? String(localized: "ai-web-search-on", defaultValue: "On")
+                        : String(localized: "ai-web-search-off", defaultValue: "Off"))
+                row(
+                    "MCP servers",
+                    report.toolServers == 0
+                        ? String(localized: "None") : String(localized: "\(report.toolServers) in reach"))
             }
             .font(.callout)
         }
@@ -683,9 +687,9 @@ private struct ContextCard: View {
         .shadow(color: Theme.Colors.tooltipShadow, radius: Theme.Spacing.xl, y: Theme.Spacing.xs)
     }
 
-    private func section(_ title: String) -> some View {
+    private func section(_ title: LocalizedStringResource) -> some View {
         GridRow {
-            Text(title.uppercased())
+            Text(title.resolved().uppercased())
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(.tertiary)
                 .gridCellColumns(2)
@@ -693,7 +697,7 @@ private struct ContextCard: View {
         }
     }
 
-    private func row(_ label: String, _ value: String) -> some View {
+    private func row(_ label: LocalizedStringResource, _ value: String) -> some View {
         GridRow {
             Text(label).foregroundStyle(.secondary)
             Text(value).monospacedDigit().lineLimit(1).truncationMode(.middle)
@@ -706,7 +710,8 @@ private struct ContextCard: View {
 
     private func tokens(_ count: Int, of window: Int?) -> String {
         guard let window else { return count.formatted() }
-        return String(localized: "\(count.formatted()) of \(window.formatted(.number.notation(.compactName)))")
+        return String(
+            localized: "\(count.formatted()) of \(window.formatted(.number.notation(.compactName)))")
     }
 
     private func input(_ usage: AIUsage) -> String {

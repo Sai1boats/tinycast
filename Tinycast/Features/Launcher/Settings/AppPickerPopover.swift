@@ -1,7 +1,6 @@
 import AppKit
 import SwiftUI
 
-/// Searchable list of installed apps, drawn from the launcher's own index.
 struct AppPickerPopover: View {
     /// Bundle IDs to leave out — the ones already chosen.
     var excluded: Set<String> = []
@@ -18,7 +17,7 @@ struct AppPickerPopover: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TextField(String(localized: "Search apps…"), text: $query)
+            TextField("Search apps…", text: $query)
                 .textFieldStyle(.roundedBorder)
                 .padding(Theme.Spacing.md)
             Divider()

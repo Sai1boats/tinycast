@@ -58,7 +58,7 @@ struct SnippetEditorView: View {
                         - metrics.typography.textNSFont(.callout).boundingRectForFont.height,
                     label: String(localized: "Snippet template"), moveFocus: editor.advanceFocus
                 )
-                .accessibilityHint(String(localized: "Enter the text Tinycast expands."))
+                .accessibilityHint("Enter the text Tinycast expands.")
                 HStack {
                     placeholderMenu
                     Spacer()
@@ -70,7 +70,7 @@ struct SnippetEditorView: View {
             }
             .padding(.bottom, metrics.spacing.md)
             .formFieldChrome(focused: focusedField == .template)
-            Text(String(localized: "Use placeholders for the clipboard, current date, arguments and more."))
+            Text("Use placeholders for the clipboard, current date, arguments and more.")
                 .font(metrics.typography.rowTrailing)
                 .foregroundStyle(Theme.Colors.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -79,7 +79,7 @@ struct SnippetEditorView: View {
     }
 
     private var placeholderMenu: some View {
-        Button(String(localized: "Insert…"), action: showPlaceholderMenu)
+        Button("Insert…", action: showPlaceholderMenu)
             .buttonStyle(.plain)
             .fixedSize()
             .onGeometryChange(for: CGRect.self) {
@@ -88,9 +88,10 @@ struct SnippetEditorView: View {
                 placeholderMenuFrame = $0
             }
             .tooltip(
-                String(localized: "Insert a dynamic placeholder"), alignment: .leading, dismissOnPress: true
+                String(localized: "Insert a dynamic placeholder"), alignment: .leading,
+                dismissOnPress: true
             )
-            .accessibilityLabel(String(localized: "Insert a placeholder"))
+            .accessibilityLabel("Insert a placeholder")
     }
 
     private func showPlaceholderMenu() {
@@ -120,13 +121,15 @@ struct SnippetEditorView: View {
     private var properties: some View {
         VStack(alignment: .leading, spacing: metrics.spacing.xxl) {
             field(
-                String(localized: "Name"), placeholder: String(localized: "Snippet name"), text: $editor.name,
+                String(localized: "Name"), placeholder: String(localized: "Snippet name"),
+                label: String(localized: "Snippet name"), text: $editor.name,
                 focus: .name,
                 hint: String(localized: "Required. Shown in the library and launcher."))
             field(
                 String(localized: "Keyword"), placeholder: String(localized: "Optional, for example !notes"),
-                text: $editor.keyword,
-                focus: .keyword, hint: String(localized: "Optional. Type this to expand the snippet."))
+                label: String(localized: "Snippet keyword"), text: $editor.keyword,
+                focus: .keyword, hint: String(localized: "Optional. Type this to expand the snippet.")
+            )
             option(
                 String(localized: "Enabled"),
                 detail: String(localized: "Disabled snippets cannot be expanded."),
@@ -155,14 +158,14 @@ struct SnippetEditorView: View {
     }
 
     private func field(
-        _ title: String, placeholder: String, text: Binding<String>,
+        _ title: String, placeholder: String, label: String, text: Binding<String>,
         focus: SnippetEditorSession.Field, hint: String
     ) -> some View {
         VStack(alignment: .leading, spacing: metrics.spacing.md) {
             fieldTitle(title)
             FormTextInput(
                 text: text, focused: focusBinding(focus), placeholder: placeholder,
-                label: String(localized: "Snippet \(title.lowercased())"), moveFocus: editor.advanceFocus
+                label: label, moveFocus: editor.advanceFocus
             )
             .frame(height: metrics.size.dialogButtonHeight)
             .formFieldChrome(focused: focusedField == focus)

@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// The Raycast Store's search, and an install button per result.
 struct ExtensionStorePanel: View {
     let storeInstall: ExtensionDeepLink.StoreInstall?
     let onClose: () -> Void
@@ -25,11 +24,15 @@ struct ExtensionStorePanel: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
             ExtensionSettingsEditorHeader(
-                title: storeInstall == nil ? String(localized: "Search Extensions") : String(localized: "Install Extension"),
-                subtitle: String(localized: "The Raycast Store's extensions arrive built, so they install as they are."))
+                title: storeInstall == nil
+                    ? String(localized: "Search Extensions") : String(localized: "Install Extension"),
+                subtitle: String(
+                    localized: """
+                        The Raycast Store's extensions arrive built, so they install as they are.
+                        """))
             // The same borderless field the panes use, rather than a bordered capsule of its own.
             if storeInstall == nil {
-                SettingsFilterField(prompt: String(localized: "Search extensions…"), query: $query)
+                SettingsFilterField(prompt: "Search extensions…", query: $query)
             }
             content
             // The list scrolls right up to the footer without it, cutting the last row.
@@ -53,7 +56,7 @@ struct ExtensionStorePanel: View {
         } else if searching && results.isEmpty {
             VStack(spacing: Theme.Spacing.md) {
                 ProgressView()
-                Text(storeInstall == nil ? String(localized: "Searching…") : String(localized: "Looking up extension…"))
+                Text(storeInstall == nil ? "Searching…" : "Looking up extension…")
                     .font(.callout).foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -61,8 +64,9 @@ struct ExtensionStorePanel: View {
             placeholder(searchFailure)
         } else if results.isEmpty && searched {
             placeholder(
-                storeInstall.map { String(localized: "“\($0.handle)/\($0.name)” is unavailable in the Raycast Store.") }
-                    ?? String(localized: "Nothing matches “\(query)”."))
+                storeInstall.map {
+                    String(localized: "“\($0.handle)/\($0.name)” is unavailable in the Raycast Store.")
+                } ?? String(localized: "Nothing matches “\(query)”."))
         } else {
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
@@ -87,12 +91,10 @@ struct ExtensionStorePanel: View {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 28, weight: .light))
                 .foregroundStyle(.tertiary)
-            Text(String(localized: "Search for an extension"))
+            Text("Search for an extension")
                 .font(.headline)
             Text(
-                String(
-                    localized: "By name, or by what it does — \u{201C}colour\u{201D}, \u{201C}github\u{201D}, \u{201C}window\u{201D}."
-                )
+                "By name, or by what it does — \u{201C}colour\u{201D}, \u{201C}github\u{201D}, \u{201C}window\u{201D}."
             )
             .font(.caption)
             .foregroundStyle(.secondary)
@@ -111,7 +113,7 @@ struct ExtensionStorePanel: View {
         HStack {
             Spacer()
             // Escape, not Return: Return belongs to the search field while typing.
-            Button(String(localized: "Done"), action: onClose)
+            Button("Done", action: onClose)
                 .buttonStyle(
                     ExtensionSettingsEditorButtonStyle(role: .cancel, fillsWidth: false)
                 )
@@ -195,7 +197,6 @@ struct ExtensionStorePanel: View {
     }
 }
 
-/// One search result: what it is, who made it, how many use it, and the button that installs it.
 private struct StoreRow: View {
     enum InstallState: Equatable {
         case idle
@@ -259,12 +260,10 @@ private struct StoreRow: View {
             }
             StoreFact(
                 symbol: "square.grid.2x2",
-                text: (listing.commandCount == 1
-            ? String(localized: "1 command")
-            : String(localized: "\(listing.commandCount) commands")))
+                text: String(localized: "\(listing.commandCount) commands"))
             if let downloads = listing.downloadCount, downloads > 0 {
                 StoreFact(symbol: "arrow.down.circle", text: ExtensionListing.abbreviate(downloads))
-                    .help(String(localized: "\(downloads.formatted()) installs"))
+                    .help("\(downloads.formatted()) installs")
             }
         }
         .font(.caption)
@@ -275,7 +274,7 @@ private struct StoreRow: View {
     private var action: some View {
         switch state {
         case .idle:
-            Button(String(localized: "Install"), action: onInstall)
+            Button("Install", action: onInstall)
                 .buttonStyle(ExtensionSettingsEditorButtonStyle(role: .primary, fillsWidth: false))
         case .installing(let message):
             HStack(spacing: Theme.Spacing.sm) {
@@ -284,21 +283,20 @@ private struct StoreRow: View {
             }
             .fixedSize()
         case .installed:
-            Label(String(localized: "Installed"), systemImage: "checkmark.circle.fill")
+            Label("Installed", systemImage: "checkmark.circle.fill")
                 .font(.callout)
                 .foregroundStyle(.green)
         case .alreadyInstalled:
-            Button(String(localized: "Reinstall"), action: onInstall)
+            Button("Reinstall", action: onInstall)
                 .buttonStyle(ExtensionSettingsEditorButtonStyle(role: .standard, fillsWidth: false))
-                .help(String(localized: "Already installed. Reinstalling replaces it with the store's copy."))
+                .help("Already installed. Reinstalling replaces it with the store's copy.")
         case .failed:
-            Button(String(localized: "Retry"), action: onInstall)
+            Button("Retry", action: onInstall)
                 .buttonStyle(ExtensionSettingsEditorButtonStyle(role: .standard, fillsWidth: false))
         }
     }
 }
 
-/// One fact under a result, behind the glyph that says what kind of fact it is.
 private struct StoreFact: View {
     let symbol: String
     let text: String

@@ -1,6 +1,5 @@
 import AppKit
 
-/// Owns the snippet flow: listener, browser, editor handoff, delivery, presence.
 @MainActor
 @Observable
 final class SnippetCoordinator {
@@ -78,10 +77,11 @@ final class SnippetCoordinator {
             guard
                 await core.confirm(
                     title: String(localized: "Enable snippets?"),
-                    message:
-                        String(
-                            localized: "Keyword expansion requires the Accessibility permission. Keystrokes stay on this Mac."
-                        ),
+                    message: String(
+                        localized: """
+                            Keyword expansion requires the Accessibility permission. Keystrokes stay on \
+                            this Mac.
+                            """),
                     symbol: "curlybraces", confirmTitle: String(localized: "Continue"), tone: .neutral,
                     confirmRole: .standard)
             else { return }
@@ -180,15 +180,16 @@ final class SnippetCoordinator {
         guard
             await core.confirm(
                 title: String(localized: "Delete “\(record.snippet.name)”?"),
-                message: String(localized: "This removes \(record.fileURL.lastPathComponent) from your snippets folder."),
+                message: String(
+                    localized: "This removes \(record.fileURL.lastPathComponent) from your snippets folder."),
                 symbol: "doc.text", confirmTitle: String(localized: "Delete"))
         else { return }
         do {
             try await store.delete(id: id)
         } catch {
             await core.showNotice(
-                title: String(localized: "Couldn’t Delete “\(record.snippet.name)”"), message: error.localizedDescription,
-                symbol: "doc.text", tone: .danger)
+                title: String(localized: "Couldn’t Delete “\(record.snippet.name)”"),
+                message: error.localizedDescription, symbol: "doc.text", tone: .danger)
         }
     }
 
@@ -319,7 +320,8 @@ final class SnippetCoordinator {
         keywordLength: Int,
         automaticGeneration: UInt?
     ) {
-        let confirmation = record.snippet.showsConfirmation ? String(localized: "Inserted \(record.snippet.name)") : nil
+        let confirmation =
+            record.snippet.showsConfirmation ? String(localized: "Inserted \(record.snippet.name)") : nil
         if !result.missingArguments.isEmpty {
             promptSnippetArguments(
                 record: record,

@@ -9,7 +9,6 @@ struct WindowLayoutEditRequest: Identifiable {
     var isCapture = false
 }
 
-/// Add / edit panel for one layout, presented from the Window Management pane.
 struct WindowLayoutEditorPanel: View {
     let request: WindowLayoutEditRequest
 
@@ -71,7 +70,8 @@ struct WindowLayoutEditorPanel: View {
 
     private var title: String {
         if request.isCapture { return String(localized: "Capture Window Layout") }
-        return request.layout == nil ? String(localized: "New Window Layout") : String(localized: "Edit Window Layout")
+        return request.layout == nil
+            ? String(localized: "New Window Layout") : String(localized: "Edit Window Layout")
     }
 
     private var previewGap: CGFloat {
@@ -88,12 +88,12 @@ struct WindowLayoutEditorPanel: View {
                     .lineLimit(2)
             }
             Spacer(minLength: 0)
-            Button(String(localized: "Cancel")) { dismiss() }
+            Button("Cancel") { dismiss() }
                 .buttonStyle(.modalAction(.cancel, fillsWidth: false))
                 .keyboardShortcut(.cancelAction)
             Button(action: save) {
                 HStack(spacing: Theme.Spacing.sm) {
-                    Text(String(localized: "Save"))
+                    Text("Save")
                     HStack(spacing: Theme.Spacing.xxs) {
                         KeyCapChip(text: "⌘", scale: .compact)
                         KeyCapChip(text: "↵", scale: .compact)

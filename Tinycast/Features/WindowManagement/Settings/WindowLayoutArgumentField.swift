@@ -12,7 +12,7 @@ struct WindowLayoutArgumentField: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            Text(String(localized: "Argument"))
+            Text("Argument")
                 .font(.callout.weight(.medium))
             menu
             if isEditingURL {
@@ -29,16 +29,16 @@ struct WindowLayoutArgumentField: View {
 
     private var menu: some View {
         Menu {
-            Button(String(localized: "None")) { clear() }
-            Button(String(localized: "Choose File…")) { choose(directories: false) }
-            Button(String(localized: "Choose Folder…")) { choose(directories: true) }
-            Button(String(localized: "Enter URL…")) {
+            Button("None") { clear() }
+            Button("Choose File…") { choose(directories: false) }
+            Button("Choose Folder…") { choose(directories: true) }
+            Button("Enter URL…") {
                 urlText = draft.selectedEntry?.argument ?? ""
                 isEditingURL = true
             }
             if !quicklinks.quicklinks.isEmpty {
                 // Copied, not referenced: a run is one pass, with nothing to prompt a placeholder.
-                Section(String(localized: "Quicklinks")) {
+                Section("Quicklinks") {
                     ForEach(quicklinks.quicklinks) { quicklink in
                         Button(quicklink.name) {
                             isEditingURL = false
@@ -57,7 +57,7 @@ struct WindowLayoutArgumentField: View {
                         .lineLimit(1)
                         .truncationMode(.middle)
                 } else {
-                    Text(String(localized: "None")).foregroundStyle(.secondary)
+                    Text("None").foregroundStyle(.secondary)
                 }
                 Spacer(minLength: Theme.Spacing.sm)
                 Image(systemName: "chevron.down")

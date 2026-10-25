@@ -35,6 +35,10 @@ enum TextTranslator {
     }
 
     /// Installed pairs only: a missing language is downloaded in System Settings, never from here.
+    static func translate(_ text: String, to target: Locale.Language) async throws -> String {
+        try await translate([text], to: target)[0]
+    }
+
     static func translate(
         _ paragraphs: [String], from source: Locale.Language? = nil, to target: Locale.Language
     ) async throws -> [String] {
@@ -42,16 +46,34 @@ enum TextTranslator {
             throw Failure.undetectableSource
         }
         guard !source.isEquivalent(to: target) else { return paragraphs }
-        switch await LanguageAvailability().status(from: source, to: target) {
+        let availability = LanguageAvailability()
+        switch await availability.status(from: source, to: target) {
         case .installed:
-            break
+            return try await translateParagraphs(paragraphs, from: source, to: target)
         case .supported:
-            throw Failure.notInstalled(language: displayName(of: target))
+            break
         case .unsupported:
             throw Failure.unsupported
         @unknown default:
             throw Failure.unsupported
         }
+        let supported = await availability.supportedLanguages
+        let sources = variants(of: source, among: supported)
+        let targets = variants(of: target, among: supported)
+        if let pair = await installedPair(sources, targets, availability) {
+            return try await translateParagraphs(paragraphs, from: pair.source, to: pair.target)
+        }
+        // Every source spelling already failed, so only a third language can prove the target.
+        let partners = supported.filter {
+            $0.languageCode != source.languageCode && $0.languageCode != target.languageCode
+        }
+        let targetIsInstalled = await installedPair(partners, targets, availability) != nil
+        throw Failure.notInstalled(language: displayName(of: targetIsInstalled ? source : target))
+    }
+
+    private static func translateParagraphs(
+        _ paragraphs: [String], from source: Locale.Language, to target: Locale.Language
+    ) async throws -> [String] {
         let requests = paragraphs.indices.filter { !paragraphs[$0].trimmingCharacters(in: .whitespaces).isEmpty }
             .map { TranslationSession.Request(sourceText: paragraphs[$0], clientIdentifier: String($0)) }
         guard !requests.isEmpty else { return paragraphs }
@@ -69,6 +91,32 @@ enum TextTranslator {
             translated[index] = response.targetText
         }
         return translated
+    }
+
+    /// A download is a locale, so the region a bare code resolves to can miss the one installed.
+    private static func installedPair(
+        _ sources: [Locale.Language], _ targets: [Locale.Language],
+        _ availability: LanguageAvailability
+    ) async -> (source: Locale.Language, target: Locale.Language)? {
+        for source in sources {
+            for target in targets {
+                if await availability.status(from: source, to: target) == .installed {
+                    return (source, target)
+                }
+            }
+        }
+        return nil
+    }
+
+    /// Region may move, since one English is another's asset, but a different script is a language.
+    private static func variants(
+        of language: Locale.Language, among supported: [Locale.Language]
+    ) -> [Locale.Language] {
+        [language]
+            + supported.filter {
+                $0.languageCode == language.languageCode && $0.script == language.script
+                    && !$0.isEquivalent(to: language)
+            }
     }
 
     /// Minimal, not maximal: the maximal form would spell `es` "Spanish (Latin, Spain)" in a menu.

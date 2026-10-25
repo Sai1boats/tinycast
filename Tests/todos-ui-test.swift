@@ -224,7 +224,7 @@ struct TodosUITests {
     func setCommandsVisible(_ commands: [Command], _ visible: Bool) {}
 }
 
-enum SystemSymbolName { static func resolve(_ name: String) -> String { name } }
+enum SystemSymbolName { static func resolve(_ name: String, isDark: Bool = true) -> String { name } }
 enum PopoverMenuIcon {
     case blank, symbol(String), asset(String), file(String), thumbnail(id: UUID, data: Data)
 }

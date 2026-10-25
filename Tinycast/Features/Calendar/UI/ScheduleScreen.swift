@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// My Schedule: the store's span, filtered by the query. Enter joins, ⌘K carries the rest.
 struct ScheduleScreen: PaletteScreen {
     let store: CalendarStore
     let clock: MeetingClock
@@ -20,7 +19,8 @@ struct ScheduleScreen: PaletteScreen {
 
     /// A meeting with no link has nowhere to join, so the pill offers what it can instead.
     var primaryActionTitle: String {
-        meeting(at: vm.selection)?.link == nil ? String(localized: "Open in Calendar") : String(localized: "Join Meeting")
+        meeting(at: vm.selection)?.link == nil
+            ? String(localized: "Open in Calendar") : String(localized: "Join Meeting")
     }
 
     private func meeting(at selection: Int) -> MeetingEvent? {
@@ -76,7 +76,9 @@ struct ScheduleScreen: PaletteScreen {
     /// Names why the list is empty: no access reads very differently from a free afternoon.
     private var emptyMessage: String {
         if store.access != .granted { return String(localized: "Tinycast has no access to your calendar") }
-        if !vm.query.trimmingCharacters(in: .whitespaces).isEmpty { return String(localized: "No matching meetings") }
-        return String(localized: "Nothing scheduled \(NSLocalizedString(store.span.orPhrase, comment: "Calendar span"))")
+        if !vm.query.trimmingCharacters(in: .whitespaces).isEmpty {
+            return String(localized: "No matching meetings")
+        }
+        return store.span.nothingScheduledMessage
     }
 }

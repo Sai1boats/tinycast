@@ -22,7 +22,7 @@ struct QuickActionsSettingsView: View {
                 Toggle(isOn: enabledBinding) {
                     SettingsFeatureToggleLabel(
                         anchor: .quickActionsQuickActions, title: "Enable Quick Actions",
-                        subtitle: String(localized: "Act on selected text. Nothing is read until you press a shortcut."))
+                        subtitle: "Act on selected text. Nothing is read until you press a shortcut.")
                 }
                 if appSettings.quickActionsEnabled, !isTrusted {
                     // Every shortcut fails without it; better said here than found one press later.
@@ -31,14 +31,14 @@ struct QuickActionsSettingsView: View {
                             .foregroundStyle(.orange)
                             .frame(width: Theme.Size.settingsRowIcon)
                         VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
-                            Text(String(localized: "Accessibility permission required"))
+                            Text("Accessibility permission required")
                                 .foregroundStyle(.orange)
-                            Text(String(localized: "Needed to read your selection."))
+                            Text("Needed to read your selection.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                         Spacer(minLength: Theme.Spacing.lg)
-                        Button(String(localized: "Open System Settings")) { Permissions.openAccessibilitySettings() }
+                        Button("Open System Settings") { Permissions.openAccessibilitySettings() }
                     }
                 }
             } header: {
@@ -113,7 +113,7 @@ struct QuickActionsSettingsView: View {
         } header: {
             SettingsSectionHeader(.quickActionsActions)
         } footer: {
-            Text(String(localized: "Replace writes into your document, and undo restores it. Preview shows a panel first."))
+            Text("Replace writes into your document, and undo restores it. Preview shows a panel first.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -128,7 +128,6 @@ struct QuickActionsSettingsView: View {
             if !action.usesTranslationFramework {
                 editButton(title: action.localizedTitle) { editingAction = action }
             }
-            // The four left the Commands pane with their kind, and its alias field with it.
             if let entry { AliasField(entry: entry) }
             ShortcutRecorder(action: .command(CommandID(action)), isQuiet: true)
             resultPicker(title: action.localizedTitle, selection: previewBinding(action))
@@ -142,18 +141,18 @@ struct QuickActionsSettingsView: View {
             SymbolImage(name: "pencil", size: Theme.Size.quickActionHeaderIcon)
         }
         .buttonStyle(.plain)
-        .help(String(localized: "Edit \(title)"))
-        .accessibilityLabel(String(localized: "Edit \(title)"))
+        .help("Edit \(title)")
+        .accessibilityLabel("Edit \(title)")
     }
 
     private func resultPicker(title: String, selection: Binding<Bool>) -> some View {
         Picker("", selection: selection) {
-            Text(String(localized: "Replace")).tag(false)
-            Text(String(localized: "Preview")).tag(true)
+            Text("Replace").tag(false)
+            Text("Preview").tag(true)
         }
         .labelsHidden()
         .fixedSize()
-        .accessibilityLabel(String(localized: "What \(title) does with its result"))
+        .accessibilityLabel("What \(title) does with its result")
     }
 
     private func launcherToggle(title: String, entry: AppEntry) -> some View {
@@ -161,7 +160,7 @@ struct QuickActionsSettingsView: View {
             .labelsHidden()
             .toggleStyle(.checkbox)
             .launcherVisibilityHelp()
-            .accessibilityLabel(String(localized: "Show \(title) in launcher"))
+            .accessibilityLabel("Show \(title) in launcher")
     }
 
     private var modelSection: some View {
@@ -171,7 +170,7 @@ struct QuickActionsSettingsView: View {
                 select: store.select,
                 modelLabel: {
                     SettingsRowTitle(.quickActionsModel, "Model")
-                    Text(String(localized: "Unless an action sets its own."))
+                    Text("Unless an action sets its own.")
                 },
                 effortLabel: {
                     SettingsRowTitle(.quickActionsModel, "Reasoning effort")
@@ -180,7 +179,7 @@ struct QuickActionsSettingsView: View {
         } header: {
             SettingsSectionHeader(.quickActionsModel)
         } footer: {
-            Text(String(localized: "Separate from AI Chat's, so frequent use needn't bill an API."))
+            Text("Separate from AI Chat's, so frequent use needn't bill an API.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -189,7 +188,7 @@ struct QuickActionsSettingsView: View {
     private var languageSection: some View {
         Section {
             Picker(selection: languageBinding) {
-                Text(String(localized: "Same as this Mac")).tag("")
+                Text("Same as this Mac").tag("")
                 ForEach(core.quickActionCoordinator.offeredLanguages, id: \.minimalIdentifier) {
                     Text(TextTranslator.displayName(of: $0)).tag($0.minimalIdentifier)
                 }
@@ -199,7 +198,7 @@ struct QuickActionsSettingsView: View {
         } header: {
             SettingsSectionHeader(.quickActionsTranslate)
         } footer: {
-            Text(String(localized: "Apple's translator, on this Mac. A language downloads on first use."))
+            Text("Apple's translator, on this Mac. A language downloads on first use.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -309,8 +308,8 @@ struct QuickActionsSettingsView: View {
         var body: some View {
             VStack(alignment: .leading, spacing: Theme.Spacing.xl) {
                 SettingsEditorHeader(
-                    title: String(localized: "Customize \(action.localizedTitle)"),
-                    subtitle: String(localized: "Tell Tinycast how you want \(action.localizedTitle) to handle your selected text.")
+                    title: "Customize \(action.title)",
+                    subtitle: "Tell Tinycast how you want \(action.title) to handle your selected text."
                 )
 
                 TextEditor(text: $instructions)
@@ -320,14 +319,14 @@ struct QuickActionsSettingsView: View {
                 QuickActionModelPicker(selection: $model)
 
                 HStack(spacing: Theme.Spacing.md) {
-                    Button(String(localized: "Use Default")) { instructions = builtIn }
+                    Button("Use Default") { instructions = builtIn }
                         .buttonStyle(.modalAction(.standard, fillsWidth: false))
                         .disabled(instructions == builtIn)
                     Spacer()
-                    Button(String(localized: "Cancel")) { dismiss() }
+                    Button("Cancel") { dismiss() }
                         .buttonStyle(.modalAction(.cancel))
                         .keyboardShortcut(.cancelAction)
-                    Button(String(localized: "Save")) {
+                    Button("Save") {
                         onSave(instructions == builtIn ? nil : instructions, model)
                         dismiss()
                     }

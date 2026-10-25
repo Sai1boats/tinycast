@@ -22,7 +22,10 @@ struct AIChatSidebarView: View {
     private var sections: [ChatSection] {
         var sections: [ChatSection] = []
         for conversation in history.search(query).pinnedFirst {
-            let title = conversation.isPinned ? String(localized: "Pinned") : DateBucket(for: conversation.updatedAt).title
+            let title =
+                conversation.isPinned
+                ? String(localized: "ai-pinned-conversations", defaultValue: "Pinned")
+                : DateBucket(for: conversation.updatedAt).title
             if sections.last?.title == title {
                 sections[sections.count - 1].conversations.append(conversation)
             } else {
@@ -61,10 +64,13 @@ struct AIChatSidebarView: View {
                 ForEach(sections) { section in
                     Section(section.title) {
                         ForEach(section.conversations) { conversation in
-                            row(
-                                conversation, isAnswering: answering.contains(conversation.id),
+                            ChatSidebarRow(
+                                conversation: conversation,
+                                isAnswering: answering.contains(conversation.id),
                                 isSelected: conversation.id == openID
-                            )
+                            ) {
+                                title(of: conversation)
+                            }
                             .tag(conversation.id)
                         }
                     }
@@ -87,22 +93,20 @@ struct AIChatSidebarView: View {
     @ViewBuilder private var emptyState: some View {
         if !history.isAvailable {
             ContentUnavailableView(
-                String(localized: "History Unavailable"), systemImage: "exclamationmark.triangle",
-                description: Text(String(localized: "Chats can't be saved on this Mac right now.")))
+                "History Unavailable", systemImage: "exclamationmark.triangle",
+                description: Text("Chats can't be saved on this Mac right now."))
         } else if !query.isEmpty {
             ContentUnavailableView.search(text: query)
         } else {
             ContentUnavailableView(
-                String(localized: "No Chats Yet"), systemImage: "bubble.left.and.bubble.right",
-                description: Text(String(localized: "Conversations stay on this Mac.")))
+                "No Chats Yet", systemImage: "bubble.left.and.bubble.right",
+                description: Text("Conversations stay on this Mac."))
         }
     }
 
-    @ViewBuilder private func row(
-        _ conversation: ChatConversation, isAnswering: Bool, isSelected: Bool
-    ) -> some View {
+    @ViewBuilder private func title(of conversation: ChatConversation) -> some View {
         if renaming == conversation.id {
-            TextField(String(localized: "Chat name"), text: $renameText, prompt: Text(conversation.title))
+            TextField("Chat name", text: $renameText, prompt: Text(conversation.title))
                 .textFieldStyle(.plain)
                 .focused($renameFocused)
                 .onSubmit { commitRename(conversation.id) }
@@ -111,29 +115,30 @@ struct AIChatSidebarView: View {
                     if !focused { commitRename(conversation.id) }
                 }
         } else {
-            ChatSidebarRow(
-                conversation: conversation, isAnswering: isAnswering, isSelected: isSelected)
+            Text(conversation.displayTitle)
+                .lineLimit(1)
+                .truncationMode(.tail)
         }
     }
 
     @ViewBuilder private func menu(for conversation: ChatConversation) -> some View {
         Button(
-            conversation.isPinned ? String(localized: "Unpin Chat") : String(localized: "Pin Chat"),
+            conversation.isPinned ? "Unpin Chat" : "Pin Chat",
             systemImage: conversation.isPinned ? "pin.slash" : "pin"
         ) {
             coordinator.togglePin(id: conversation.id)
         }
-        Button(String(localized: "Rename…"), systemImage: "pencil") { beginRename(conversation) }
+        Button("Rename…", systemImage: "pencil") { beginRename(conversation) }
         Divider()
-        Button(String(localized: "Copy Chat"), systemImage: "doc.on.doc") { coordinator.copyChat(id: conversation.id) }
-        Button(String(localized: "Export as Markdown…"), systemImage: "square.and.arrow.up") {
+        Button("Copy Chat", systemImage: "doc.on.doc") { coordinator.copyChat(id: conversation.id) }
+        Button("Export as Markdown…", systemImage: "square.and.arrow.up") {
             coordinator.exportChat(id: conversation.id)
         }
         Divider()
-        Button(String(localized: "Delete Chat…"), systemImage: "trash", role: .destructive) {
+        Button("Delete Chat…", systemImage: "trash", role: .destructive) {
             Task { await coordinator.deleteChat(id: conversation.id) }
         }
-        Button(String(localized: "Delete All Chats…"), systemImage: "trash.slash", role: .destructive) {
+        Button("Delete All Chats…", systemImage: "trash.slash", role: .destructive) {
             Task { await coordinator.deleteAllChats() }
         }
     }
@@ -163,28 +168,26 @@ struct AIChatSidebarView: View {
 
 }
 
-/// A chat's title, then a spinner while it answers or a pin; hover is a fainter selection.
-private struct ChatSidebarRow: View {
+private struct ChatSidebarRow<Title: View>: View {
     let conversation: ChatConversation
     let isAnswering: Bool
     let isSelected: Bool
+    @ViewBuilder let title: Title
     @State private var isHovered = false
 
     var body: some View {
         HStack(spacing: Theme.Spacing.sm) {
-            Text(conversation.displayTitle)
-                .lineLimit(1)
-                .truncationMode(.tail)
+            title
             Spacer(minLength: 0)
             if isAnswering {
                 ProgressView()
                     .controlSize(.mini)
-                    .accessibilityLabel(String(localized: "Answering"))
+                    .accessibilityLabel("Answering")
             } else if conversation.isPinned {
                 Image(systemName: "pin.fill")
                     .font(.caption)
                     .foregroundStyle(.tertiary)
-                    .accessibilityLabel(String(localized: "Pinned"))
+                    .accessibilityLabel("Pinned")
             }
         }
         // The whole cell, so the pointer never crosses a gap where no row is hovered.
@@ -215,7 +218,7 @@ private struct ChatSearchField: View {
         HStack(spacing: Theme.Spacing.sm) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(.secondary)
-            TextField("", text: $query, prompt: Text(String(localized: "Search")))
+            TextField("", text: $query, prompt: Text("Search"))
                 .textFieldStyle(.plain)
                 .labelsHidden()
                 .focused($focused)
@@ -228,7 +231,7 @@ private struct ChatSearchField: View {
                         .foregroundStyle(.tertiary)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(String(localized: "Clear search"))
+                .accessibilityLabel("Clear search")
             }
         }
         .padding(.horizontal, Theme.Spacing.lg)
@@ -236,6 +239,6 @@ private struct ChatSearchField: View {
         .background { Color.clear.frosted(in: Capsule()) }
         .contentShape(.rect)
         .onTapGesture { focused = true }
-        .accessibilityLabel(String(localized: "Search chats"))
+        .accessibilityLabel("Search chats")
     }
 }

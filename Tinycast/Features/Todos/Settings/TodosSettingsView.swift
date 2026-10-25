@@ -56,8 +56,8 @@ struct TodosSettingsView: View {
         }
     }
 
-    private var enableSubtitle: String {
-        String(localized: "Tasks mirrored from Planote. Tinycast starts it in the background.")
+    private var enableSubtitle: LocalizedStringResource {
+        "Tasks mirrored from Planote. Tinycast starts it in the background."
     }
 
     private var planoteState: String {

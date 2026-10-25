@@ -17,12 +17,12 @@ struct AISettingsView: View {
                 Toggle(isOn: $appSettings.aiEnabled) {
                     SettingsFeatureToggleLabel(
                         anchor: .aiAI, title: "Enable AI",
-                        subtitle: String(localized: "Nothing is loaded or sent while it is off."))
+                        subtitle: "Nothing is loaded or sent while it is off.")
                 }
                 SettingsRow(
                     title: "Providers", subtitle: providerSummary, anchor: .aiProviders
                 ) {
-                    Button(String(localized: "Manage…")) { providersPresented = true }
+                    Button("Manage…") { providersPresented = true }
                 }
             } header: {
                 SettingsSectionHeader(.aiAI)
@@ -94,7 +94,6 @@ struct AISettingsView: View {
             : String(localized: "Only the selected provider is contacted.")
     }
 
-    /// Why the on-device route is missing from the picker, or `nil` when it is there.
     private var appleIntelligenceReason: String? {
         settings.isAppleIntelligenceAvailable() ? nil : AppleIntelligenceProvider.status().message
     }
@@ -108,9 +107,10 @@ struct AISettingsView: View {
         }
         if !settings.connections.isEmpty {
             let count = settings.connections.count
-            providers.append(count == 1 ? String(localized: "1 API connection") : String(localized: "\(count) API connections"))
+            providers.append(String(localized: "\(count) API connections"))
         }
-        return providers.isEmpty ? String(localized: "No external providers ready") : providers.joined(separator: ", ")
+        return providers.isEmpty
+            ? String(localized: "No external providers ready") : providers.joined(separator: ", ")
     }
 
     private func syncSelection() {
@@ -122,15 +122,21 @@ struct AISettingsView: View {
         return Section {
             Toggle(isOn: $settings.webSearchEnabled) {
                 SettingsRowTitle(.aiChat, "Web search")
-                Text(String(localized: "Codex and OpenRouter only. Prompts go to a search engine."))
+                Text("Codex and OpenRouter only. Prompts go to a search engine.")
+            }
+            Toggle(isOn: $settings.choicesEnabled) {
+                SettingsRowTitle(.aiChat, "Suggested replies")
+                Text("Next steps the model offers as buttons after a reply.")
             }
             Picker(selection: $settings.toolRounds) {
                 ForEach(AIToolRounds.allCases) { Text(LocalizedStringKey($0.title)).tag($0) }
             } label: {
                 SettingsRowTitle(.aiChat, "Tool call rounds")
                 Text(
-                    String(localized: "A reply stops after this many; Unlimited runs until Stop. ")
-                        + String(localized: "API connections, Codex and Claude."))
+                    """
+                    A reply stops after this many; Unlimited runs until Stop. API connections, Codex \
+                    and Claude.
+                    """)
             }
         } header: {
             SettingsSectionHeader(.aiChat)
@@ -143,7 +149,8 @@ struct AISettingsView: View {
             Picker(selection: $settings.opensTo) {
                 ForEach(AIOpensTo.allCases) { Text(LocalizedStringKey($0.title)).tag($0) }
             } label: {
-                SettingsRowTitle(.aiConversations, "Quick AI opens to")
+                SettingsRowTitle(.aiConversations, "Opens to")
+                Text("What Quick AI and the AI Chat window show when you open them.")
             }
             if settings.opensTo == .recent {
                 Picker(selection: $settings.newChatAfter) {
@@ -156,12 +163,12 @@ struct AISettingsView: View {
                 ForEach(AIRetention.allCases) { Text(LocalizedStringKey($0.title)).tag($0) }
             } label: {
                 SettingsRowTitle(.aiConversations, "Keep conversations")
-                Text(String(localized: "Older ones are deleted, except pinned chats."))
+                Text("Older ones are deleted, except pinned chats.")
             }
         } header: {
             SettingsSectionHeader(.aiConversations)
         } footer: {
-            Text(String(localized: "Conversations stay on this Mac, outside settings backups."))
+            Text("Conversations stay on this Mac, outside settings backups.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -172,14 +179,14 @@ struct AISettingsView: View {
         return Section {
             Toggle(isOn: $settings.systemPromptEnabled) {
                 SettingsRowTitle(.aiSystemPrompt, "Send a system prompt")
-                Text(String(localized: "Off also skips Tinycast's own prompt."))
+                Text("Off also skips Tinycast's own prompt.")
             }
             SystemPromptEditor(text: $settings.systemPrompt)
                 .settingsEnabled(settings.systemPromptEnabled)
         } header: {
             SettingsSectionHeader(.aiSystemPrompt)
         } footer: {
-            Text(String(localized: "Sent before every message, after Tinycast's own. Both are billed each turn."))
+            Text("Sent before every message, after Tinycast's own. Both are billed each turn.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

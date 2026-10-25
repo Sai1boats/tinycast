@@ -1,7 +1,6 @@
 import AppKit
 import SwiftUI
 
-/// The support surface: the ask, the one button, and the reminder switch.
 struct SupportWindowView: View {
     /// Held directly, not injected: it publishes nothing, so `@Observable` would buy nothing.
     let support: SupportCoordinator
@@ -51,9 +50,9 @@ struct SupportWindowView: View {
                 .frame(width: Self.iconSize, height: Self.iconSize)
                 .shadow(color: .black.opacity(0.35), radius: 12, y: 6)
             VStack(spacing: Theme.Spacing.sm) {
-                Text(String(localized: "Support \(Bundle.main.appDisplayName)"))
+                Text("Support \(Bundle.main.appDisplayName)")
                     .font(.title2.weight(.semibold))
-                Text(String(localized: "Built with love."))
+                Text("Built with love.")
                     .font(.callout)
                     .foregroundStyle(Theme.Colors.textSecondary)
             }
@@ -65,10 +64,12 @@ struct SupportWindowView: View {
 
     private var action: some View {
         VStack(spacing: Theme.Spacing.lg) {
-            SupportActionButton(title: String(localized: "Support \(Bundle.main.appDisplayName)"), icon: "heart") {
+            SupportActionButton(
+                title: String(localized: "Support \(Bundle.main.appDisplayName)"), icon: "heart"
+            ) {
                 support.openCheckout()
             }
-            Text(String(localized: "Secure checkout on Polar."))
+            Text("Secure checkout on Polar.")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
@@ -77,18 +78,16 @@ struct SupportWindowView: View {
     // MARK: - Reminder
 
     private func reminder(isOn: Binding<Bool>) -> some View {
-        Toggle(String(localized: "Remind me occasionally"), isOn: isOn)
+        Toggle("Remind me occasionally", isOn: isOn)
             .toggleStyle(.checkbox)
             .font(.callout)
             .foregroundStyle(Theme.Colors.textSecondary)
             .frame(maxWidth: .infinity, alignment: .leading)
             .help(
-                String(localized: "About once a month. Turn this off and")
-                    + String(localized: " \(Bundle.main.appDisplayName) won't ask again."))
+                "About once a month. Turn this off and \(Bundle.main.appDisplayName) won't ask again.")
     }
 }
 
-/// The window's one call to action. Local to Support, like every other view this feature owns.
 private struct SupportActionButton: View {
     let title: String
     let icon: String

@@ -12,6 +12,7 @@ enum SettingsFileKey: String, CaseIterable, Sendable {
     case supportReminders = "general.supportReminders"
     case language = "general.language"
     case appearance = "appearance.theme"
+    case animationsEnabled = "appearance.animations"
     case interfaceSize = "appearance.interfaceSize"
     case compactMode = "appearance.compactMode"
     case showFavoritesInCompactMode = "appearance.showFavoritesInCompactMode"
@@ -46,6 +47,7 @@ enum SettingsFileKey: String, CaseIterable, Sendable {
     case appleShortcutsEnabled = "appleShortcuts.enabled"
     case aiEnabled = "ai.enabled"
     case aiWebSearch = "ai.webSearch"
+    case aiChoices = "ai.choices"
     case aiSystemPrompt = "ai.systemPrompt"
     case aiSystemPromptEnabled = "ai.systemPromptEnabled"
     case aiRetention = "ai.retentionDays"
@@ -57,15 +59,19 @@ enum SettingsFileKey: String, CaseIterable, Sendable {
     case quickActionCommands = "quickActions.commands"
     case dictationMode = "dictation.mode"
     case dictationShortcut = "dictation.shortcut"
+    case dictationPlaysSounds = "dictation.playsSounds"
     case dictationModel = "dictation.model"
     case dictationMicrophone = "dictation.microphone"
     case dictationDestination = "dictation.destination"
     case dictationAdaptsCapitalization = "dictation.adaptsCapitalization"
+    case dictationLiveInsertion = "dictation.liveInsertion"
     case dictationIdleRelease = "dictation.releaseAfterMinutes"
     case dictationLanguage = "dictation.language"
     case fileSearchEnabled = "fileSearch.enabled"
     case fileSearchScopes = "fileSearch.scopes"
     case fileSearchIgnorePatterns = "fileSearch.ignorePatterns"
+    case fileSearchRemovedDefaultPatterns = "fileSearch.removedDefaultPatterns"
+    case fileSearchShowInLauncher = "fileSearch.showInLauncher"
     case fileSearchCommands = "fileSearch.commands"
     case notesEnabled = "notes.enabled"
     case notesRendersMarkdown = "notes.rendersMarkdown"
@@ -119,10 +125,8 @@ enum SettingsFileKey: String, CaseIterable, Sendable {
     case calendarCommands = "calendar.commands"
     case extensionsShowInLauncher = "extensions.showInLauncher"
 
-    /// The top-level object the key sits in.
     var section: String { String(rawValue.prefix { $0 != "." }) }
 
-    /// The key's name inside its section.
     var name: String { String(rawValue.drop { $0 != "." }.dropFirst()) }
 
     /// Every section, in file order.

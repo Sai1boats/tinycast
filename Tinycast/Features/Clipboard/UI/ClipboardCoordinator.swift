@@ -1,6 +1,5 @@
 import AppKit
 
-/// Owns clipboard-history actions: paste, copy, reveal, pin — and the selection that follows.
 @MainActor
 final class ClipboardCoordinator {
     private let clipboardStore: ClipboardStore
@@ -65,7 +64,6 @@ final class ClipboardCoordinator {
         }
     }
 
-    /// The setting names an age, the store enforces it; a shortened window culls straight away.
     func applyRetention(_ retention: ClipboardRetention) {
         clipboardStore.maxAge = retention.maxAge
         clipboardStore.enforceLimits()
@@ -178,7 +176,10 @@ final class ClipboardCoordinator {
         guard
             await core.confirm(
                 title: String(localized: "Delete All Entries"),
-                message: String(localized: "Are you sure you want to proceed with deleting all clipboard history entries?"),
+                message: String(
+                    localized: """
+                        Are you sure you want to proceed with deleting all clipboard history entries?
+                        """),
                 symbol: PaletteMode.clipboard.systemImage, confirmTitle: String(localized: "Delete All"))
         else { return }
         clearHistory()
@@ -233,7 +234,6 @@ final class ClipboardCoordinator {
         core.showMessage(String(localized: "Copied path"))
     }
 
-    /// ⇧⌘T / “Copy Text” — OCRs the image in the bundled helper and copies what it reads.
     func copyImageText(_ item: ClipboardItem) {
         guard let path = item.imagePath ?? item.filePath else { return }
         paletteCoordinator.hidePalette(restoreFocus: false)
@@ -242,18 +242,22 @@ final class ClipboardCoordinator {
         textTask?.cancel()
         textTask = Task {
             do {
-                // A stat on an unmounted or network volume can stall, so it stays off the main actor.
+                // A stat on an unmounted or network volume can stall, so it stays off-main.
                 let exists = await Task.detached { FileManager.default.fileExists(atPath: path) }.value
                 try Task.checkCancellation()
                 guard exists else {
                     return item.kind == .file
                         ? reportUnavailable(item)
-                        : core.showMessage(String(localized: "That image is no longer available."), tone: .danger)
+                        : core.showMessage(
+                            String(localized: "That image is no longer available."), tone: .danger)
                 }
                 let text = try await ClipboardTextWorker.extract(item)
-                guard !text.isEmpty else { return core.showMessage(String(localized: "No text found"), tone: .neutral) }
+                guard !text.isEmpty else {
+                    return core.showMessage(String(localized: "No text found"), tone: .neutral)
+                }
                 guard NSPasteboard.general.changeCount == changeCount else {
-                    return core.showMessage(String(localized: "Clipboard changed, text not copied"), tone: .neutral)
+                    return core.showMessage(
+                        String(localized: "Clipboard changed, text not copied"), tone: .neutral)
                 }
                 Paster.copyPlainText(text)
                 core.showMessage(String(localized: "Copied text"))
@@ -272,6 +276,33 @@ final class ClipboardCoordinator {
             return nil
         }
         return url
+    }
+
+    func editClip(_ item: ClipboardItem) async {
+        guard item.kind == .text else { return }
+        guard let text = await core.editClipboardText(item.text ?? ""), !text.isEmpty else { return }
+        do {
+            guard let edited = try clipboardStore.updateText(text, of: item) else {
+                Paster.copyPlainText(text)
+                return
+            }
+            Paster.copy(edited, store: clipboardStore)
+            guard palette.mode == .clipboard else { return }
+            if !palette.clipboardFilter.matches(edited) { palette.clipboardFilter = .all }
+            if clipboardStore.rowIndex(of: edited, in: palette.query, filter: palette.clipboardFilter) == nil
+            {
+                palette.query = ""
+            }
+            selectClip(edited)
+            palette.preserveSelection()
+            palette.followToken = UUID()
+        } catch .tooLong {
+            let limit = ClipboardStore.maxTextLength.formatted()
+            core.showMessage(
+                String(localized: "Too long to save. Keep it under \(limit) characters."), tone: .danger)
+        } catch {
+            core.showMessage(String(localized: "Couldn’t save the clipboard entry"), tone: .danger)
+        }
     }
 
     /// Pin or unpin an entry; the selection and scroll follow the row as it moves.

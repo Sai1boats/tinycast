@@ -207,7 +207,6 @@ final class RoomCoordinator {
 
     // MARK: - Entering
 
-    /// The one funnel for a Rooms row, a launcher entry, a shortcut and the pane alike.
     func enterRoom(id: UUID) {
         guard settings.windowManagementEnabled, let room = store.room(id: id) else { return }
         // The preview holds while the windows move in under it, then fades.
@@ -384,7 +383,8 @@ final class RoomCoordinator {
         guard let snapshot = session.snapshot else { return }
         let picks = session.picked
         guard !picks.isEmpty else {
-            core.showMessage(String(localized: "Pick at least one window or app for the room"), tone: .neutral)
+            core.showMessage(
+                String(localized: "Pick at least one window or app for the room"), tone: .neutral)
             return
         }
         let name = session.roomName
@@ -412,7 +412,8 @@ final class RoomCoordinator {
         do {
             if session.editingID == nil { try store.add(room) } else { try store.update(room) }
         } catch {
-            core.showMessage(error.errorDescription.map { NSLocalizedString($0, comment: "Error message") } ?? String(localized: "Couldn't save the room"), tone: .danger)
+            core.showMessage(
+                error.errorDescription ?? String(localized: "Couldn't save the room"), tone: .danger)
             return
         }
         enterRoom(id: room.id)
@@ -441,10 +442,12 @@ final class RoomCoordinator {
         do {
             try store.update(updated)
         } catch {
-            core.showMessage(error.errorDescription.map { NSLocalizedString($0, comment: "Error message") } ?? String(localized: "Couldn't save the room"), tone: .danger)
+            core.showMessage(
+                error.errorDescription ?? String(localized: "Couldn't save the room"), tone: .danger)
             return
         }
-        core.showMessage(String(localized: "\(room.name) — remembered as \(reading.kind.title)"), tone: .success)
+        core.showMessage(
+            String(localized: "\(room.name) — remembered as \(reading.kind.title)"), tone: .success)
     }
 
     /// Read on the display most of the windows share, which is where their arrangement is.
@@ -522,7 +525,8 @@ final class RoomCoordinator {
         guard outcome.placed > 0 else {
             await core.showNotice(
                 title: String(localized: "Couldn't Enter “\(room.name)”"),
-                message: String(localized: "None of its windows are open. Open them, then choose them again."),
+                message: String(
+                    localized: "None of its windows are open. Open them, then choose them again."),
                 symbol: Room.sfSymbol, tone: .danger)
             return
         }

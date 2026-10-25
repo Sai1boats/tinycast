@@ -105,7 +105,8 @@ final class AIChatState {
                 guard let self, !Task.isCancelled, self.replyGeneration == generation,
                     self.isStreaming
                 else { return }
-                self.finishLast(state: .failed, fallback: String(localized: "The response ended unexpectedly."))
+                self.finishLast(
+                    state: .failed, fallback: String(localized: "The response ended unexpectedly."))
             } catch {
                 guard let self, !Task.isCancelled, self.replyGeneration == generation,
                     self.isStreaming
@@ -199,12 +200,10 @@ final class AIChatState {
         session.messages.last { $0.role == .assistant && $0.usage != nil }?.usage
     }
 
-    /// True when this state is the one showing `id`; an empty chat holds nothing yet.
     func holds(_ id: UUID) -> Bool {
         session.id == id && !session.messages.isEmpty
     }
 
-    /// The line shown in the empty streaming bubble while nothing has arrived yet.
     var liveStatus: String? { isThinking ? String(localized: "Thinking…") : nil }
 
     var lastAssistantText: String? {
@@ -389,8 +388,9 @@ enum ChatAttachmentRefusal: Equatable, Sendable {
     var message: String {
         switch self {
         case .count:
-            return String(localized: "\(AIAttachmentBudget.maxCount) attachments is all one message can carry.")
-        case .size: return String(localized: "That file is too big for this message — send these first.")
+            return String(
+                localized: "\(AIAttachmentBudget.maxCount) attachments is all one message can carry.")
+        case .size: return String(localized: "This file is too large to attach.")
         case .textTooLong:
             let limit = AIAttachmentBudget.maxInlinedTextBytes / 1_024
             return String(localized: "That text file is too big to attach — \(limit) KB is the limit.")
@@ -398,7 +398,8 @@ enum ChatAttachmentRefusal: Equatable, Sendable {
         case .unreadable: return String(localized: "That file could not be read.")
         case .unsupported(let ext):
             return String(localized: "Can't attach .\(ext) files — only images, PDFs and text.")
-        case .imagesUnsupported: return String(localized: "This model can't read images. Switch model to attach one.")
+        case .imagesUnsupported:
+            return String(localized: "This model can't read images. Switch model to attach one.")
         case .documentsUnsupported:
             return String(localized: "This model can't read PDFs. Switch model or paste the text.")
         }

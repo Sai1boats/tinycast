@@ -1,6 +1,5 @@
 import SwiftUI
 
-/// The quicklink library plus the behaviour that applies to all of them.
 struct QuicklinksSettingsView: View {
     @Environment(QuicklinkStore.self) private var store
     @Environment(QuicklinkCoordinator.self) private var coordinator
@@ -13,7 +12,7 @@ struct QuicklinksSettingsView: View {
             FeatureSwitchSection(
                 anchor: .quicklinksQuicklinks,
                 enableTitle: "Enable quicklinks",
-                enableSubtitle: String(localized: "Open saved links and searches from the launcher."),
+                enableSubtitle: "Open saved links and searches from the launcher.",
                 isEnabled: $settings.quicklinksEnabled,
                 showsInLauncher: $settings.quicklinksShowInLauncher,
                 showsIcon: true,
@@ -37,7 +36,7 @@ struct QuicklinksSettingsView: View {
     private var storageNotice: some View {
         Section {
             Label(
-                String(localized: "Changes can't be saved: the database couldn't be opened. Its file is untouched."),
+                "Changes can't be saved: the database couldn't be opened. Its file is untouched.",
                 systemImage: "exclamationmark.triangle.fill"
             )
             .foregroundStyle(.orange)
@@ -48,13 +47,13 @@ struct QuicklinksSettingsView: View {
     private var library: some View {
         Section {
             if !store.quicklinks.isEmpty {
-                SettingsFilterField(prompt: String(localized: "Search quicklinks…"), query: $query)
+                SettingsFilterField(prompt: "Search quicklinks…", query: $query)
             }
             if results.isEmpty {
                 Text(
                     store.quicklinks.isEmpty
-                        ? String(localized: "No quicklinks yet.")
-                        : String(localized: "No quicklink matches “\(query)”.")
+                        ? "No quicklinks yet."
+                        : "No quicklink matches “\(query)”."
                 )
                 .foregroundStyle(.secondary)
             } else {
@@ -85,15 +84,15 @@ struct QuicklinksSettingsView: View {
         return Section {
             Toggle(isOn: $settings.quicklinkOpensNewWindow) {
                 SettingsRowTitle(.quicklinksBehaviour, "Open in a new window")
-                Text(String(localized: "Where the app supports it."))
+                Text("Where the app supports it.")
             }
             Toggle(isOn: $settings.quicklinkPassesSelectedText) {
                 SettingsRowTitle(.quicklinksBehaviour, "Pass selected text as argument")
-                Text(String(localized: "Fills the first argument when a shortcut opens the quicklink."))
+                Text("Fills the first argument when a shortcut opens the quicklink.")
             }
             Toggle(isOn: $settings.quicklinkConfirmsBeforeDelete) {
                 SettingsRowTitle(.quicklinksBehaviour, "Confirm before deleting")
-                Text(String(localized: "From the launcher's Actions menu."))
+                Text("From the launcher's Actions menu.")
             }
         } header: {
             SettingsSectionHeader(.quicklinksBehaviour)
@@ -103,17 +102,17 @@ struct QuicklinksSettingsView: View {
     private var transfer: some View {
         Section {
             LabeledContent {
-                Button(String(localized: "Import…")) { Task { await coordinator.importQuicklinks() } }
+                Button("Import…") { Task { await coordinator.importQuicklinks() } }
             } label: {
                 SettingsRowTitle(.quicklinksImportExport, "Import quicklinks")
-                Text(String(localized: "From a JSON file; duplicates are skipped."))
+                Text("From a JSON file; duplicates are skipped.")
             }
             LabeledContent {
-                Button(String(localized: "Export…")) { Task { await coordinator.exportQuicklinks() } }
+                Button("Export…") { Task { await coordinator.exportQuicklinks() } }
                     .disabled(store.quicklinks.isEmpty)
             } label: {
                 SettingsRowTitle(.quicklinksImportExport, "Export quicklinks")
-                Text(String(localized: "To a JSON file."))
+                Text("To a JSON file.")
             }
         } header: {
             SettingsSectionHeader(.quicklinksImportExport)
@@ -148,12 +147,12 @@ private struct QuicklinkSettingsRow: View {
             if quicklink.isPinned {
                 Image(systemName: "pin.fill")
                     .foregroundStyle(.secondary)
-                    .help(String(localized: "Pinned to the top"))
+                    .help("Pinned to the top")
             }
             if !quicklink.showsInRootSearch {
                 Image(systemName: "eye.slash")
                     .foregroundStyle(.secondary)
-                    .help(String(localized: "Hidden from root search"))
+                    .help("Hidden from root search")
             }
 
             // An alias only reaches the ranker through the root-search slice, so it dims with it.
@@ -168,22 +167,22 @@ private struct QuicklinkSettingsRow: View {
                 Image(systemName: "pencil")
             }
             .buttonStyle(.plain)
-            .help(String(localized: "Edit Quicklink"))
-            .accessibilityLabel(String(localized: "Edit \(quicklink.name)"))
+            .help("Edit Quicklink")
+            .accessibilityLabel("Edit \(quicklink.name)")
 
             Button(action: onDelete) {
                 Image(systemName: "trash")
                     .foregroundStyle(.red)
             }
             .buttonStyle(.plain)
-            .help(String(localized: "Delete Quicklink"))
-            .accessibilityLabel(String(localized: "Delete \(quicklink.name)"))
+            .help("Delete Quicklink")
+            .accessibilityLabel("Delete \(quicklink.name)")
 
             Toggle("", isOn: $isEnabled)
                 .labelsHidden()
                 .toggleStyle(.checkbox)
-                .help(String(localized: "Enabled"))
-                .accessibilityLabel(String(localized: "Enable \(quicklink.name)"))
+                .help("Enabled")
+                .accessibilityLabel("Enable \(quicklink.name)")
         }
     }
 }
