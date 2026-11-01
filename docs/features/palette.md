@@ -667,3 +667,9 @@ The same show also mirrors that app into `PaletteState.pasteTarget` (a `PasteTar
 name + bundle path), so Clipboard and Emoji can name it — the footer pill reads "Paste to Notes" and
 the ⌘K paste rows carry the app's icon. Resolved once per summon, never per render, and deliberately
 not cleared by `prepare` (pop-to-root resets the screen, not the target).
+
+## QR codes
+
+The `qrCode` screen uses the header field as content, not a history filter. Return generates a QR
+code and records it; arrow keys browse the unfiltered history beside its preview. See
+[qr-code.md](qr-code.md) for input limits, persistence and image actions.

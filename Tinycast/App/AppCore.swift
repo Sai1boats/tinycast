@@ -211,6 +211,12 @@ final class AppCore {
     @ObservationIgnored private(set) lazy var emojiCoordinator = EmojiCoordinator(
         frequentEmoji: frequentEmoji, settings: settings, windowController: windowController,
         paletteCoordinator: paletteCoordinator)
+    @ObservationIgnored private(set) lazy var qrCodeHistory = QRCodeHistoryStore(
+        fileURL: AppPaths.applicationSupport().appendingPathComponent("qr-code-history.json"))
+    @ObservationIgnored private(set) lazy var qrCodeCoordinator = QRCodeCoordinator(
+        history: qrCodeHistory, palette: palette,
+        report: { [weak self] message, failed in self?.showMessage(message, tone: failed ? .danger : .success) },
+        hidePalette: { [weak self] in self?.paletteCoordinator.hidePalette(restoreFocus: false) })
     @ObservationIgnored private(set) lazy var calculatorCoordinator = CalculatorCoordinator(
         calcHistory: calcHistory, paletteCoordinator: paletteCoordinator, core: self)
     @ObservationIgnored private(set) lazy var calendarCoordinator = CalendarCoordinator(
@@ -531,7 +537,8 @@ final class AppCore {
         }
     }
 
-    func flushNotesForTermination() async {
+    func flushPendingWritesForTermination() async {
+        await qrCodeCoordinator.finishPendingWork()
         await notesCoordinator.prepareForTermination()
         await planoteCoordinator.prepareForTermination()
     }

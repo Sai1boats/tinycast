@@ -7,6 +7,7 @@ struct RootPaletteView: View {
     @Environment(ClipboardStore.self) private var store
     @Environment(FavoritesStore.self) private var favorites
     @Environment(VisibilityStore.self) private var visibility
+    @Environment(QRCodeCoordinator.self) private var qrCode
     @Environment(CalculatorHistoryStore.self) private var calcHistory
     /// Observed so the card re-evaluates when a snapshot lands or consent changes.
     @Environment(CurrencyRateStore.self) private var currencyRates
@@ -128,6 +129,8 @@ struct RootPaletteView: View {
                 vm: vm, openActions: openActions, metrics: metrics)
         case .dictionary:
             return DictionaryScreen(session: dictionary, core: core, vm: vm)
+        case .qrCode:
+            return QRCodeScreen(coordinator: qrCode, vm: vm, openActions: openActions)
         case .calculatorHistory:
             return CalculatorHistoryScreen(
                 history: calcHistory, currencyRates: currencyRates, core: core, vm: vm,

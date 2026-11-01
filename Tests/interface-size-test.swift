@@ -123,6 +123,7 @@ struct InterfaceSizeTests {
         expect(m.size.menuSectionHeader, Theme.Size.menuSectionHeader, "size.menuSectionHeader")
         expect(m.size.menuRowHeight, Theme.Size.menuRowHeight, "size.menuRowHeight")
         expect(m.size.menuRowsMaxHeight, Theme.Size.menuRowsMaxHeight, "size.menuRowsMaxHeight")
+        expect(m.size.qrCodePreview, Theme.Size.qrCodePreview, "size.qrCodePreview")
         expect(m.size.clipboardListWidth, Theme.Size.clipboardListWidth, "size.clipboardListWidth")
         expect(
             m.size.clipboardMediaHeight, Theme.Size.clipboardMediaHeight, "size.clipboardMediaHeight")
