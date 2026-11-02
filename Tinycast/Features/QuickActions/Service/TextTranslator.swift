@@ -82,6 +82,7 @@ enum TextTranslator {
             responses = try await TranslationSession(installedSource: source, target: target)
                 .translations(from: requests)
         } catch {
+            try Task.checkCancellation()
             throw Failure.failed
         }
         var translated = paragraphs
