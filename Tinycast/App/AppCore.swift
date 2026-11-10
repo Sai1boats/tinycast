@@ -357,7 +357,7 @@ final class AppCore {
             appleShortcutCoordinator.applyPresence()
             paletteCoordinator.onLauncherShown = { [weak self] in
                 self?.appleShortcutCoordinator.refresh()
-                self?.planoteCoordinator.refresh(startIfNeeded: true)
+                self?.planoteCoordinator.refresh()
             }
             paletteCoordinator.onScreenOpening = { [weak self] mode in
                 switch mode {

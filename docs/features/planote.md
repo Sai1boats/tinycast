@@ -6,6 +6,8 @@
   edits through the Planote bridge; it never opens Planote's database.
 - Root search indexes note titles only, using the ordinary fuzzy and Chinese transliteration ranking.
   Notes have their own `AppEntry.Kind.planoteNote`, section and Planote settings owner.
+- Opening the launcher and refreshing its note index only read published snapshots; they never start
+  Planote. Cached titles remain searchable after Planote quits.
 - Disabling note search removes its launcher entries and hides its editor. Stopping the service also
   prevents todo commands from automatically relaunching Planote. Saved snapshots remain readable.
 - An edit compares the published content version before changing title or literal Markdown. External
@@ -19,9 +21,10 @@
 ## Search and editing
 
 Settings → Planote is the single settings page for notes and todos. It holds title search, the
-background service, the todo enable switch, bridge status and todo command shortcuts. Opening the launcher refreshes
-its small title index off-main and starts the service if permitted. Clicking a result opens a floating
-660 × 580 panel (minimum 440 × 350). It reuses Notes' TextKit 2 Markdown editor, undo, find, list editing,
+background service, the todo enable switch, bridge status and todo command shortcuts. Opening the launcher
+refreshes its small title index off-main from the saved snapshot. Clicking a note starts the service
+if permitted and opens a floating 660 × 580 panel (minimum 440 × 350). It reuses Notes' TextKit 2
+Markdown editor, undo, find, list editing,
 formatting shortcuts and literal-source semantics. The title is editable. Changes autosave after
 600 ms; ⌘S saves immediately, and ⌘W/Escape hide the panel while preserving the draft.
 
@@ -64,3 +67,5 @@ conflicts and acknowledged autosave. `planote-ui-test` renders the shipped edito
 and supported sizes, edits through its native text view and checks recovery-file persistence.
 Planote's `NoteBridgeTests` checks persisted save, conflict rejection, replay, deletion and validation
 against an isolated in-memory SwiftData repository. The existing todo tests cover regression behavior.
+With note search and the service enabled, quit Planote and repeatedly open the launcher: Planote must
+stay closed and cached note titles must remain searchable. Opening a note may start the service.
