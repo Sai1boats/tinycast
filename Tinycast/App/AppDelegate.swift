@@ -35,7 +35,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task { @MainActor [weak self] in
             await AppCore.shared.stopDictationForTermination()
             // A 300 ms-debounced draft still has to reach disk, but it can no longer veto the quit.
-            await AppCore.shared.flushNotesForTermination()
+            await AppCore.shared.flushPendingWritesForTermination()
             self?.terminationRequestInFlight = false
             sender.reply(toApplicationShouldTerminate: true)
         }

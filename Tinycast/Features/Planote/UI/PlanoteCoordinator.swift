@@ -38,15 +38,12 @@ final class PlanoteCoordinator {
         }
     }
 
-    func refresh(startIfNeeded: Bool = false) {
+    func refresh() {
         refreshTask?.cancel()
         let generation = generation
         refreshTask = Task { [weak self] in
             guard let self else { return }
             do {
-                if startIfNeeded, settings.planoteNotesEnabled, settings.planoteServiceEnabled {
-                    try await ensureService()
-                }
                 let summaries = try await repository.list()
                 guard !Task.isCancelled, generation == self.generation else { return }
                 notes = summaries

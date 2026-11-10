@@ -210,6 +210,8 @@ final class LauncherCoordinator {
             core.translationCoordinator.show(selection: true)
         case .summarize:
             core.quickActionCoordinator.run(.summarize)
+        case .qrCode:
+            paletteCoordinator.togglePalette(mode: .qrCode)
         case .calculatorHistory:
             paletteCoordinator.togglePalette(mode: .calculatorHistory)
         case .clipboardHistory:

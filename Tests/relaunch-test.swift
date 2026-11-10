@@ -170,7 +170,7 @@ final class AppCore {
         record("cleanup-end")
     }
 
-    func flushNotesForTermination() async {
+    func flushPendingWritesForTermination() async {
         record("flush-start")
         try? await Task.sleep(for: .milliseconds(50))
         record("flush-end")

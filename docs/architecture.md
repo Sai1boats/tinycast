@@ -282,3 +282,9 @@ Applications, System Settings, System Actions, Commands — are thin wrappers ov
 `SettingsTab` and `SettingsSection` both identify by the case itself, never by an index. A selectable
 `List` flattens section and row IDs into one namespace, so overlapping `Int` IDs make SwiftUI drop
 whole sidebar groups; `Tests/settings-history-test.swift` pins the two namespaces apart.
+
+## QR codes
+
+`AppCore` owns `QRCodeHistoryStore` and `QRCodeCoordinator`. The palette injects the coordinator
+through the environment; `QRCodeScreen` keeps history selection in `PaletteState`. Rendering and
+JSON I/O execute off-main, and the coordinator serializes mutations. See [QR Code](features/qr-code.md).

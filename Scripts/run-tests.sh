@@ -197,6 +197,24 @@ run developer-tools-ui-test Tinycast/Features/Utilities/Model/*.swift \
                            Tinycast/DesignSystem/GlassEffectView.swift \
                            Tinycast/DesignSystem/Scrolling/OverflowFade.swift \
                            Tinycast/DesignSystem/Interaction/Motion.swift
+run qr-code-ui-test        Tinycast/Features/QRCode/Model/*.swift \
+                           Tinycast/Features/QRCode/Service/*.swift \
+                           Tinycast/Features/QRCode/UI/QRCodeCoordinator.swift \
+                           Tinycast/Features/QRCode/UI/QRCodeView.swift \
+                           Tinycast/Features/QRCode/UI/QRCodePreview.swift \
+                           Tinycast/Features/Launcher/UI/SectionHeader.swift \
+                           Tinycast/Platform/Appearance.swift \
+                           Tinycast/DesignSystem/Theme.swift \
+                           Tinycast/DesignSystem/InterfaceMetrics.swift \
+                           Tinycast/DesignSystem/SymbolImage.swift \
+                           Tinycast/DesignSystem/Scrolling/*.swift \
+                           Tinycast/DesignSystem/Interaction/RowClick.swift \
+                           Tinycast/DesignSystem/Interaction/RightClick.swift \
+                           Tinycast/Palette/ArmedHover.swift \
+                           Tinycast/Platform/NotificationToken.swift
+run qr-code-test           Tinycast/Features/QRCode/Model/*.swift \
+                           Tinycast/Features/QRCode/Service/*.swift \
+                           Tinycast/Features/QRCode/UI/QRCodeCoordinator.swift
 run calc-test              Tinycast/Features/Calculator/Model/*.swift
 run index calc-performance Tinycast/Features/Calculator/Model/*.swift
 run calendar-test          Tinycast/Features/Calendar/Model/*.swift \

@@ -98,6 +98,7 @@ struct InterfaceMetrics: Equatable, Sendable {
         var menuRowsMaxHeight: CGFloat {
             (Theme.Size.menuVisibleRows * (menuRowHeight + menuRowSpacing)).rounded()
         }
+        var qrCodePreview: CGFloat { scaledPoints(Theme.Size.qrCodePreview, scale) }
         var clipboardListWidth: CGFloat { scaledPoints(Theme.Size.clipboardListWidth, scale) }
         var clipboardMediaHeight: CGFloat { scaledPoints(Theme.Size.clipboardMediaHeight, scale) }
         var clipboardPreviewPixel: CGFloat { scaledPoints(Theme.Size.clipboardPreviewPixel, scale) }

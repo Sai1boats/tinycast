@@ -177,6 +177,7 @@ enum Theme {
         static let dropHintDash: CGFloat = 6
         /// The uninstall list's leading checkbox / lock glyph.
         static let checkbox: CGFloat = 16
+        static let qrCodePreview: CGFloat = 200
         static let clipboardListWidth: CGFloat = 290
         /// Symmetric clearance between the emoji grid and both panel edges.
         static let emojiGridInset: CGFloat = 16

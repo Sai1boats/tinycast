@@ -19,6 +19,7 @@ enum CommandID: String, CaseIterable, Sendable {
     case quickTranslate = "command:quick-translate"
     case translateSelection = "command:translate-selection"
     case summarize = "command:summarize"
+    case qrCode = "command:qr-code"
     case calculatorHistory = "command:calculator-history"
     case clipboardHistory = "command:clipboard-history"
     case pasteSequentially = "command:paste-sequentially"
@@ -86,6 +87,7 @@ enum CommandID: String, CaseIterable, Sendable {
         case .quickTranslate: return "Quick Translate"
         case .translateSelection: return "Translate Selected Text"
         case .summarize: return BuiltInQuickAction.summarize.titleResource
+        case .qrCode: return "Generate QR Code"
         case .calculatorHistory: return "Calculator History"
         case .clipboardHistory: return "Clipboard History"
         case .pasteSequentially: return "Paste Sequentially"
@@ -150,6 +152,7 @@ enum CommandID: String, CaseIterable, Sendable {
         case .textDiff: return "doc.text.magnifyingglass"
         case .quickTranslate, .translateSelection: return "translate"
         case .summarize: return BuiltInQuickAction.summarize.symbol
+        case .qrCode: return "qrcode"
         case .calculatorHistory: return "plus.forwardslash.minus"
         case .clipboardHistory: return "doc.on.clipboard"
         case .pasteSequentially: return "list.bullet.clipboard"
@@ -197,6 +200,7 @@ enum CommandID: String, CaseIterable, Sendable {
 
     var searchKeywords: [String] {
         switch self {
+        case .qrCode: ["QR", "QR code", "二维码", "生成二维码", "barcode"]
         case .urlCodec: ["percent encoding", "encode", "decode", "URL 编码", "URL 解码"]
         case .base64: ["base64url", "encode", "decode", "编码", "解码"]
         case .uuidGenerator: ["identifier", "random", "GUID", "标识符"]
