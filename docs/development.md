@@ -239,3 +239,17 @@ breaks in the meantime, since an unquoted code just reports "no exchange rate".
 ## Interface localization
 
 See [localization.md](localization.md) for the language setting, resource tables, and verification.
+
+## Selective upstream integration — 2026-11-10
+
+The fork selectively integrates 29 changes from upstream through `58168bf7`. Included areas are
+Hyper Key and Dictation remap ownership, IME navigation, clipboard capture and lifecycle safety,
+extension OAuth and Node compatibility, form persistence, AI provider/MCP fixes, reasoning controls,
+calculator language coverage, native window behavior and command-output fixes. Each imported commit
+records its upstream SHA in a cherry-pick trailer.
+
+The automatic updater, upstream release signing and Homebrew workflows, compact-mode defaults and
+palette glass redesign remain excluded. Chat presets, new launcher favorites/shortcuts, Notes menu-bar
+controls, display-move features, deep links, dictionary layout and the currency service migration
+remain deferred. Planote, QR codes, Shell history/destinations, translation and mixed file search are
+preserved. Selective cherry-picks intentionally leave upstream commits outside the fork's ancestry.
