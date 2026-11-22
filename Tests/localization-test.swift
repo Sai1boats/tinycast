@@ -8,7 +8,7 @@ struct LocalizationTests {
         let data = try Data(contentsOf: root.appendingPathComponent("Localizable.xcstrings"))
         let catalog = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         let strings = catalog?["strings"] as? [String: [String: Any]] ?? [:]
-        for key in ["Quick Translate", "JSON Tools", "Run Shell Command", "Todos", "Planote"] {
+        for key in ["Quick Translate", "JSON Tools", "Run Shell Command"] {
             let localizations = strings[key]?["localizations"] as? [String: [String: Any]]
             let unit = localizations?["zh-Hans"]?["stringUnit"] as? [String: String]
             precondition(unit?["state"] == "translated", "Missing Chinese translation: \(key)")

@@ -41,11 +41,10 @@ enum CommandID: String, CaseIterable, Sendable {
     case createEvent = "command:create-event"
     case copyMeetingLink = "command:copy-meeting-link"
     case openInCalendar = "command:open-in-calendar"
+    case localTodos = "command:local-todos"
     case showNotes = "command:show-notes"
     case createNote = "command:create-note"
     case searchNotes = "command:search-notes"
-    case showTodos = "command:show-todos"
-    case createTodo = "command:create-todo"
     case createWindowLayout = "command:create-window-layout"
     case captureWindowLayout = "command:capture-window-layout"
     case switchRoom = "command:switch-room"
@@ -109,11 +108,10 @@ enum CommandID: String, CaseIterable, Sendable {
         case .createEvent: return "Create Event"
         case .copyMeetingLink: return "Copy Meeting Link"
         case .openInCalendar: return "Open in Calendar"
+        case .localTodos: return "Local Todos"
         case .showNotes: return "Show Notes"
         case .createNote: return "Create Note"
         case .searchNotes: return "Search Notes"
-        case .showTodos: return "Show Todos"
-        case .createTodo: return "New Todo"
         case .createWindowLayout: return "Create Window Layout"
         case .captureWindowLayout: return "Create Layout from Current Windows"
         case .switchRoom: return "Switch Room"
@@ -173,11 +171,10 @@ enum CommandID: String, CaseIterable, Sendable {
         case .createEvent: return "calendar.badge.plus"
         case .copyMeetingLink: return "link"
         case .openInCalendar: return "calendar.badge.clock"
+        case .localTodos: return "checklist"
         case .showNotes: return "text.page"
         case .createNote: return "note.text.badge.plus"
         case .searchNotes: return "text.magnifyingglass"
-        case .showTodos: return "checklist"
-        case .createTodo: return "plus.circle"
         case .createWindowLayout: return "plus.rectangle.on.rectangle"
         case .captureWindowLayout: return "macwindow.badge.plus"
         case .switchRoom: return "door.left.hand.open"
@@ -200,6 +197,7 @@ enum CommandID: String, CaseIterable, Sendable {
 
     var searchKeywords: [String] {
         switch self {
+        case .localTodos: ["todo", "task", "checklist", "待办", "任务", "清单"]
         case .qrCode: ["QR", "QR code", "二维码", "生成二维码", "barcode"]
         case .urlCodec: ["percent encoding", "encode", "decode", "URL 编码", "URL 解码"]
         case .base64: ["base64url", "encode", "decode", "编码", "解码"]
@@ -207,7 +205,6 @@ enum CommandID: String, CaseIterable, Sendable {
         case .hashGenerator: ["checksum", "SHA-256", "SHA-384", "SHA-512", "SHA-1", "MD5", "哈希", "校验"]
         case .jwtViewer: ["JSON Web Token", "Bearer", "header", "payload", "令牌"]
         case .textDiff: ["compare", "difference", "comparison", "对比", "差异"]
-        case .showTodos, .createTodo: ["todo", "task", "planote", "待办", "任务", "清单"]
         default: []
         }
     }

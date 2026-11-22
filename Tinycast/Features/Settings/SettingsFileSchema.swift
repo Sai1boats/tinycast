@@ -98,10 +98,6 @@ enum SettingsFileSchema {
         case .notesShowsFormattingBar: return bind(settings, \.notesShowsFormattingBar)
         case .notesFolder: return bind(settings, \.notesFolder, accept: folder)
         case .notesCommands: return launcher.commandsBinding(for: key, owner: .notes)
-        case .planoteNotesEnabled: return bind(settings, \.planoteNotesEnabled)
-        case .planoteServiceEnabled: return bind(settings, \.planoteServiceEnabled)
-        case .todosEnabled: return bind(settings, \.todosEnabled)
-        case .todosCommands: return launcher.commandsBinding(for: key, owner: .planote)
         case .dictationMode: return bind(settings, \.dictationMode)
         case .dictationShortcut:
             return shortcuts.binding(for: key, action: .dictation, name: String(localized: "Dictation"))

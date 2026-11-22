@@ -146522,34 +146522,206 @@
         }
       }
     },
-    "Add Subtask" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "Local Todos" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokale Aufgaben"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tareas locales"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tâches locales"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ローカルのタスク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "로컬 할 일"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarefas locais"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Локальные задачи"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "添加子任务"
+            "value" : "本地待办"
           }
         }
       }
     },
-    "Bridge Folder" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "Task title" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgabentitel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título de la tarea"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Titre de la tâche"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タスク名"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "할 일 제목"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Título da tarefa"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Название задачи"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "桥接文件夹"
+            "value" : "任务名称"
           }
         }
       }
     },
-    "Completed" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "Open tasks" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offene Aufgaben"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tareas pendientes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tâches en cours"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未完了のタスク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미완료 할 일"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarefas pendentes"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Незавершённые задачи"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待完成"
+          }
+        }
+      }
+    },
+    "Completed tasks" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erledigte Aufgaben"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tareas completadas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tâches terminées"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完了したタスク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "완료한 할 일"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarefas concluídas"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выполненные задачи"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -146558,358 +146730,414 @@
         }
       }
     },
-    "Due Date" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "Delete task?" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufgabe löschen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar la tarea?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la tâche ?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タスクを削除しますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "할 일을 삭제할까요?"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluir tarefa?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить задачу?"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "截止日期"
+            "value" : "删除这项待办？"
           }
         }
       }
     },
-    "Enable Todos" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "No tasks yet" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noch keine Aufgaben"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aún no hay tareas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune tâche pour le moment"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タスクはまだありません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아직 할 일이 없습니다"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ainda não há tarefas"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Задач пока нет"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "启用待办"
+            "value" : "还没有待办事项"
+          }
+        }
+      }
+    },
+    "Rename" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Umbenennen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar nombre"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renommer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名前を変更"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이름 변경"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renomear"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переименовать"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重命名"
           }
         }
       }
     },
     "Inbox" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eingang"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bandeja de entrada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boîte de réception"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "受信トレイ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "받은 편지함"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caixa de entrada"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Входящие"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "收集箱"
+            "value" : "收件箱"
           }
         }
       }
     },
-    "Installed, not running" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "Projects" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Projekte"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proyectos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Projets"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロジェクト"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "프로젝트"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Projetos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проекты"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已安装，未运行"
+            "value" : "项目"
           }
         }
       }
     },
-    "Installed, running" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "New project" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neues Projekt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuevo proyecto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouveau projet"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新規プロジェクト"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새 프로젝트"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Novo projeto"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новый проект"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已安装，运行中"
+            "value" : "新建项目"
           }
         }
       }
     },
-    "Label" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "Move to project" : {
       "localizations" : {
-        "zh-Hans" : {
+        "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "标签"
+            "value" : "In Projekt verschieben"
           }
-        }
-      }
-    },
-    "Last Heartbeat" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
+        },
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最近心跳"
+            "value" : "Mover al proyecto"
           }
-        }
-      }
-    },
-    "Live" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
+        },
+        "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已连接"
+            "value" : "Déplacer vers un projet"
           }
-        }
-      }
-    },
-    "Mark %@ complete" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "将 %@ 标记为完成"
+            "value" : "プロジェクトに移動"
           }
-        }
-      }
-    },
-    "Mark %@ incomplete" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
+        },
+        "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "将 %@ 标记为未完成"
+            "value" : "프로젝트로 이동"
           }
-        }
-      }
-    },
-    "New Todo" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
+        },
+        "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "新建待办"
+            "value" : "Mover para projeto"
           }
-        }
-      }
-    },
-    "No Todos" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
+        },
+        "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "没有待办"
+            "value" : "Переместить в проект"
           }
-        }
-      }
-    },
-    "No cached tasks." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "没有缓存的待办。"
-          }
-        }
-      }
-    },
-    "Not Installed" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未安装"
-          }
-        }
-      }
-    },
-    "Not yet" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "尚未"
-          }
-        }
-      }
-    },
-    "Offline" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "离线"
-          }
-        }
-      }
-    },
-    "Open Planote" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "打开 Planote"
-          }
-        }
-      }
-    },
-    "Overdue" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已逾期"
-          }
-        }
-      }
-    },
-    "Planote Connection" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planote 连接"
-          }
-        }
-      }
-    },
-    "Planote did not answer in time. The change is queued." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planote 未及时响应，修改已排队。"
-          }
-        }
-      }
-    },
-    "Planote did not open in time. The change is queued." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planote 未及时打开，修改已排队。"
-          }
-        }
-      }
-    },
-    "Planote is not installed." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未安装 Planote。"
-          }
-        }
-      }
-    },
-    "Planote is not running. Showing saved tasks." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planote 未运行，正在显示已保存的任务。"
-          }
-        }
-      }
-    },
-    "Planote rejected the change." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planote 拒绝了这次修改。"
-          }
-        }
-      }
-    },
-    "Planote's task list could not be read." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法读取 Planote 的任务列表。"
-          }
-        }
-      }
-    },
-    "Section" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "分区"
-          }
-        }
-      }
-    },
-    "Show Todos" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "显示待办"
-          }
-        }
-      }
-    },
-    "Show completed tasks" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "显示已完成任务"
-          }
-        }
-      }
-    },
-    "Subtask" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "子任务"
+            "value" : "移至项目"
           }
         }
       }
     },
     "Subtasks" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilaufgaben"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subtareas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sous-tâches"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サブタスク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "하위 작업"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Subtarefas"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подзадачи"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -146918,614 +147146,418 @@
         }
       }
     },
-    "Subtasks: %lld of %lld" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "Add subtask" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teilaufgabe hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir subtarea"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter une sous-tâche"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サブタスクを追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "하위 작업 추가"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar subtarefa"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить подзадачу"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "子任务：%lld / %lld"
+            "value" : "添加子任务"
           }
         }
       }
     },
-    "Syncing…" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "Time reminder" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeiterinnerung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordatorio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rappel horaire"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日時指定の通知"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "시간 알림"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lembrete com horário"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Напоминание по времени"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在同步…"
+            "value" : "定时提醒"
           }
         }
       }
     },
-    "Task title" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "Choose a future reminder time." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wähle eine zukünftige Erinnerungszeit."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige una hora futura para el recordatorio."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez une heure de rappel dans le futur."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今より後の通知時刻を選んでください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현재 이후의 알림 시간을 선택하세요."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha um horário futuro para o lembrete."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Выберите время напоминания в будущем."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "任务标题"
+            "value" : "请选择未来的提醒时间。"
           }
         }
       }
     },
-    "Tasks mirrored from the Planote app." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "Allow Tinycast notifications in System Settings to receive reminders." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erlaube Tinycast-Mitteilungen in den Systemeinstellungen, um Erinnerungen zu erhalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permite las notificaciones de Tinycast en Ajustes del Sistema para recibir recordatorios."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorisez les notifications de Tinycast dans Réglages Système pour recevoir des rappels."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リマインダーを受け取るには、システム設定でTinycastの通知を許可してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미리 알림을 받으려면 시스템 설정에서 Tinycast 알림을 허용하세요."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permita as notificações do Tinycast nos Ajustes do Sistema para receber lembretes."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрешите уведомления Tinycast в системных настройках, чтобы получать напоминания."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "来自 Planote 应用的任务。"
+            "value" : "请在系统设置中允许 Tinycast 发送通知，以接收提醒。"
           }
         }
       }
     },
-    "Todos" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "Some reminders could not be scheduled. Reduce the number of active reminders and retry." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Einige Erinnerungen konnten nicht geplant werden. Reduziere die Anzahl aktiver Erinnerungen und versuche es erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se han podido programar algunos recordatorios. Reduce el número de recordatorios activos y vuelve a intentarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Certains rappels n’ont pas pu être programmés. Réduisez le nombre de rappels actifs et réessayez."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一部の通知を設定できませんでした。有効な通知を減らしてから再試行してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일부 알림을 예약하지 못했습니다. 활성 알림 수를 줄이고 다시 시도하세요."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível agendar alguns lembretes. Reduza o número de lembretes ativos e tente novamente."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не удалось запланировать некоторые напоминания. Уменьшите число активных напоминаний и повторите попытку."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "待办"
+            "value" : "部分提醒未能安排，请减少启用的提醒后重试。"
           }
         }
       }
     },
-    "Todos commands" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "Delete project?" : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Projekt löschen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Eliminar el proyecto?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer le projet ?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プロジェクトを削除しますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "프로젝트를 삭제할까요?"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Excluir projeto?"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Удалить проект?"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "待办命令"
+            "value" : "删除项目？"
           }
         }
       }
     },
-    "%lld open · %lld done" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "Tasks in “%@” will move to Inbox." : {
       "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Aufgaben aus „%@“ werden in den Eingang verschoben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las tareas de «%@» se moverán a la bandeja de entrada."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les tâches de « %@ » seront déplacées vers la boîte de réception."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「%@」のタスクを受信トレイに移動します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@”의 작업이 받은 편지함으로 이동합니다."
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As tarefas de “%@” serão movidas para a caixa de entrada."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Задачи проекта «%@» будут перемещены во входящие."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%lld 项未完成 · %lld 项已完成"
+            "value" : "“%@”中的任务将移至收件箱。"
           }
         }
       }
     },
-    "Add a note" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
+    "A project with this name already exists." : {
       "localizations" : {
-        "zh-Hans" : {
+        "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "添加备注"
+            "value" : "Ein Projekt mit diesem Namen existiert bereits."
           }
-        }
-      }
-    },
-    "Add a task to get started." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
+        },
+        "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "添加一个任务开始吧。"
+            "value" : "Ya existe un proyecto con ese nombre."
           }
-        }
-      }
-    },
-    "Edit Todo" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
+        },
+        "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "编辑待办"
+            "value" : "Un projet porte déjà ce nom."
           }
-        }
-      }
-    },
-    "Install Planote to save and sync tasks." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
+        },
+        "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "安装 Planote 以保存并同步任务。"
+            "value" : "同じ名前のプロジェクトがすでにあります。"
           }
-        }
-      }
-    },
-    "Organization" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
+        },
+        "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "分类"
+            "value" : "같은 이름의 프로젝트가 이미 있습니다."
           }
-        }
-      }
-    },
-    "Start Planote to load your tasks." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
+        },
+        "pt" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "启动 Planote 以载入任务。"
+            "value" : "Já existe um projeto com esse nome."
           }
-        }
-      }
-    },
-    "Task Notes" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
+        },
+        "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "任务备注"
+            "value" : "Проект с таким именем уже существует."
           }
-        }
-      }
-    },
-    "Tasks mirrored from Planote. Tinycast starts it in the background." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "任务来自 Planote；需要时 Tinycast 会自动在后台启动它。"
-          }
-        }
-      }
-    },
-    "Add due date" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "添加截止日期"
-          }
-        }
-      }
-    },
-    "My Todos" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "我的待办"
-          }
-        }
-      }
-    },
-    "%lld open tasks" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld 项未完成"
-          }
-        }
-      }
-    },
-    "What needs doing?" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "要做些什么？"
-          }
-        }
-      }
-    },
-    "Add a note, supports Markdown" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "添加备注，支持 Markdown"
-          }
-        }
-      }
-    },
-    "Break this task into smaller steps." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "把一件事拆成几个小步骤。"
-          }
-        }
-      }
-    },
-    "Create Todo" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "创建待办"
-          }
-        }
-      }
-    },
-    "Save Changes" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "保存修改"
-          }
-        }
-      }
-    },
-    "Not created yet" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "尚未创建"
-          }
-        }
-      }
-    },
-    "Save to apply changes" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "修改后保存"
-          }
-        }
-      }
-    },
-    "Up to date" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已同步"
-          }
-        }
-      }
-    },
-    "Saved tasks" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已缓存待办"
-          }
-        }
-      }
-    },
-    "Planote" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planote"
-          }
-        }
-      }
-    },
-    "Planote Notes" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planote 笔记"
-          }
-        }
-      }
-    },
-    "Background Service" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "后台服务"
-          }
-        }
-      }
-    },
-    "Search Planote Notes" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "搜索 Planote 笔记"
-          }
-        }
-      }
-    },
-    "Find notes by title in the launcher, then read and edit them here." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在主界面按标题搜索 Planote 笔记，直接查看和编辑。"
-          }
-        }
-      }
-    },
-    "Indexed Notes" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已索引笔记"
-          }
-        }
-      }
-    },
-    "The background service has no window or Dock icon. Stopping it pauses writes for notes and todos." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "后台服务不显示窗口或 Dock 图标。停止后，笔记和待办将暂停写入。"
-          }
-        }
-      }
-    },
-    "Start Service" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "启动服务"
-          }
-        }
-      }
-    },
-    "Stop Service" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "停止服务"
-          }
-        }
-      }
-    },
-    "Planote could not start." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法启动 Planote。"
-          }
-        }
-      }
-    },
-    "Planote could not stop. Close its open dialogs and try again." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法停止 Planote，请关闭其中的对话框后重试。"
-          }
-        }
-      }
-    },
-    "Planote service is stopped. Start it in Planote settings to save." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planote 服务已停止。请在 Planote 设置中启动服务以保存。"
-          }
-        }
-      }
-    },
-    "Save the current draft before opening another note." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请先保存当前草稿，再打开其他笔记。"
-          }
-        }
-      }
-    },
-    "Select a note from the launcher." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "在主界面搜索并选择一篇笔记。"
-          }
-        }
-      }
-    },
-    "Attachments are preserved. Open Planote to view them." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "附件会保留，请打开 Planote 查看。"
-          }
-        }
-      }
-    },
-    "Keep Draft & Reload" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "保留草稿并载入最新"
-          }
-        }
-      }
-    },
-    "Drafts" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "草稿目录"
-          }
-        }
-      }
-    },
-    "Unsaved draft" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "待保存草稿"
-          }
-        }
-      }
-    },
-    "Saved to Planote" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已保存到 Planote"
-          }
-        }
-      }
-    },
-    "A note title is required." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "请填写笔记标题。"
-          }
-        }
-      }
-    },
-    "Planote changed this note. Your recovered draft is kept." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planote 中的笔记已更改，已保留恢复的草稿。"
-          }
-        }
-      }
-    },
-    "Planote did not answer in time. The draft is kept." : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Planote 未及时响应，草稿已保留。"
-          }
-        }
-      }
-    },
-    "Open Note" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "打开笔记"
-          }
-        }
-      }
-    },
-    "Markdown" : {
-      "comment" : "Fork-specific interface; English and Simplified Chinese.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Markdown"
+            "value" : "已存在同名项目。"
           }
         }
       }

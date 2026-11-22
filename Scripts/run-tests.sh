@@ -138,7 +138,6 @@ run app-name-test          Tinycast/Platform/AppDisplayName.swift \
                            $L/SearchRelevance.swift
 run favorites-test         $L/FavoriteSlots.swift
 run app-installation-test  $L/SearchRelevance.swift $L/ScriptRomanization.swift \
-                           Tinycast/Features/Planote/Model/PlanoteNoteProtocol.swift \
                            $L/LauncherMatch.swift $L/EntryNaming.swift $L/LauncherOrder.swift \
                            $L/LauncherRankingStore.swift $L/LauncherSuggestions.swift $L/SearchScopes.swift \
                            Tinycast/Features/Launcher/Service/AppIndex.swift \
@@ -205,6 +204,17 @@ run developer-tools-ui-test Tinycast/Features/Utilities/Model/*.swift \
                            Tinycast/DesignSystem/SymbolImage.swift \
                            Tinycast/DesignSystem/GlassEffectView.swift \
                            Tinycast/DesignSystem/Scrolling/OverflowFade.swift \
+                           Tinycast/DesignSystem/Interaction/Motion.swift
+run local-todos-test       Tinycast/Features/Todos/Model/*.swift \
+                           Tinycast/Features/Todos/Service/*.swift \
+                           Tinycast/Features/Todos/UI/*.swift \
+                           Tinycast/Features/Utilities/UI/UtilityCloseButtonStyle.swift \
+                           Tinycast/Features/Utilities/UI/UtilityWindowChrome.swift \
+                           Tinycast/Windows/AppWindowController.swift \
+                           Tinycast/Windows/WindowChrome.swift \
+                           Tinycast/Platform/ActivationPolicy.swift \
+                           Tinycast/Platform/Appearance.swift \
+                           Tinycast/DesignSystem/Theme.swift \
                            Tinycast/DesignSystem/Interaction/Motion.swift
 run qr-code-ui-test        Tinycast/Features/QRCode/Model/*.swift \
                            Tinycast/Features/QRCode/Service/*.swift \
@@ -618,59 +628,6 @@ run notes-test             Tinycast/Platform/Signposts.swift \
                            $L/SearchRelevance.swift \
                            Tinycast/Features/Notes/Model/*.swift \
                            Tinycast/Features/Notes/Service/*.swift
-run planote-test           Tinycast/Features/Planote/Model/*.swift \
-                           Tinycast/Features/Planote/Service/PlanoteNoteRepository.swift \
-                           Tinycast/Features/Planote/UI/PlanoteNoteSession.swift \
-                           Tinycast/Features/Notes/Model/NoteDocument.swift \
-                           Tinycast/Features/Notes/Model/NoteTitle.swift \
-                           Tinycast/Features/Notes/Model/NoteMarkdown.swift \
-                           Tinycast/Features/Notes/Model/NoteMarkdownParser.swift \
-                           Tinycast/Features/Notes/Model/NoteInlineScanner.swift
-run todos-bridge-test      Tinycast/Features/Todos/Model/TodoBridgeFileStore.swift \
-                           Tinycast/Features/Todos/Model/TodoBridgePaths.swift \
-                           Tinycast/Features/Todos/Model/TodoBridgeProtocol.swift \
-                           Tinycast/Features/Todos/Model/TodoEditorDraft.swift \
-                           Tinycast/Features/Todos/Model/TodoListModel.swift
-run todos-ui-test          Tinycast/Features/Todos/Model/*.swift \
-                           Tinycast/Features/Todos/Service/*.swift \
-                           Tinycast/Features/Todos/UI/*.swift \
-                           Tinycast/Features/Notes/Model/NoteWindowPlacement.swift \
-                           Tinycast/Platform/Appearance.swift \
-                           Tinycast/DesignSystem/Theme.swift \
-                           Tinycast/DesignSystem/InterfaceMetrics.swift \
-                           Tinycast/DesignSystem/BarButton.swift \
-                           Tinycast/DesignSystem/SymbolImage.swift \
-                           Tinycast/DesignSystem/GlassEffectView.swift
-run planote-ui-test      Tinycast/Platform/Signposts.swift \
-                           Tinycast/Platform/Appearance.swift \
-                           Tinycast/DesignSystem/Theme.swift \
-                           Tinycast/DesignSystem/InterfaceMetrics.swift \
-                           Tinycast/Platform/NotificationToken.swift \
-                           Tinycast/Features/TextInjection/Service/InjectableTextView.swift \
-                           Tinycast/Features/Notes/Model/NoteDocument.swift \
-                           Tinycast/Features/Notes/Model/NoteTitle.swift \
-                           Tinycast/Features/Notes/Model/NoteMarkdown.swift \
-                           Tinycast/Features/Notes/Model/NoteMarkdownParser.swift \
-                           Tinycast/Features/Notes/Model/NoteInlineScanner.swift \
-                           Tinycast/Features/Notes/Model/NoteEditPlan.swift \
-                           Tinycast/Features/Notes/Model/NoteEditAction.swift \
-                           Tinycast/Features/Notes/Model/NoteFormatting.swift \
-                           Tinycast/Features/Notes/Model/NoteMarkdownEditing.swift \
-                           Tinycast/Features/Notes/Model/NoteRevealPolicy.swift \
-                           Tinycast/Features/Notes/UI/NoteMarkdownTypography.swift \
-                           Tinycast/Features/Notes/UI/NoteBlockDecoration.swift \
-                           Tinycast/Features/Notes/UI/NoteMarkdownStyler.swift \
-                           Tinycast/Features/Notes/UI/NoteMarkdownRenderer.swift \
-                           Tinycast/Features/Notes/UI/NoteCheckboxGeometry.swift \
-                           Tinycast/Features/Notes/UI/NoteBlockLayoutFragment.swift \
-                           Tinycast/Features/Notes/UI/NoteLayoutFragmentProvider.swift \
-                           Tinycast/Features/Notes/UI/NoteTextViewEditing.swift \
-                           Tinycast/Features/Notes/UI/NoteTextView.swift \
-                           Tinycast/Features/Notes/UI/NoteEditorView.swift \
-                           Tinycast/Features/Planote/Model/*.swift \
-                           Tinycast/Features/Planote/Service/PlanoteNoteRepository.swift \
-                           Tinycast/Features/Planote/UI/PlanoteNoteSession.swift \
-                           Tinycast/Features/Planote/UI/PlanoteNoteView.swift
 run notes-editor-test      Tinycast/Platform/Signposts.swift \
                            Tinycast/Platform/Appearance.swift \
                            Tinycast/DesignSystem/Theme.swift \

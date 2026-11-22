@@ -29,22 +29,20 @@ struct DialogView: View {
         let shape = RoundedRectangle(cornerRadius: metrics.radius.panel, style: .continuous)
         VStack(alignment: .leading, spacing: metrics.spacing.xxl) {
             VStack(alignment: .leading, spacing: metrics.spacing.xxl) {
-                if let symbol = request.symbol {
-                    DialogSymbol(name: symbol, tone: request.tone)
-                }
-
-                VStack(alignment: .leading, spacing: metrics.spacing.sm) {
-                    Text(request.title)
-                        .font(metrics.typography.panelTitle)
-                    if let message = request.message {
-                        Text(message)
-                            .font(metrics.typography.rowTitle)
-                            .foregroundStyle(Theme.Colors.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
+                if case .name = request.accessory {
+                    Label {
+                        Text(request.title).font(metrics.typography.panelTitle)
+                    } icon: {
+                        Image(systemName: request.symbol ?? "folder").foregroundStyle(.tint)
                     }
+                } else {
+                    header
                 }
 
                 switch request.accessory {
+                case .name(let state):
+                    @Bindable var state = state
+                    TextField("Name", text: $state.text).dialogTextField()
                 case .volume(let volume): VolumeSlider(state: volume)
                 case .snippetArguments(let arguments): SnippetArgumentFields(state: arguments)
                 case .clipboardText(let state): ClipboardEditField(state: state)
@@ -61,6 +59,23 @@ struct DialogView: View {
         .frame(width: width, alignment: .leading)
         .background(Theme.Colors.panelScrim, in: shape)
         .glassEffect(.regular, in: shape)
+    }
+
+    @ViewBuilder private var header: some View {
+        if let symbol = request.symbol {
+            DialogSymbol(name: symbol, tone: request.tone)
+        }
+
+        VStack(alignment: .leading, spacing: metrics.spacing.sm) {
+            Text(request.title)
+                .font(metrics.typography.panelTitle)
+            if let message = request.message {
+                Text(message)
+                    .font(metrics.typography.rowTitle)
+                    .foregroundStyle(Theme.Colors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 
     @ViewBuilder private var actions: some View {
@@ -89,6 +104,7 @@ struct DialogView: View {
                 singleLine: singleLine,
                 onActivate: { onChoose(index) }
             )
+            .disabled(index == request.defaultIndex && !request.canConfirm)
         }
     }
 
@@ -144,9 +160,13 @@ private struct DialogButton: View {
 
     var body: some View {
         Button(action: onActivate) {
-            Text(action.title)
-                .fixedSize(horizontal: singleLine, vertical: false)
-                .multilineTextAlignment(.center)
+            if let symbol = action.symbol {
+                Label(action.title, systemImage: symbol).labelStyle(.iconOnly).help(action.title)
+            } else {
+                Text(action.title)
+                    .fixedSize(horizontal: singleLine, vertical: false)
+                    .multilineTextAlignment(.center)
+            }
         }
         .buttonStyle(.modalAction(role))
         .tooltip(keyCaps: keyCaps)

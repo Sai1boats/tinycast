@@ -251,5 +251,5 @@ records its upstream SHA in a cherry-pick trailer.
 The automatic updater, upstream release signing and Homebrew workflows, compact-mode defaults and
 palette glass redesign remain excluded. Chat presets, new launcher favorites/shortcuts, Notes menu-bar
 controls, display-move features, deep links, dictionary layout and the currency service migration
-remain deferred. Planote, QR codes, Shell history/destinations, translation and mixed file search are
+remain deferred. Local Todos, QR codes, Shell history/destinations, translation and mixed file search are
 preserved. Selective cherry-picks intentionally leave upstream commits outside the fork's ancestry.

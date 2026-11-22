@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 
 /// One button; role decides its colour, severity living separately in `DialogTone`.
 struct DialogAction {
@@ -10,6 +11,7 @@ struct DialogAction {
 
     let title: String
     var role: Role = .standard
+    var symbol: String?
 }
 
 /// How serious a dialog is; it tints the glyph but never picks one. See docs/ui.md.
@@ -32,10 +34,16 @@ struct DialogRequest {
     var cancelIndex: Int
     /// The caller reads the result back out of the state object it passed in.
     var accessory: DialogAccessory?
+
+    @MainActor var canConfirm: Bool {
+        if case .name(let state) = accessory { return !state.name.isEmpty }
+        return true
+    }
 }
 
 /// A dialog carries at most one control, so the cases are exclusive by construction.
 enum DialogAccessory {
+    case name(DialogNameState)
     case volume(VolumeState)
     case snippetArguments(SnippetArgumentsState)
     case clipboardText(ClipboardEditState)
@@ -51,4 +59,12 @@ enum DialogAccessory {
         if case .clipboardText = self { return true }
         return false
     }
+}
+
+@MainActor @Observable
+final class DialogNameState {
+    var text: String
+
+    init(text: String) { self.text = text }
+    var name: String { text.trimmingCharacters(in: .whitespacesAndNewlines) }
 }

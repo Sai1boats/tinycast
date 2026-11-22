@@ -94,6 +94,17 @@ final class DialogController: NSObject, NSWindowDelegate {
         return state.values
     }
 
+    func requestName(title: String, symbol: String, initial: String, confirm: DialogAction) async -> String? {
+        let state = DialogNameState(text: initial)
+        let request = DialogRequest(
+            title: title, symbol: symbol, actions: [
+                confirm,
+                DialogAction(title: String(localized: "Cancel"), role: .cancel)
+            ], defaultIndex: 0, cancelIndex: 1, accessory: .name(state))
+        guard await present(request) == 0 else { return nil }
+        return state.name
+    }
+
     func editClipboardText(_ text: String) async -> String? {
         let state = ClipboardEditState(text: text)
         let request = DialogRequest(
@@ -114,7 +125,7 @@ final class DialogController: NSObject, NSWindowDelegate {
             onPresentationChanged(true)
             let width =
                 switch request.accessory {
-                case nil, .volume: metrics.size.dialogCompactWidth
+                case nil, .volume, .name: metrics.size.dialogCompactWidth
                 case .snippetArguments, .clipboardText: metrics.size.dialogWidth
                 }
             let content = hostingView(
@@ -134,7 +145,7 @@ final class DialogController: NSObject, NSWindowDelegate {
                 case .cancel:
                     finish(request.cancelIndex)
                 case .confirm:
-                    finish(request.defaultIndex)
+                    if request.canConfirm { finish(request.defaultIndex) }
                 case .increment, .decrement:
                     // Keying the slider lands on the same values Volume Up/Down produce.
                     guard case .volume(let volume) = request.accessory else { return }

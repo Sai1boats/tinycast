@@ -175,16 +175,6 @@ final class AppCore {
         saveFormattingBarExpanded: {
             UserDefaults.standard.set($0, forKey: Self.noteFormattingBarKey)
         })
-    @ObservationIgnored private(set) lazy var planoteBridge: TodoBridgeClient = {
-        let bridge = TodoBridgeClient(
-            paths: TodoBridgePaths(homeDirectory: FileManager.default.homeDirectoryForCurrentUser))
-        bridge.allowsBackgroundLaunch = { [weak self] in self?.settings.planoteServiceEnabled == true }
-        return bridge
-    }()
-    @ObservationIgnored private(set) lazy var planoteCoordinator = PlanoteCoordinator(
-        settings: settings, index: appIndex, bridge: planoteBridge)
-    @ObservationIgnored private(set) lazy var todosCoordinator = TodosCoordinator(
-        bridge: planoteBridge, settings: settings, appIndex: appIndex, core: self)
 
     @ObservationIgnored private(set) lazy var launcherCoordinator = LauncherCoordinator(
         ranking: launcherRanking, windowController: windowController,
@@ -211,6 +201,25 @@ final class AppCore {
     @ObservationIgnored private(set) lazy var emojiCoordinator = EmojiCoordinator(
         frequentEmoji: frequentEmoji, settings: settings, windowController: windowController,
         paletteCoordinator: paletteCoordinator)
+    let todoReminders = TodoReminders()
+    @ObservationIgnored private(set) lazy var todosCoordinator = TodosCoordinator(
+        repository: TodoRepository(url: AppPaths.applicationSupport().appending(path: "todos.json")),
+        activation: activationPolicy, reminders: todoReminders,
+        requestProjectName: { [unowned self] original in
+            if let original {
+                return await dialogs.requestName(
+                    title: String(localized: "Rename"), symbol: "pencil", initial: original,
+                    confirm: DialogAction(title: String(localized: "Save")))
+            }
+            return await dialogs.requestName(
+                title: String(localized: "New project"), symbol: "folder.badge.plus", initial: "",
+                confirm: DialogAction(title: String(localized: "Create"), symbol: "plus"))
+        },
+        confirmDelete: { [unowned self] title, message in
+            await self.confirm(
+                title: title, message: message,
+                symbol: "trash", confirmTitle: String(localized: "Delete"))
+        })
     @ObservationIgnored private(set) lazy var qrCodeHistory = QRCodeHistoryStore(
         fileURL: AppPaths.applicationSupport().appendingPathComponent("qr-code-history.json"))
     @ObservationIgnored private(set) lazy var qrCodeCoordinator = QRCodeCoordinator(
@@ -302,6 +311,9 @@ final class AppCore {
             // Shorten AppKit's ~2–3s tooltip delay; registration domain, so a user default wins.
             UserDefaults.standard.register(defaults: ["NSInitialToolTipDelay": 250])
             NSApp.setActivationPolicy(.accessory)
+            todoReminders.openItem = { [weak self] in self?.todosCoordinator.show(itemID: $0) }
+            todoReminders.start()
+            todosCoordinator.load()
             dictationAudioDucker.recover()
             applyAppearance()
             applyMotion()
@@ -319,8 +331,6 @@ final class AppCore {
             menuSearchCoordinator.applyEnabled()
             fileSearchCoordinator.applyPolicy()
             notesCoordinator.applyEnabled()
-            todosCoordinator.applyEnabled()
-            planoteCoordinator.applyEnabled()
             installedAI.launchSettings = { [aiSettings] in aiSettings.launch(for: $0) }
             chatGPTSubscription.launchSettings = { [aiSettings] in aiSettings.launch(for: .codex) }
             aiChatCoordinator.applyEnabled()
@@ -357,7 +367,6 @@ final class AppCore {
             appleShortcutCoordinator.applyPresence()
             paletteCoordinator.onLauncherShown = { [weak self] in
                 self?.appleShortcutCoordinator.refresh()
-                self?.planoteCoordinator.refresh()
             }
             paletteCoordinator.onScreenOpening = { [weak self] mode in
                 switch mode {
@@ -539,9 +548,9 @@ final class AppCore {
     }
 
     func flushPendingWritesForTermination() async {
+        await todosCoordinator.finishForTermination()
         await qrCodeCoordinator.finishPendingWork()
         await notesCoordinator.prepareForTermination()
-        await planoteCoordinator.prepareForTermination()
     }
 
     func stopDictationForTermination() async {
@@ -715,9 +724,6 @@ final class AppCore {
                 $0.menuSearchCoordinator.applyEnabled()
             })
         track({ _ = $0.notesEnabled }, reproject: { $0.notesCoordinator.applyEnabled() })
-        track({ _ = $0.planoteServiceEnabled }, reproject: { $0.planoteCoordinator.applyServiceEnabled() })
-        track({ _ = $0.planoteNotesEnabled }, reproject: { $0.planoteCoordinator.applyEnabled() })
-        track({ _ = $0.todosEnabled }, reproject: { $0.todosCoordinator.applyEnabled() })
         track({ _ = $0.aiEnabled }, reproject: { $0.aiChatCoordinator.applyEnabled() })
         track(
             { _ = $0.dictationIdleRelease },

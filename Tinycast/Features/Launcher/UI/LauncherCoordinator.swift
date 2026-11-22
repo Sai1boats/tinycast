@@ -133,12 +133,6 @@ final class LauncherCoordinator {
             extensionCoordinator.runExtensionCommand(app, arguments: arguments)
             return
         }
-        if app.kind == .planoteNote {
-            guard let id = UUID(uuidString: String(app.id.dropFirst("planote-note:".count))) else { return }
-            paletteCoordinator.hidePalette(restoreFocus: false)
-            core.planoteCoordinator.open(id)
-            return
-        }
         if app.kind == .meeting {
             guard let id = MeetingEvent.id(fromEntryID: app.id) else { return }
             calendarCoordinator.activateMeeting(id: id)
@@ -167,7 +161,7 @@ final class LauncherCoordinator {
             guard let snippetID = StoredSnippet.id(fromEntryID: app.id) else { return }
             snippetCoordinator.expandSnippet(id: snippetID, target: previous)
         case .command, .quickAction, .customCommand, .systemAction, .windowCommand, .windowLayout,
-            .windowRoom, .quicklink, .appleShortcut, .extensionCommand, .meeting, .planoteNote:
+            .windowRoom, .quicklink, .appleShortcut, .extensionCommand, .meeting:
             break  // handled above
         }
     }
@@ -245,6 +239,9 @@ final class LauncherCoordinator {
             calendarCoordinator.openNextMeetingInCalendar()
         case .createEvent:
             calendarCoordinator.createEvent()
+        case .localTodos:
+            dismissPalette()
+            core.todosCoordinator.show()
         case .showNotes:
             dismissPalette()
             notesCoordinator.toggle()
@@ -254,12 +251,6 @@ final class LauncherCoordinator {
         case .searchNotes:
             dismissPalette()
             notesCoordinator.searchNotes()
-        case .showTodos:
-            dismissPalette()
-            core.todosCoordinator.toggle()
-        case .createTodo:
-            dismissPalette()
-            core.todosCoordinator.createTodo()
         case .searchQuicklinks:
             paletteCoordinator.togglePalette(mode: .quicklinks)
         case .searchSnippets:
