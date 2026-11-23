@@ -1,9 +1,11 @@
+import CryptoKit
 import Foundation
 
 struct NotesRepository: Sendable {
     typealias TrashOperation = @Sendable (URL) throws -> Void
 
     enum Failure: Error, LocalizedError, Sendable, Equatable {
+        case conflict(diskSource: String)
         case invalidTitle(String)
         case unreadable(URL)
         case invalidLocation(URL)
@@ -11,6 +13,7 @@ struct NotesRepository: Sendable {
 
         var errorDescription: String? {
             switch self {
+            case .conflict: return String(localized: "Modified on disk")
             case .invalidTitle(let title):
                 return String(localized: "“\(title)” can't be used as a note title.")
             case .unreadable(let fileURL):
@@ -36,12 +39,13 @@ struct NotesRepository: Sendable {
         self.trashOperation = trashOperation
     }
 
-    func list() throws(Failure) -> [NoteSummary] {
+    func list(reusing cached: [NoteSummary] = []) throws(Failure) -> [NoteSummary] {
         try mappedError(at: notesDirectory) {
             try ensureDirectory()
+            let previous = Dictionary(uniqueKeysWithValues: cached.map { ($0.id, $0) })
             let keys: Set<URLResourceKey> = [
                 .contentModificationDateKey, .isHiddenKey, .isRegularFileKey,
-                .isSymbolicLinkKey
+                .isSymbolicLinkKey, .fileSizeKey
             ]
             return try FileManager.default.contentsOfDirectory(
                 at: notesDirectory,
@@ -57,11 +61,24 @@ struct NotesRepository: Sendable {
                     let url = try? validatedFileURL(candidate)
                 else { return nil }
                 let title = url.deletingPathExtension().lastPathComponent
+                let id = NoteID(rawValue: url.lastPathComponent)
+                if let old = previous[id], old.fileSize == values.fileSize,
+                    old.modifiedAt == values.contentModificationDate
+                {
+                    return old
+                }
+                let data = try? Data(contentsOf: url)
+                let source = data.flatMap { String(data: $0, encoding: .utf8) } ?? ""
+                let metadata = NoteMetadataExtractor(source: source)
                 return NoteSummary(
-                    id: NoteID(rawValue: url.lastPathComponent),
+                    id: id,
                     title: title,
-                    firstLine: NoteTitle.isUnnamed(title) ? firstLine(of: url) : nil,
-                    modifiedAt: values.contentModificationDate ?? .distantPast)
+                    firstLine: NoteTitle.isUnnamed(title) ? NoteTitle.firstLine(of: source) : nil,
+                    modifiedAt: values.contentModificationDate ?? .distantPast,
+                    preview: metadata.preview, tags: metadata.tags,
+                    pendingTaskCount: metadata.pendingTaskCount,
+                    totalTaskCount: metadata.totalTaskCount, imageCount: metadata.imageCount,
+                    contentHash: data.map { Data(SHA256.hash(data: $0)) }, fileSize: values.fileSize)
             }
             .sorted(by: summaryPrecedes)
         }
@@ -92,7 +109,7 @@ struct NotesRepository: Sendable {
     func create(title: String = "Untitled") throws(Failure) -> NoteDocument {
         try mappedError(at: notesDirectory) {
             let url = try claimUniqueURL(base: try validatedTitle(title)) {
-                try writeNewFileAtomically(Data(), to: $0)
+                try NoteFileAccess.writeNewFileAtomically(Data(), to: $0)
             }
             return try load(NoteID(rawValue: url.lastPathComponent))
         }
@@ -111,7 +128,7 @@ struct NotesRepository: Sendable {
             for note in notes {
                 guard let base = try? validatedTitle(note.title) else { continue }
                 _ = try claimUniqueURL(base: base) {
-                    try writeNewFileAtomically(Data(note.source.utf8), to: $0)
+                    try NoteFileAccess.writeNewFileAtomically(Data(note.source.utf8), to: $0)
                 }
                 imported += 1
             }
@@ -119,14 +136,26 @@ struct NotesRepository: Sendable {
         }
     }
 
-    func save(id: NoteID, source: String) throws(Failure) {
+    @discardableResult
+    func save(id: NoteID, source: String, expectedRevision: Data? = nil) throws(Failure) -> Data {
         let candidate = fileURL(for: id)
-        try mappedError(at: candidate) {
+        return try mappedError(at: candidate) {
             let url = try validatedFileURL(candidate)
             let data = Data(source.utf8)
-            try coordinatedWrite(at: url, options: .forReplacing) { coordinatedURL in
-                try data.write(to: try validatedFileURL(coordinatedURL), options: .atomic)
+            try NoteFileAccess.coordinatedWrite(at: url, options: .forReplacing) { coordinatedURL in
+                let target = try validatedFileURL(coordinatedURL)
+                if let expectedRevision {
+                    let disk = try Data(contentsOf: target)
+                    if Data(SHA256.hash(data: disk)) != expectedRevision, disk != data {
+                        guard let source = String(data: disk, encoding: .utf8) else {
+                            throw Failure.unreadable(target)
+                        }
+                        throw Failure.conflict(diskSource: source)
+                    }
+                }
+                try data.write(to: target, options: .atomic)
             }
+            return Data(SHA256.hash(data: data))
         }
     }
 
@@ -138,7 +167,7 @@ struct NotesRepository: Sendable {
             // Exact, not folded: a change of case or accents alone is a rename the user asked for.
             guard base + ".md" != id.rawValue else { return id }
             let destination = try claimUniqueURL(base: base, renaming: id) { destination in
-                try coordinatedWrite(at: sourceURL, options: .forMoving) { coordinatedURL in
+                try NoteFileAccess.coordinatedWrite(at: sourceURL, options: .forMoving) { coordinatedURL in
                     try FileManager.default.moveItem(
                         at: try validatedFileURL(coordinatedURL), to: destination)
                 }
@@ -151,7 +180,7 @@ struct NotesRepository: Sendable {
         let candidate = fileURL(for: id)
         try mappedError(at: candidate) {
             let url = try validatedFileURL(candidate)
-            try coordinatedWrite(at: url, options: .forDeleting) { coordinatedURL in
+            try NoteFileAccess.coordinatedWrite(at: url, options: .forDeleting) { coordinatedURL in
                 try trashOperation(try validatedFileURL(coordinatedURL))
             }
         }
@@ -176,21 +205,6 @@ struct NotesRepository: Sendable {
 
     func fileURL(for id: NoteID) -> URL {
         notesDirectory.appendingPathComponent(id.rawValue)
-    }
-
-    /// Only an unnamed note pays for this, and only for the head of its file.
-    private func firstLine(of url: URL) -> String? {
-        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
-        defer { try? handle.close() }
-        guard let head = try? handle.read(upToCount: NoteTitle.headByteCount), !head.isEmpty
-        else { return nil }
-        // A fixed-size read can land mid-character, so back off to the last complete one.
-        for dropped in 0...3 where head.count > dropped {
-            if let text = String(bytes: head.dropLast(dropped), encoding: .utf8) {
-                return NoteTitle.firstLine(of: text)
-            }
-        }
-        return nil
     }
 
     private func ensureDirectory() throws {
@@ -266,38 +280,6 @@ struct NotesRepository: Sendable {
             locale: Locale(identifier: "en_US_POSIX"))
     }
 
-    private func writeNewFileAtomically(_ data: Data, to destination: URL) throws {
-        let temporary = destination.deletingLastPathComponent().appendingPathComponent(
-            ".\(destination.lastPathComponent).\(UUID().uuidString).tmp")
-        do {
-            try data.write(to: temporary, options: .atomic)
-            try FileManager.default.moveItem(at: temporary, to: destination)
-        } catch {
-            try? FileManager.default.removeItem(at: temporary)
-            throw error
-        }
-    }
-
-    private func coordinatedWrite<Value>(
-        at fileURL: URL,
-        options: NSFileCoordinator.WritingOptions,
-        _ mutation: (URL) throws -> Value
-    ) throws -> Value {
-        let coordinator = NSFileCoordinator(filePresenter: nil)
-        var coordinationError: NSError?
-        var result: Result<Value, Swift.Error>?
-        coordinator.coordinate(
-            writingItemAt: fileURL,
-            options: options,
-            error: &coordinationError
-        ) { coordinatedURL in
-            result = Result { try mutation(coordinatedURL) }
-        }
-        if let result { return try result.get() }
-        if let coordinationError { throw coordinationError }
-        throw CocoaError(.fileWriteUnknown)
-    }
-
     private func mappedError<Value>(
         at fileURL: URL,
         _ operation: () throws -> Value
@@ -309,5 +291,27 @@ struct NotesRepository: Sendable {
         } catch {
             throw .io(fileURL: fileURL, message: error.localizedDescription)
         }
+    }
+}
+
+extension NotesAssetStore {
+    func orphanedAssets() throws -> [URL] {
+        let folder = try validatedAssetURL("assets/check.png").deletingLastPathComponent()
+        guard FileManager.default.fileExists(atPath: folder.path) else { return [] }
+        let files = try FileManager.default.contentsOfDirectory(
+            at: folder, includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles])
+        var candidates = try files.filter { url in
+            guard Self.isImportedName(url.lastPathComponent),
+                (try? validatedAssetURL("assets/" + url.lastPathComponent)) != nil
+            else { return false }
+            return try url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile == true
+        }
+        let repository = NotesRepository(notesDirectory: notesDirectory)
+        for summary in try repository.list() where !candidates.isEmpty {
+            let source = try repository.load(summary.id).source
+            candidates.removeAll { source.contains($0.lastPathComponent) }
+        }
+        return candidates
     }
 }

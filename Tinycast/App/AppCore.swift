@@ -171,7 +171,8 @@ final class AppCore {
         settings: settings,
         appIndex: appIndex,
         core: self,
-        isFormattingBarExpanded: UserDefaults.standard.bool(forKey: Self.noteFormattingBarKey),
+        defaults: .standard,
+        isFormattingBarExpanded: UserDefaults.standard.object(forKey: Self.noteFormattingBarKey) as? Bool ?? true,
         saveFormattingBarExpanded: {
             UserDefaults.standard.set($0, forKey: Self.noteFormattingBarKey)
         })
@@ -300,6 +301,8 @@ final class AppCore {
         let noteSelectionKey = "notesActiveFileName"
         notesStore = NotesStore(
             repository: Self.notesRepository(for: settings),
+            pinnedIDs: Set((UserDefaults.standard.stringArray(forKey: "notesPinnedFileNames") ?? []).map(NoteID.init(rawValue:))),
+            persistPins: { UserDefaults.standard.set($0.map(\.rawValue).sorted(), forKey: "notesPinnedFileNames") },
             loadSelection: {
                 UserDefaults.standard.string(forKey: noteSelectionKey).map(NoteID.init(rawValue:))
             },

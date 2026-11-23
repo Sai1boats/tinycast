@@ -9,9 +9,6 @@ enum NoteTitle {
         return String(localized: "Untitled") + title.dropFirst(untitled.count)
     }
 
-    /// Wide enough that the scanned prefix is covered even where every character is four bytes.
-    static let headByteCount = 4096
-
     private static let scanLimit = 1024
     private static let displayLimit = 120
 
@@ -39,11 +36,11 @@ enum NoteTitle {
     }
 
     /// A line as it reads when rendered, with the setting on or off: syntax never titles a note.
-    private static func visibleText(
+    static func visibleText(
         of line: NoteMarkdown.Line, in markdown: NoteMarkdown, text: NSString
     ) -> String {
         switch line.kind {
-        case .blank, .rule, .fenceOpen, .fenceClose: return ""
+        case .blank, .image, .rule, .fenceOpen, .fenceClose: return ""
         default: break
         }
         var visible = ""

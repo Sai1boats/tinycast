@@ -25,10 +25,6 @@ struct NoteFormattingBar: View {
             $0.inlineStyles.contains(.italic)
         },
         Control(
-            symbol: "strikethrough", title: String(localized: "Strikethrough"), shortcut: "⇧⌘X",
-            action: .toggleInline(.strikethrough)
-        ) { $0.inlineStyles.contains(.strikethrough) },
-        Control(
             symbol: "chevron.left.forwardslash.chevron.right", title: String(localized: "Inline Code"),
             shortcut: "⌘E", action: .toggleInline(.code)
         ) { $0.inlineStyles.contains(.code) },
@@ -39,24 +35,12 @@ struct NoteFormattingBar: View {
 
     private static let blocks = [
         Control(
-            symbol: "curlybraces", title: String(localized: "Code Block"), shortcut: "⌥⌘C",
-            action: .toggleCodeBlock
-        ) {
-            $0.isCodeBlock
-        },
-        Control(
             symbol: "text.quote", title: String(localized: "Quote"), shortcut: "⇧⌘B",
             action: .toggleQuote
         ) { $0.isQuote }
     ]
 
     private static let lists = [
-        Control(
-            symbol: "list.number", title: String(localized: "Numbered List"), shortcut: "⇧⌘7",
-            action: .toggleList(.ordered)
-        ) {
-            $0.list == .ordered
-        },
         Control(
             symbol: "list.bullet", title: String(localized: "Bullet List"), shortcut: "⇧⌘8",
             action: .toggleList(.bullet)
@@ -77,13 +61,25 @@ struct NoteFormattingBar: View {
         HStack(spacing: Theme.Spacing.sm) {
             if isExpanded {
                 HStack(spacing: Theme.Spacing.sm) {
-                    NoteHeadingButton(
-                        level: formatting.headingLevel, isOpen: notes.isHeadingMenuPresented,
-                        action: notes.toggleHeadingMenu
-                    ) { notes.headingButtonFrame = $0 }
-                    group(Self.styles, formatting)
-                    group(Self.blocks, formatting)
-                    group(Self.lists, formatting)
+                    BarButton(isSelected: !notes.rendersMarkdown, isCompact: true, action: notes.toggleRaw) {
+                        Label(
+                            notes.rendersMarkdown ? String(localized: "Rendered") : "Raw", systemImage: "eye"
+                        )
+                        .font(.caption)
+                    }.focusable(false).accessibilityLabel("Render Markdown")
+                    if notes.rendersMarkdown {
+                        group(Self.styles, formatting)
+                        group(Self.blocks, formatting)
+                        group(Self.lists, formatting)
+                        NoteToolButton("photo", String(localized: "Insert Image"), action: notes.pickImage)
+                        NoteToolButton("minus", String(localized: "Horizontal Rule")) {
+                            notes.format(.insertSnippet(text: "\n---\n", caretOffset: 5))
+                        }
+                        NoteToolButton("clock", String(localized: "Timestamp")) {
+                            let stamp = Date().formatted(date: .abbreviated, time: .shortened)
+                            notes.format(.insertSnippet(text: stamp, caretOffset: stamp.utf16.count))
+                        }
+                    }
                 }
                 // Grows out of the round button; nothing leaves the capsule, so no clip is needed.
                 .transition(.scale(scale: 0.6, anchor: .trailing).combined(with: .opacity))
@@ -138,48 +134,5 @@ private struct NoteBarGlyph: View {
     var body: some View {
         SymbolImage(name: name, size: Theme.Size.noteGlyph)
             .frame(width: Theme.Size.noteGlyph, height: Theme.Size.noteGlyph)
-    }
-}
-
-private struct NoteHeadingButton: View {
-    let level: Int?
-    let isOpen: Bool
-    let action: () -> Void
-    let onFrameChange: (CGRect) -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    private var isHeading: Bool { (1...6).contains(level ?? 0) }
-
-    var body: some View {
-        BarButton(isSelected: isHeading || isOpen, isCompact: true, action: action) {
-            HStack(spacing: Theme.Spacing.xs) {
-                NoteBarGlyph(name: "textformat.size")
-                // Rotates rather than swaps, so opening the menu cannot shift the bar.
-                Image(systemName: "chevron.down")
-                    .font(Theme.Typography.disclosure)
-                    .rotationEffect(.degrees(isOpen ? 180 : 0))
-                    .animation(reduceMotion ? nil : Theme.MenuMotion.chevronAnimation, value: isOpen)
-            }
-        }
-        // Its menu hangs off this frame, which only the laid-out view knows.
-        .onGeometryChange(for: CGRect.self) {
-            $0.frame(in: .global)
-        } action: {
-            onFrameChange($0)
-        }
-        .focusable(false)
-        .accessibilityLabel("Heading")
-        .accessibilityValue(accessibilityValue)
-        .accessibilityAddTraits(isHeading ? .isSelected : [])
-        // The leading end of an expanded capsule, which a narrow note pushes against the edge.
-        .tooltip(isOpen ? nil : String(localized: "Heading"), alignment: .leading)
-    }
-
-    private var accessibilityValue: String {
-        switch level {
-        case nil: ""
-        case 0: String(localized: "Text")
-        case let level?: String(localized: "Heading \(level)")
-        }
     }
 }

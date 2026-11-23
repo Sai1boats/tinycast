@@ -36,6 +36,8 @@ final class NoteBlockLayoutFragment: NSTextLayoutFragment {
         context.saveGState()
         defer { context.restoreGState() }
         switch decoration.shape {
+        case .image(let path, _):
+            drawImage(path: path, left: left, top: point.y, in: context)
         case .code:
             break
         case .quote(let depth):
@@ -52,6 +54,60 @@ final class NoteBlockLayoutFragment: NSTextLayoutFragment {
         case .task(let level, let checked):
             drawBox(level: level, checked: checked, left: left, top: point.y, in: context)
         }
+    }
+
+    var imageRect: CGRect {
+        let width = max(1, min(containerWidth, Theme.Size.noteImageMaxWidth))
+        let ratio = decoration.thumbnail?.aspectRatio ?? 2
+        let height = min(width / ratio, Theme.Size.noteImageMaxHeight)
+        return CGRect(
+            x: 0,
+            y: max(Theme.Size.noteImageCaptionHeight, textLineFragments.last?.typographicBounds.maxY ?? 0),
+            width: width, height: height + Theme.Size.noteImageCaptionHeight)
+    }
+
+    override var bottomMargin: CGFloat {
+        guard case .image = decoration.shape else { return super.bottomMargin }
+        let width = min(containerWidth, Theme.Size.noteImageMaxWidth)
+        let height = min(width / (decoration.thumbnail?.aspectRatio ?? 2), Theme.Size.noteImageMaxHeight)
+        return height + 2 * Theme.Size.noteImageCaptionHeight + Theme.Spacing.md
+    }
+
+    private func drawImage(path: String, left: CGFloat, top: CGFloat, in context: CGContext) {
+        let rect = imageRect.offsetBy(dx: left, dy: top)
+        let radius = Theme.Size.noteImageCornerRadius
+        let outline = CGPath(roundedRect: rect, cornerWidth: radius, cornerHeight: radius, transform: nil)
+        context.addPath(outline)
+        context.clip()
+        context.setFillColor(decoration.fill.cgColor)
+        context.fill(rect)
+        let caption = Theme.Size.noteImageCaptionHeight
+        let area = CGRect(x: rect.minX, y: rect.minY, width: rect.width, height: rect.height - caption)
+        let font = NSFont.preferredFont(forTextStyle: .caption1)
+        let label: String
+        if let thumb = decoration.thumbnail, let image = thumb.pixels() {
+            let width = min(area.width, area.height * thumb.aspectRatio)
+            let height = width / thumb.aspectRatio
+            context.saveGState()
+            context.translateBy(x: area.midX - width / 2, y: area.midY + height / 2)
+            context.scaleBy(x: 1, y: -1)
+            context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+            context.restoreGState()
+            label = "\(path)    \(thumb.width) × \(thumb.height)"
+        } else {
+            label = String(localized: "Image unavailable") + " · " + path
+            context.setLineDash(phase: 0, lengths: [4, 4])
+        }
+        context.setStrokeColor(decoration.fill.cgColor)
+        context.move(to: CGPoint(x: rect.minX, y: area.maxY))
+        context.addLine(to: CGPoint(x: rect.maxX, y: area.maxY))
+        context.strokePath()
+        context.addPath(outline)
+        context.setStrokeColor(decoration.ink.withAlphaComponent(0.3).cgColor)
+        context.strokePath()
+        Self.draw(
+            Self.line(label, font: font, color: decoration.ink),
+            at: CGPoint(x: rect.minX + Theme.Spacing.md, y: rect.maxY - Theme.Spacing.md), in: context)
     }
 
     // MARK: - Shapes
@@ -94,7 +150,8 @@ final class NoteBlockLayoutFragment: NSTextLayoutFragment {
                 bottomRadius: roundsBottom ? Theme.Radius.menu : 0))
         context.setFillColor(decoration.fill.cgColor)
         context.fillPath()
-        if roundsTop, let language {
+        if roundsTop {
+            let language = [language, String(localized: "Copy")].compactMap { $0 }.joined(separator: "   ")
             let font = NSFont.systemFont(ofSize: NSFont.preferredFont(forTextStyle: .caption1).pointSize)
             let line = Self.line(language, font: font, color: decoration.ink)
             let width = CTLineGetTypographicBounds(line, nil, nil, nil)

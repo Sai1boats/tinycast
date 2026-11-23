@@ -377,28 +377,11 @@ swiftc -O -swift-version 6 Tinycast/Features/Emoji/Model/{EmojiCatalog,EmojiData
 /tmp/emoji-search-performance --languages fr,ja
 ```
 
-`Tests/notes-editor-performance.swift` installs a 100,000-character note in a real rendered editor and
-prints, as JSON, the median over 30 runs of the install with its full restyle, one typed character at
-the end, middle and start, the window fit's height read after an install and after each of those
-characters, and a caret move between distant lines. The budget is 150 ms, 8 ms (end and middle) and
-4 ms, and the fit's read gets 10 ms after an install and 1 ms after a character. The read after a
-character runs once the edit has laid out the caret's screen, so it is the fit's cost on top of the
-keystroke. Inside `didChange`, near the top of the note, the read does that layout itself, in about
-2 ms:
-
-```sh
-N=Tinycast/Features/Notes
-swiftc -O -swift-version 6 Tinycast/Platform/{Signposts,Appearance,NotificationToken}.swift \
-    Tinycast/DesignSystem/{Theme,InterfaceMetrics}.swift \
-    Tinycast/Features/TextInjection/Service/InjectableTextView.swift \
-    $N/Model/{NoteDocument,NoteMarkdown,NoteMarkdownParser,NoteInlineScanner}.swift \
-    $N/Model/{NoteEditPlan,NoteEditAction,NoteFormatting,NoteMarkdownEditing,NoteRevealPolicy}.swift \
-    $N/UI/{NoteMarkdownTypography,NoteBlockDecoration,NoteMarkdownStyler,NoteMarkdownRenderer}.swift \
-    $N/UI/{NoteCheckboxGeometry,NoteBlockLayoutFragment,NoteLayoutFragmentProvider}.swift \
-    $N/UI/{NoteTextViewEditing,NoteTextView,NoteEditorView}.swift \
-    Tests/notes-editor-performance.swift -o /tmp/notes-editor-performance
-/tmp/notes-editor-performance
-```
+`./Scripts/run-tests.sh notes-editor-performance` runs the optimized benchmark independently. It
+prints median install, typing, caret and scroll times on a 100,000-character note with 20 warmed
+image references. Compare typing at the start, middle and end separately. The historical text-only
+budgets are 150 ms for install, 8 ms at the end and middle, and 4 ms at the start. Keep image-heavy
+measurements separate when comparing with the recorded text-only baseline below.
 
 `Signposts.interval` owns an explicit `defer` around the wrapped work on purpose. The obvious spelling
 leaks the interval when the work throws, because the `.end` emit is skipped on the throw path and the
@@ -680,111 +663,22 @@ caches, TCC grants and login item, so this cannot disturb an installed copy.
 
 ### Notes
 
-- With Notes **off**: all three commands are absent, their shortcuts no-op, and the Notes directory is
-  not created
-- Enabling in Settings projects Show Notes, Create Note, and Search Notes immediately; the pane's
-  visibility checkboxes and recorders are the only ones — Settings > Commands lists none of the three
-- Show Notes opens the last active note and focuses an already visible window without hiding it
-- Create Note makes one unique Untitled file, including as the first action in an empty channel
-- Command-P and the Browse button focus search, arrows move selection, Return opens, and Command-N
-  creates
-- Empty switcher search reads the complete recent list; title and body searches rank correctly and a
-  superseded query never publishes
-- An Untitled note titles itself from its first line as it is typed, in the title bar and — after the
-  autosave — in the browse list; naming it replaces that, and clearing the name brings it back
-- Inline rename updates the Markdown filename without changing source, and starts from that filename
-  even where the row shows a derived title; collisions receive a suffix
-- Delete confirms through Tinycast, moves the file to Trash, and selecting another note never loses an
-  unsaved edit
-- An existing `Floating Note.md` appears as an ordinary note without conversion
-- A note using every construct renders in Dark and Light: sized headings, emphasis, strikethrough,
-  inline code, coloured links, bullets, numbers, checkboxes with space between tasks, lists nested at
-  two and four spaces, quote bars, a code band with its language label, and a rule
-- The caret's line shows raw Markdown in the tertiary colour and re-renders when the caret leaves; a
-  multi-line selection reveals every selected line, and Select All shows the whole source
-- Dragging a selection across rendered lines does not jump under the pointer; the lines reveal on
-  mouse-up
-- Clicking another app renders the whole note; clicking back reveals the caret line again
-- Inside a code block both fences show and Markdown inside it stays literal
-- A table shows as its literal source in the code font, with no styling inside it; adding the `| --- |`
-  row under existing rows turns them all into the table at once
-- Bullets, numbers and checkboxes are a neutral gray, bullet, numbered and task items are evenly spaced,
-  and revealing a bullet or numbered line leaves its text where it was
-- A checkbox click toggles without moving the caret, autosaves, and Command-Z restores it; the file on
-  disk shows `[x]`
-- A link click opens the browser, a click at the label's edge places the caret, a `file:` link does
-  nothing, and a link on the caret's line is editable text
-- Return continues and leaves lists and quotes, Tab and Shift-Tab nest, ordered lists renumber, `[] `
-  becomes a task, and every formatting shortcut works and undoes in one step
-- Pasting a URL over selected text makes a link; pasting anything else is plain text
-- Copy from a rendered line pastes raw Markdown into another app; a snippet keyword expands inside a
-  rendered note and is styled at once
-- The derived title of an Untitled note shows no Markdown markers
-- A narrow window wraps list items under their text, not under the marker
-- A bullet, task or numbered item whose first word is wider than the window keeps a whole marker on
-  its first line of text, and its checkbox toggles where it is drawn
-- Typing new lines, wrapping text, and pasting grow the note vertically without changing its width,
-  and deleting shrinks it back to the 180pt floor; the top edge stays put until growth reaches the
-  screen's bottom, then the window moves up. It stops at 860pt or the screen's usable height and
-  scrolls. A dragged height holds until the next keystroke, which fits the window again. Switching
-  to a shorter note shrinks it. Repeat with rendering on and off, Find and the formatting bar open,
-  and on a secondary display
-- Typing, Return and Delete in a bulleted list, in its last item and in the middle, grow or shrink the
-  window by whole rows and never shrink it for a frame, scroll the first line away or flash the
-  scrollbar
-- With Render Markdown **off**, the note is fully literal (markers visible, links inert, task syntax
-  plain) and Return, Tab, Delete, and formatting-looking shortcuts keep native plain-text behavior;
-  flipping it back re-renders without dirtying the note or touching undo
-- Edit one note, switch to a shorter note, then Undo and Redo: the new note remains intact and the app
-  does not terminate
-- With rendering on and off, ⌘Z undoes and ⇧⌘Z redoes typing, deletion and paste while another app's
-  menu bar is visible; both update the footer and autosave the restored source. Editing after undo
-  discards redo; reopening a note after switching away starts with no history
-- Marked-text input, emoji, combining marks, Copy, Cut, Paste, Select All, Undo, and Redo preserve
-  exact source; ⌘F finds occurrences in the active note with rendering on and off, and Escape closes
-  the find bar before hiding Notes
-- An empty note shows `Start writing…`; ⌘F moves it below the find bar without overlap, and closing Find
-  restores its position. The footer count is right after typing, pasting and undoing
-- With Render Markdown and Show Formatting Bar on, the band under a note holds the character count on
-  the left and the round formatting button on the right; with either setting off, the old centred
-  count footer is back and nothing else moved
-- The bar starts collapsed, ⌥⌘T and the round button both expand and collapse it, the buttons slide out
-  from behind that button, and the state survives switching notes, hiding the window and a relaunch
-- Every bar button applies its formatting, undoes in one step with ⌘Z, and autosaves; clicking keeps the
-  caret where it was and the caret's line stays revealed
-- Buttons light for the selection: inside bold, on a list, quote, heading or code line; clicking a lit
-  button removes that formatting and the button goes dark
-- Hovering a button shows its name and shortcut above it, fully visible and not clipped by the capsule;
-  the heading button's tooltip does not show while its menu is open
-- The heading menu opens above the capsule, aligned to its left edge, shows the current level checked,
-  and applies a level on click; it closes on Escape, on a click anywhere in the note window (including
-  the heading button itself, which must not reopen it), on typing, on ⌘P, and when another app is clicked
-- At the smallest window size all eleven controls show and the count is hidden, the note's text keeps
-  its inset in both states, the heading menu still opens in full above the capsule, and widening the
-  window brings the count back
-- ⌥⌘C and ⇧⌘B toggle a code block and a quote; with Render Markdown off they do nothing special
-- Settings > Notes > Show Formatting Bar is disabled while Render Markdown is off, Settings search for
-  "formatting" lands on it, and a backup round trip restores it
-- With VoiceOver, the bar reads as "Formatting" with each button named, lit ones as selected, the round
-  button announcing Expanded or Collapsed, and the heading button its level; menu rows read their titles
-  and the current one as selected
-- Traffic lights sit top-left, the title is centred **on the window**, and the capsule is top-right, all
-  on one line; the yellow light is disabled and green zooms
-- Each capsule button shows a hover capsule and a native tooltip, and fires its action
-- Dragging the title bar moves the window and dragging an edge resizes it; both survive relaunch
-- Clicking another app leaves the panel visible; Escape, Command-W, and the red light hide it
-- Command-Q does nothing anywhere; with Settings in front, Command-W closes Settings
-- Hiding restores the previous external app or Tinycast window
-- Open Notes Folder opens Finder with the active Markdown file selected, or the folder with no note
-- Hide a saved checklist, reset its boxes in another editor, and reopen: the boxes match the file
-- Reopen an unchanged note: Undo still works; an external content change starts fresh history
-- Remove the active file while hidden: reopening selects a remaining note or shows the empty state
-- Deleting every note closes the browse list and leaves one clean empty state with no character count;
-  Command-N from there creates and selects one note
-- The browse list fades only at its bottom edge and rests opaque once it reaches the end
-- Quitting inside the debounce window saves the last edit
-- Over a light desktop, the corner matches the palette's, the shadow follows it, and no dark edge shows
-  around the glass controls
+- Toggle enablement and verify Show, Create and Search Notes, including an empty collection.
+- Compare split and collapsed frames in both appearances and at minimum size. Check traffic lights,
+  card selection, the editable title, status, toolbar and scrollable editor.
+- Use ⌘\ to resize with the right edge anchored. Type, switch notes, load images and toggle Raw.
+  Verify the frame holds and the window-level switch allows other apps in front.
+- Search a title and a body. Use arrows and Return, pin a note, filter pending tasks and click a tag.
+- Rename in the header. Open the outline, jump to a heading, then open native Find. Verify Escape,
+  ⌘W and closing the preview return focus to the expected surface.
+- Paste a screenshot, copy an image file in Finder, drag an image and use the picker. Inspect the
+  Markdown, the original file, preview dimensions and selection. Undo once, redo and toggle Raw.
+- Copy and reveal an image from its preview. Check missing files and editing the reference line.
+- With a dirty draft, edit the file externally. Try both recovery choices, including another external
+  edit before Keep Draft. Reopen clean and dirty files and verify the retained sources.
+- Verify Unicode, marked text, native copy/paste, snippets, checkboxes and formatting shortcuts.
+- Confirm Trash through Tinycast. Remove an image reference, undo, then explicitly clean unreferenced
+  images and confirm other notes' images remain. Test against a disposable Notes folder.
 
 ### Snippets
 

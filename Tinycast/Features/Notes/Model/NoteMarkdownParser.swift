@@ -269,26 +269,36 @@ enum NoteMarkdownParser {
 
         func block(range: Range<Int>) -> NoteMarkdown.Line {
             let lineRange = NSRange(range)
-            if units[start..<end].allSatisfy(Unit.isSpaceOrTab) {
-                return plain(.blank, range: lineRange, contentStart: start)
+            let indent = indentation
+            let first = indent.end
+            guard first < end else { return plain(.blank, range: lineRange, contentStart: start) }
+            if indent.columns <= 3, isRule(from: first) { return wholeLine(.rule, range: range) }
+            if units[first] == Unit.exclamation {
+                let literal = String(decoding: units[first..<end], as: UTF16.self)
+                    .trimmingCharacters(in: .whitespaces)
+                if let match = literal.wholeMatch(of: /!\[([^\]]*)\]\(([^()]+)\)/),
+                    match.2.hasPrefix("assets/"),
+                    !match.2.split(separator: "/").contains(where: { $0.hasPrefix(".") })
+                {
+                    return plain(
+                        .image(alt: String(match.1), destination: String(match.2)),
+                        range: lineRange, contentStart: start)
+                }
             }
-            if indentColumns <= 3, isRule {
-                return wholeLine(.rule, range: range)
-            }
-            let first = indentEnd
-            if indentColumns <= 3, let line = heading(range: lineRange, from: first) { return line }
-            if indentColumns <= 3, let line = quote(range: lineRange, from: first) { return line }
+            if indent.columns <= 3, let line = heading(range: lineRange, from: first) { return line }
+            if indent.columns <= 3, let line = quote(range: lineRange, from: first) { return line }
             if let line = listItem(range: lineRange, from: first) { return line }
             return plain(.paragraph, range: lineRange, contentStart: start)
         }
 
-        private var isRule: Bool {
-            let marks = units[start..<end].filter { !Unit.isSpaceOrTab($0) }
-            guard marks.count >= 3, let mark = marks.first else { return false }
-            guard mark == Unit.dash || mark == Unit.asterisk || mark == Unit.underscore else {
-                return false
+        private func isRule(from first: Int) -> Bool {
+            let mark = units[first]
+            guard mark == Unit.dash || mark == Unit.asterisk || mark == Unit.underscore else { return false }
+            var count = 0
+            for unit in units[first..<end] {
+                if unit == mark { count += 1 } else if !Unit.isSpaceOrTab(unit) { return false }
             }
-            return marks.allSatisfy { $0 == mark }
+            return count >= 3
         }
 
         private func heading(range: NSRange, from first: Int) -> NoteMarkdown.Line? {

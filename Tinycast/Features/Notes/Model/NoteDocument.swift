@@ -10,6 +10,13 @@ struct NoteSummary: Identifiable, Sendable, Equatable {
     /// Stands in for `title` while the note is still unnamed; nil once the user names it.
     let firstLine: String?
     let modifiedAt: Date
+    var preview: String?
+    var tags: [String] = []
+    var pendingTaskCount = 0
+    var totalTaskCount = 0
+    var imageCount = 0
+    var contentHash: Data?
+    var fileSize: Int?
 
     var displayTitle: String { firstLine ?? NoteTitle.displayName(title) }
 }

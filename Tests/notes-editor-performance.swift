@@ -8,24 +8,35 @@ import SwiftUI
 struct NotesEditorPerformance {
     private static let runs = 30
 
-    static func main() {
+    static func main() async throws {
         _ = NSApplication.shared
-        let source = largeNote(characters: 100_000)
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let assets = directory.appendingPathComponent("assets")
+        try FileManager.default.createDirectory(at: assets, withIntermediateDirectories: true)
+        let bitmap = NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: 1440, pixelsHigh: 800, bitsPerSample: 8,
+            samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0,
+            bitsPerPixel: 0)
+        guard let png = bitmap?.representation(using: .png, properties: [:]) else {
+            throw CocoaError(.fileWriteUnknown)
+        }
+        let paths = (0..<20).map { "assets/shot-\($0).png" }
+        for path in paths { try png.write(to: directory.appendingPathComponent(path)) }
+        let sections = largeNote(characters: 5000)
+        let source = paths.map { "![shot](\($0))\n" + sections + "\n" }.joined()
+
         let input = NoteEditorInput(id: NoteID(rawValue: "Large.md"), source: source, epoch: 0)
         let editor = makeEditor(input: input)
         let text = source as NSString
 
-        var epoch = 0
-        let install = median {
-            epoch += 1
-            editor.coordinator.update(NoteEditorInput(id: input.id, source: source, epoch: epoch))
+        editor.coordinator.renderer.configureImages(directory: directory, scale: 2)
+        let deadline = ContinuousClock.now + .seconds(10)
+        while paths.contains(where: { editor.coordinator.renderer.imageCache?.thumbnail(for: $0) == nil }) {
+            guard ContinuousClock.now < deadline else { throw CocoaError(.fileReadCorruptFile) }
+            try await Task.sleep(for: .milliseconds(10))
         }
-        let fitAfterInstall = median(prepare: {
-            epoch += 1
-            editor.coordinator.update(NoteEditorInput(id: input.id, source: source, epoch: epoch))
-        }) {
-            _ = editor.textView.textHeight(upTo: Theme.Size.noteWindowMaxHeight)
-        }
+        let install = median { editor.coordinator.renderer.reset() }
         let middleLine = text.lineRange(for: NSRange(location: text.length / 2, length: 0)).location
         let places = [("end", text.length), ("middle", middleLine + 2), ("start", 2)]
         let typing = places.map { name, location in
@@ -39,18 +50,12 @@ struct NotesEditorPerformance {
                 }
             )
         }
-        let fit = places.map { name, location in
-            (
-                name,
-                median(prepare: {
-                    editor.textView.setSelectedRange(NSRange(location: location, length: 0))
-                    editor.textView.insertText("x", replacementRange: editor.textView.selectedRange())
-                }) {
-                    _ = editor.textView.textHeight(upTo: Theme.Size.noteWindowMaxHeight)
-                } after: {
-                    editor.textView.deleteBackward(nil)
-                }
-            )
+        var imageIndex = 0
+        let scroll = median {
+            imageIndex = (imageIndex + 7) % paths.count
+            let range = text.range(of: paths[imageIndex])
+            editor.textView.scrollRangeToVisible(range)
+            editor.textView.enclosingScrollView?.displayIfNeeded()
         }
         var nearTop = true
         let caret = median {
@@ -64,8 +69,8 @@ struct NotesEditorPerformance {
             "runs": runs,
             "installAndRestyleMs": install,
             "typingMs": Dictionary(uniqueKeysWithValues: typing),
-            "windowFitAfterInstallMs": fitAfterInstall,
-            "windowFitAfterTypingMs": Dictionary(uniqueKeysWithValues: fit),
+            "cachedImages": paths.count,
+            "scrollToImageMs": scroll,
             "caretMoveMs": caret
         ]
         let data = try? JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys])

@@ -3,16 +3,17 @@ import Carbon.HIToolbox
 
 /// Editor and switcher differ only in style mask and chords, so one panel serves both.
 final class NotesPanel: NSPanel, AnimatedPanel {
+    var closesWithSpace = false
     var onEscape: (() -> Void)?
     /// ⌘⌫ is keyed separately: only its key code survives every keyboard layout.
     var onDeleteChord: (() -> Bool)?
     /// The ⌘-letter chords this window claims, by lowercased character.
     var commandChords: [String: () -> Void] = [:]
     /// The same, for ⌥⌘-letter chords.
+    var shiftCommandChords: [String: () -> Void] = [:]
     var optionCommandChords: [String: () -> Void] = [:]
     /// False for the heading menu, so the editor keeps its caret, reveal and chords beneath it.
     var acceptsKey = true
-    var onMouseDown: (() -> Void)?
     /// The system title bar runs its own double-click action, so the band claims it before AppKit.
     var claimsTitleBarDoubleClick: ((NSEvent) -> Bool)?
 
@@ -46,6 +47,9 @@ final class NotesPanel: NSPanel, AnimatedPanel {
         guard !event.isARepeat else { return false }
         let modifiers = event.modifierFlags.intersection([.command, .option, .control, .shift])
         let key = event.charactersIgnoringModifiers?.lowercased()
+        if modifiers == [.command, .shift], let key, let chord = shiftCommandChords[key] {
+            chord(); return true
+        }
         if modifiers == [.command, .option] {
             guard let key, let chord = optionCommandChords[key] else { return false }
             chord()
@@ -59,12 +63,12 @@ final class NotesPanel: NSPanel, AnimatedPanel {
     }
 
     override func sendEvent(_ event: NSEvent) {
-        if event.type == .leftMouseDown || event.type == .rightMouseDown { onMouseDown?() }
         if event.type == .leftMouseDown, event.clickCount == 2,
             claimsTitleBarDoubleClick?(event) == true
         {
             return
         }
+        if closesWithSpace, event.type == .keyDown, event.keyCode == UInt16(kVK_Space) { onEscape?(); return }
         // The search and rename fields own Escape while they are editing.
         guard event.type == .keyDown, Int(event.keyCode) == kVK_Escape, !event.isARepeat,
             (firstResponder as? NSTextView)?.isFieldEditor != true

@@ -25,7 +25,7 @@ struct NotesSettingsView: View {
                 Toggle(isOn: $settings.notesShowsFormattingBar) {
                     SettingsRowTitle(.notesOptions, "Show Formatting Bar")
                 }
-                .settingsEnabled(settings.notesEnabled && settings.notesRendersMarkdown)
+                .settingsEnabled(settings.notesEnabled)
                 LabeledContent {
                     if settings.notesFolder != nil {
                         Button(

@@ -39,7 +39,8 @@ enum NoteMarkdownStyler {
 
     /// Colours the fragment draws with are resolved now, under the caller's drawing appearance.
     static func style(
-        at index: Int, in markdown: NoteMarkdown, text: NSString, isRevealed: Bool
+        at index: Int, in markdown: NoteMarkdown, text: NSString, isRevealed: Bool,
+        imageCache: NoteImageCache? = nil
     ) -> LineStyle {
         let line = markdown.lines[index]
         var base = literal
@@ -49,6 +50,16 @@ enum NoteMarkdownStyler {
         switch line.kind {
         case .blank, .paragraph:
             break
+        case .image(_, let path):
+            if let imageCache {
+                base[.font] = isRevealed ? NoteMarkdownTypography.codeBlock : NoteMarkdownTypography.hidden
+                base[.foregroundColor] = isRevealed ? color(Theme.Colors.textTertiary) : NSColor.clear
+                base[.noteBlockDecoration] = NoteBlockDecoration(
+                    shape: .image(path: path, revealed: isRevealed),
+                    fill: color(Theme.Colors.cardFill), ink: color(Theme.Colors.textSecondary),
+                    bodyPointSize: NoteMarkdownTypography.body.pointSize,
+                    thumbnail: imageCache.thumbnail(for: path))
+            }
         case .heading(let level):
             base[.font] = NoteMarkdownTypography.heading(level)
             base[.paragraphStyle] = paragraph {
@@ -110,6 +121,16 @@ enum NoteMarkdownStyler {
                 fill: Theme.Colors.cardFill, ink: Theme.Colors.textTertiary)
         }
 
+        if imageCache != nil, !line.kind.isFenced, line.kind != .table, !isRevealed,
+            markdown.units[line.contentRange.location..<NSMaxRange(line.contentRange)].contains(
+                NoteMarkdownParser.Unit.hash)
+        {
+            for (tag, range) in NoteMetadataExtractor.tags(in: text.substring(with: line.contentRange)) {
+                let location = NSRange(
+                    location: line.contentRange.location + range.location, length: range.length)
+                runs.append((location, [.foregroundColor: NSColor.linkColor, .noteTag: tag]))
+            }
+        }
         let lineFont = base[.font] as? NSFont ?? NoteMarkdownTypography.body
         runs += inlineRuns(markdown.inlines(of: line), lineFont: lineFont, text: text, isRevealed: isRevealed)
         return LineStyle(base: base, runs: runs)

@@ -22,6 +22,16 @@ enum NoteMarkdownEditing {
         case .toggleQuote: return document.toggleQuote(in: selection)
         case .toggleTask(let lineIndex): return document.toggleTask(lineIndex, keeping: selection)
         case .typedSpace: return document.typedSpace(at: selection)
+        case .insertImage(let alt, let path):
+            let prefix = selection.location > 0 && !(CharacterSet.newlines as NSCharacterSet).characterIsMember(
+                text.character(at: selection.location - 1)) ? "\n" : ""
+            let replacement = "\(prefix)![\(alt)](\(path))\n"
+            return NoteEditPlan(range: selection, replacement: replacement,
+                selection: NSRange(location: selection.location + replacement.utf16.count, length: 0))
+        case .insertSnippet(let snippet, let offset):
+            guard (0...snippet.utf16.count).contains(offset) else { return nil }
+            return NoteEditPlan(range: selection, replacement: snippet,
+                selection: NSRange(location: selection.location + offset, length: 0))
         case .pasteURL(let string): return document.pasteURL(string, over: selection)
         }
     }

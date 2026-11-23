@@ -15,10 +15,6 @@ final class NotesCoordinator {
     private let appIndex: AppIndex
     private unowned let core: AppCore
     @ObservationIgnored private lazy var windowController = NotesWindowController(coordinator: self)
-    @ObservationIgnored private lazy var switcherController = NoteSwitcherWindowController(
-        coordinator: self)
-    @ObservationIgnored private lazy var headingMenuController = NoteHeadingMenuWindowController(
-        coordinator: self)
     @ObservationIgnored private var loadTask: Task<Void, Never>?
     @ObservationIgnored private var issueTask: Task<Void, Never>?
     @ObservationIgnored private var operationTask: Task<Void, Never>?
@@ -32,13 +28,23 @@ final class NotesCoordinator {
     private(set) var characterCount = 0
     private(set) var formatting = NoteFormatting.plain
     private(set) var isFormattingBarExpanded: Bool
-    private(set) var isHeadingMenuPresented = false
-    /// A press closes the menu before its button fires, so the button must not reopen it.
-    @ObservationIgnored private var headingMenuWasOpenAtPress = false
-    /// The heading button in the panel's flipped content space, reported by the bar as it lays out.
-    @ObservationIgnored var headingButtonFrame: CGRect = .zero
     private var switcherRename = NoteSwitcherRenameState()
     private var presentationGeneration = 0
+    private let defaults: UserDefaults
+    private(set) var isSidebarVisible: Bool
+    private(set) var isAlwaysOnTop: Bool
+    private(set) var statsMode: Int
+    var sidebarFilter = NoteSidebarFilter.all
+    enum Menu { case outline, actions }
+    var menu: Menu?
+    private var imports: [UUID: Task<Void, Never>] = [:]
+    var notesDirectory: URL { store.notesDirectory }
+    var pinnedIDs: Set<NoteID> { store.pinnedIDs }
+    var availableTags: [String] { store.availableTags }
+    var noteCount: Int { store.summaries.count }
+    var saveState: NotesStore.SaveState { store.saveState }
+    var activeSummary: NoteSummary? { store.summaries.first { $0.id == store.activeID } }
+    var headings: [NoteOutlineHeading] { NoteMetadataExtractor(source: store.source).headings }
 
     @ObservationIgnored private let saveFormattingBarExpanded: @Sendable (Bool) -> Void
 
@@ -47,6 +53,7 @@ final class NotesCoordinator {
         settings: AppSettings,
         appIndex: AppIndex,
         core: AppCore,
+        defaults: UserDefaults,
         isFormattingBarExpanded: Bool = false,
         saveFormattingBarExpanded: @escaping @Sendable (Bool) -> Void = { _ in }
     ) {
@@ -54,6 +61,10 @@ final class NotesCoordinator {
         self.settings = settings
         self.appIndex = appIndex
         self.core = core
+        self.defaults = defaults
+        isSidebarVisible = defaults.object(forKey: "notesSidebarVisible") as? Bool ?? true
+        isAlwaysOnTop = defaults.object(forKey: "notesAlwaysOnTop") as? Bool ?? true
+        statsMode = defaults.integer(forKey: "notesStatsMode") % 3
         self.isFormattingBarExpanded = isFormattingBarExpanded
         self.saveFormattingBarExpanded = saveFormattingBarExpanded
         store.onIssue = { [weak self] issue in self?.present(issue) }
@@ -80,13 +91,14 @@ final class NotesCoordinator {
 
     var activeTitle: String { store.activeTitle }
     var rendersMarkdown: Bool { settings.notesRendersMarkdown }
-    var showsFormattingBar: Bool { settings.notesRendersMarkdown && settings.notesShowsFormattingBar }
+    var showsFormattingBar: Bool { settings.notesShowsFormattingBar }
     var isSearching: Bool { store.isSearching }
     var visibleNotes: [NoteSummary] {
-        store.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let matches =
+            store.searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? store.summaries : store.searchResults.map(\.summary)
+        return sidebarFilter.apply(to: matches, pins: pinnedIDs)
     }
-    var switcherEditingID: NoteID? { switcherRename.id }
     var isRenamingSwitcherNote: Bool { switcherRename.isActive }
     var switcherTitleDraftBinding: Binding<String> {
         Binding(
@@ -104,8 +116,8 @@ final class NotesCoordinator {
         loadTask?.cancel()
         loadTask = nil
         operationTask?.cancel()
-        closeHeadingMenu()
         closeSwitcher(focusEditor: false)
+        dismissWorkspace()
         windowController.hide(restoreFocus: false)
         Task { [weak self] in
             guard let self else { return }
@@ -129,16 +141,18 @@ final class NotesCoordinator {
     }
 
     func createNote() {
+        if !isSidebarVisible { toggleSidebar() }
+        sidebarFilter = .all
         request(.create)
     }
 
     func searchNotes() {
-        request(.search)
+        if windowController.isVisible { openSwitcher() } else { request(.search) }
     }
 
     func openSwitcher() {
         guard settings.notesEnabled, store.isLoaded else { return }
-        closeHeadingMenu()
+        menu = nil
         if isSwitcherPresented {
             switcherFocusRevision &+= 1
             return
@@ -146,7 +160,7 @@ final class NotesCoordinator {
         isSwitcherPresented = true
         switcherSelection = store.activeID ?? store.summaries.first?.id
         switcherFocusRevision &+= 1
-        windowController.presentSwitcher(switcherController)
+        if !isSidebarVisible { toggleSidebar() }
     }
 
     func closeSwitcher(focusEditor: Bool = true) {
@@ -155,22 +169,24 @@ final class NotesCoordinator {
         isSwitcherPresented = false
         switcherSelection = nil
         store.cancelSearch()
-        switcherController.hide()
+
         if focusEditor { windowController.focusEditor() }
     }
 
     func hide() {
-        closeHeadingMenu()
         presentationGeneration &+= 1
         pendingPresentation = nil
         closeSwitcher(focusEditor: false)
+        dismissWorkspace()
         windowController.hide(restoreFocus: true)
         Task { await store.flush() }
     }
 
     func handleEscape() {
-        if isHeadingMenuPresented {
-            closeHeadingMenu()
+        if menu != nil {
+            menu = nil
+        } else if switcherRename.isActive {
+            cancelSwitcherRename()
         } else if isSwitcherPresented {
             closeSwitcher()
         } else {
@@ -221,13 +237,12 @@ final class NotesCoordinator {
     func commitSwitcherRename() {
         guard let committed = switcherRename.commit() else { return }
         rename(committed.id, to: committed.title)
-        switcherFocusRevision &+= 1
     }
 
     func cancelSwitcherRename() {
         guard switcherRename.isActive else { return }
         switcherRename.cancel()
-        switcherFocusRevision &+= 1
+        windowController.focusEditor()
     }
 
     func select(_ id: NoteID) {
@@ -241,6 +256,7 @@ final class NotesCoordinator {
                 return
             }
             guard permitsCompletion(generation) else { return }
+            menu = nil
             closeSwitcher()
             windowController.show(focusEditor: true)
         }
@@ -267,8 +283,8 @@ final class NotesCoordinator {
     }
 
     func handleDeleteShortcut() -> Bool {
-        guard isSwitcherPresented, !switcherRename.isActive else { return false }
-        trashSwitcherSelection()
+        guard !switcherRename.isActive, let id = store.activeID else { return false }
+        trash(id)
         return true
     }
 
@@ -326,7 +342,6 @@ final class NotesCoordinator {
     }
 
     func updateSource(_ source: String) {
-        closeHeadingMenu()
         store.updateSource(source)
     }
 
@@ -348,10 +363,8 @@ final class NotesCoordinator {
         windowController.format(action)
     }
 
-    /// Collapsing takes the heading button with it, so its menu cannot outlive it.
     func toggleFormattingBar() {
         guard showsFormattingBar else { return }
-        closeHeadingMenu()
         // Explicit, because the chord changes this from outside any view's transaction.
         withAnimation(Self.barMotion) { isFormattingBarExpanded.toggle() }
         saveFormattingBarExpanded(isFormattingBarExpanded)
@@ -362,39 +375,21 @@ final class NotesCoordinator {
             ? nil : Theme.MenuMotion.chevronAnimation
     }
 
-    func toggleHeadingMenu() {
-        guard !headingMenuWasOpenAtPress else {
-            headingMenuWasOpenAtPress = false
-            return
-        }
-        guard !isHeadingMenuPresented else { return closeHeadingMenu() }
-        isHeadingMenuPresented = true
-        windowController.presentHeadingMenu(headingMenuController)
-    }
-
-    func chooseHeading(_ level: Int) {
-        closeHeadingMenu()
-        format(.setHeading(level: level))
-    }
-
-    func closeHeadingMenu() {
-        guard isHeadingMenuPresented else { return }
-        isHeadingMenuPresented = false
-        headingMenuController.hide()
-    }
-
-    func noteWindowMouseDown() {
-        headingMenuWasOpenAtPress = isHeadingMenuPresented
-        closeHeadingMenu()
-    }
-
     func editorReady(_ textView: NoteTextView) {
+        textView.onImageImport = { [weak self] in self?.importImage($0) }
+        textView.onImagePreview = { [weak self] path in
+            guard let self,
+                let url = try? NotesAssetStore(notesDirectory: notesDirectory).validatedAssetURL(path)
+            else { return }
+            windowController.preview(url)
+        }
+        textView.onTag = { [weak self] in self?.filter(tag: $0) }
+        textView.registerForDraggedTypes([.fileURL, .png, .tiff])
         windowController.editorReady(textView)
     }
 
     private func request(_ presentation: Presentation) {
         guard settings.notesEnabled else { return }
-        closeHeadingMenu()
         pendingPresentation = presentation
         guard loadTask == nil else { return }
         let generation = enablementGeneration
@@ -421,6 +416,7 @@ final class NotesCoordinator {
     private func present(_ presentation: Presentation) async {
         switch presentation {
         case .editor:
+            menu = nil
             closeSwitcher()
             windowController.show(focusEditor: true)
         case .create:
@@ -428,10 +424,10 @@ final class NotesCoordinator {
             guard await store.create(), settings.notesEnabled, !Task.isCancelled,
                 generation == presentationGeneration
             else { return }
+            menu = nil
             closeSwitcher()
             windowController.show(focusEditor: true)
         case .search:
-            // The switcher hangs off the note window, so that window has to exist first.
             windowController.show(focusEditor: false)
             openSwitcher()
         }
@@ -490,5 +486,156 @@ final class NotesCoordinator {
                 present(pendingIssue)
             }
         }
+    }
+}
+
+extension NotesCoordinator {
+    func toggleMenu(_ requested: Menu) { menu = menu == requested ? nil : requested }
+
+    func toggleSidebar() {
+        isSidebarVisible.toggle()
+        defaults.set(isSidebarVisible, forKey: "notesSidebarVisible")
+        if !isSidebarVisible { closeSwitcher() }
+        windowController.resizeSidebar()
+    }
+
+    func toggleFloating() {
+        isAlwaysOnTop.toggle()
+        defaults.set(isAlwaysOnTop, forKey: "notesAlwaysOnTop")
+        windowController.updateLevel()
+    }
+
+    func togglePin(_ id: NoteID) { store.togglePin(id) }
+
+    func cycleStats() {
+        statsMode = (statsMode + 1) % 3
+        defaults.set(statsMode, forKey: "notesStatsMode")
+    }
+
+    var statsLabel: String {
+        switch statsMode {
+        case 1:
+            var words = 0
+            store.source.enumerateSubstrings(
+                in: store.source.startIndex..., options: [.byWords, .substringNotRequired]
+            ) { _, _, _, _ in
+                words += 1
+            }
+            return String(localized: "\(words) words · \(max(1, (words + 199) / 200)) min")
+        case 2:
+            return String(
+                localized:
+                    "\(activeSummary?.totalTaskCount ?? 0) tasks · \(activeSummary?.imageCount ?? 0) images")
+        default: return characterCountLabel
+        }
+    }
+
+    func filter(tag: String) {
+        if !isSidebarVisible { toggleSidebar() }
+        sidebarFilter = sidebarFilter == .tag(tag) ? .all : .tag(tag)
+    }
+
+    func jump(to heading: NoteOutlineHeading) {
+        menu = nil
+        windowController.jump(to: heading.range)
+    }
+
+    func copyNote(plain: Bool) {
+        menu = nil
+        var text = store.source
+        if plain {
+            let markdown = NoteMarkdownParser.parse(text)
+            let source = text as NSString
+            text = markdown.lines.map { line in
+                if case .image(let alt, _) = line.kind { return alt }
+                if case .code = line.kind { return source.substring(with: line.contentRange) }
+                return NoteTitle.visibleText(of: line, in: markdown, text: source)
+            }.joined(separator: "\n")
+        }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+        core.showMessage(String(localized: "Copied"))
+    }
+
+    func toggleRaw() {
+        settings.notesRendersMarkdown.toggle()
+    }
+
+    func pickImage() {
+        menu = nil
+        let id = store.activeID
+        let epoch = store.editorEpoch
+        windowController.pickImage { [weak self] url in
+            guard let self, settings.notesEnabled, store.activeID == id, store.editorEpoch == epoch else {
+                return
+            }
+            importImage(.file(url))
+        }
+    }
+
+    private func importImage(_ input: NotesAssetStore.Input) {
+        guard let id = store.activeID, rendersMarkdown else { return }
+        let epoch = store.editorEpoch
+        let directory = notesDirectory
+        let token = UUID()
+        imports[token] = Task { [weak self] in
+            guard let self else { return }
+            defer { imports.removeValue(forKey: token) }
+            do {
+                let path = try await NotesAssetStore(notesDirectory: directory).importImage(input)
+                guard !Task.isCancelled, settings.notesEnabled, windowController.isVisible,
+                    directory == notesDirectory, id == store.activeID, epoch == store.editorEpoch,
+                    rendersMarkdown
+                else { return }
+                let alt = ((path as NSString).lastPathComponent as NSString).deletingPathExtension
+                format(.insertImage(alt: alt, path: path))
+            } catch {
+                if !Task.isCancelled { core.showMessage(error.localizedDescription, tone: .danger) }
+            }
+        }
+    }
+
+    func cleanImages() {
+        menu = nil
+        let directory = notesDirectory
+        runOperation { [weak self] generation in
+            guard let self,
+                await core.confirm(
+                    title: String(localized: "Clean unused images?"),
+                    message: String(localized: "Unreferenced imported images will move to the Trash."),
+                    symbol: "trash", confirmTitle: String(localized: "Move to Trash")),
+                directory == notesDirectory, permitsCompletion(generation), imports.isEmpty,
+                await store.flush()
+            else { return }
+            let assets = NotesAssetStore(notesDirectory: directory)
+            do {
+                let files = try await Task.detached(priority: .utility) { try assets.orphanedAssets() }.value
+                guard !Task.isCancelled, directory == notesDirectory, permitsCompletion(generation),
+                    imports.isEmpty, !store.isDirty
+                else { return }
+                for file in files where !store.source.contains(file.lastPathComponent) {
+                    let url = try assets.validatedAssetURL("assets/" + file.lastPathComponent)
+                    try FileManager.default.trashItem(at: url, resultingItemURL: nil)
+                }
+                core.showMessage(String(localized: "\(files.count) unused images removed"))
+            } catch { core.showMessage(error.localizedDescription, tone: .danger) }
+        }
+    }
+
+    func resolveConflict(keepDraft: Bool) {
+        runOperation { [weak self] _ in
+            if keepDraft {
+                await self?.store.resolveConflictKeepDraft()
+            } else {
+                await self?.store.resolveConflictLoadDisk()
+            }
+        }
+    }
+
+    private func dismissWorkspace() {
+        menu = nil
+        switcherRename.cancel()
+        for task in imports.values { task.cancel() }
+        imports.removeAll()
     }
 }

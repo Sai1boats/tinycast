@@ -165,7 +165,7 @@ round every row to 18 for no reason.
 If a pair ever does need closing, **move the gap, not the curve** — but only once you have checked
 what else is anchored to that gap. A radius is shared by surfaces across several features, a
 placement constant is not: `Radius.menuPanel` alone dresses the ⌘K menu, the extensions actions
-panel, the shortcut-recorder callout and the Notes switcher, and `menuRow` is deliberately equal to
+panel, the shortcut-recorder callout and the Notes sidebar, and `menuRow` is deliberately equal to
 `row` so a row pill is one shape everywhere.
 
 ### Size (`Theme.Size`)
@@ -183,9 +183,8 @@ panel, the shortcut-recorder callout and the Notes switcher, and `menuRow` is de
 
 The opt-in Dictation capsule adds `dictationPanel 144×44`, with 2pt waveform bars separated by 3pt.
 
-Notes adds `noteWindow 440×180` (opening size on a first run, and the floor), `noteWindowMaxHeight 860`,
-`noteTitlebar 44`, `noteTitleInset 120`, `noteEditorInset 16`, `noteSearchHeight 34`,
-`noteFooterHeight 28`, `noteGlyph 16`, `noteEmptyGlyph 28`, and `noteHeadingMenu 220×159`.
+Notes opens at 960 × 660 pt, or 680 × 660 pt with its sidebar hidden. The sidebar is 260 pt wide,
+the header 52 pt high, the search field 32 pt high and the editor inset 24 pt horizontally.
 
 AI Chat adds `aiChatWindow 960×660` (opening size), `aiChatWindowMinimum 680×440`, a sidebar of
 `aiChatSidebarMinimum 240`–`aiChatSidebarMaximum 340`, `aiChatDetailMinimum 440`,
@@ -337,25 +336,11 @@ applies `panelScrim` → `GlassEffectView()` → one continuous **`panel`** corn
 Notes and the palette round identically. The clip is larger than the theme frame's own corner, so it
 is what shows; `invalidateShadow()` on every show recuts the shadow to match.
 
-The title bar is a 44-point band, and both halves of it are deliberate. `titleVisibility` is
-`.hidden` and `NotesView` draws the title itself, centred on the **window**: a titlebar accessory
-drops `NSThemeFrame` off its centred-title layout, so the native title would sit beside the traffic
-lights. The drawn title is not hit-testable, so clicks fall through to the real title bar and drag
-the window. The three actions cannot do that, so they live in an `NSTitlebarAccessoryViewController`
-at `.trailing` — `NoteTitlebarActions`, the launcher's footer capsule (`BarButton` in a
-`frosted(in: Capsule())`) with glyphs in place of pills. Its 44-point height is what sizes the band.
-
-`NotesWindowController` fits the height to the editor on every edit and AppKit autosaves the frame
-under `"Notes Window"`; only a title-bar double-click computes a top-right target. The window shows exactly
-one surface at a time — editor, switcher, or the "No Notes" empty state — and the character count is
-part of the editor surface, so it never appears without a note.
-
-The header keeps a fixed slot for status so Saving, Saved, failure, and conflict symbols cannot move
-the controls. Failure and conflict symbols can be clicked to reopen their recovery report after a
-dismissal. A title click opens the in-window note switcher; dragging the title, note icon, or otherwise
-empty header moves the panel after a three-point threshold. Create, Reveal, Hide, and actionable status
-remain click-only controls. Escape closes the switcher before hiding, while Command-W and the hide
-control order the panel out. Show Notes only shows or focuses; focus loss leaves the panel visible.
+The 52 pt header places native traffic lights and Create above the sidebar. The editor header holds
+the sidebar toggle, editable filename, save status, outline, window pin and actions. The sidebar
+shows search, filters and note cards with previews, modification times and task/image counts.
+The minimum split and compact sizes are 760 × 520 and 480 × 440 pt. Collapsing holds the right
+edge. AppKit saves the frame under “Notes Split Window”. Typing only changes the scrollable document.
 
 The editor is one native TextKit 2 surface. Its string is the canonical Markdown source, and Render
 Markdown styles it in place with no new tokens. Notes type sits one system text style above the rest
@@ -377,33 +362,14 @@ space above, the rest `md`, and `xs` below; every list item gets `md` below. A t
 source in the code-block font, and a wrapped row hangs `lg` under its first line. AppKit owns editing,
 undo, selection, Find, and marked text.
 
-Under the editor, the formatting bar takes a `bottomBarHeight` band while Render Markdown and Show
-Formatting Bar are on, in place of the 28-point count footer. It is one row, not a capsule hugging the
-window: the count is plain text at the leading edge and the buttons sit in glass at the trailing edge,
-the same split as the palette's own bottom bar. The capsule is the title bar's recipe (`BarButton`s in
-`frosted(in: Capsule())`), inset `md` from the trailing edge as the title capsule is, with `xxs`
-between buttons and `sm` between groups. Each button is a compact 28-point square
-around a `noteGlyph` frame, so the capsule is 36 points wide collapsed and 397 expanded, and the count
-gives way from 524 points down. Collapsing and expanding grows the buttons out of the round button on
-`MenuMotion.chevronAnimation`, wrapped in an explicit `withAnimation` in the coordinator because the
-chord changes that state outside any view's transaction, and skips the animation under Reduce Motion. The band takes only the width it is offered, so the bar can never widen the note; past that,
-only the capsule's leading end clips. Lit buttons
-use `BarButton.isSelected`; hovering shows a `Tooltip` with the name and shortcut, because an AppKit
-tooltip does not appear while the app is inactive behind this non-activating panel. The glass is a
-`background`, never a wrapper, and nothing clips the row, because either one swallows that tooltip. The
-round button aligns its tooltip trailing and the heading button leading, so neither runs past the
-window edge. The heading menu is a borderless child window like the switcher, `noteHeadingMenu` in
-size, hung off the heading button's own reported frame and `xs` above it, drawn with
-`PopoverMenuRow`'s metrics on `menuPanel` glass.
+The footer places clickable statistics on the left and a glass formatting capsule on the right.
+The capsule includes Rendered/Raw, inline and block formatting, image import, rule and timestamp.
+The narrowest supported widths allow horizontal scrolling. The outline and actions menus open
+inside the editor pane.
 
-The switcher is its own glass panel over the editor, sized to its list up to a 240-point ceiling and
-never resizing the note window. Its plain search field and
-keyboard-navigable rows use the shared selection/hover ramp; rename and Trash remain row actions rather
-than adding another toolbar or window.
-
-The switcher exposes activation, Rename, and Move to Trash as VoiceOver actions with the actual note
-title. Its hover buttons are hidden from accessibility so those actions are announced once. See
-[features/notes.md](features/notes.md).
+Image cards fit the original aspect ratio in at most 560 × 260 pt, with a 26 pt caption for the
+relative path and source dimensions. A card keeps its preview when the caret reveals its Markdown.
+See [Notes](features/notes.md) for import, keyboard and conflict recovery behavior.
 
 ---
 
@@ -451,7 +417,7 @@ the `ScrollView`, **before `.thinScrollbar()`** (so the scrollbar overlay stays 
 
 **Palette only.** Every one of its call sites is a palette screen, and the bands above are measured
 against the palette's bars. A Settings list underlaps nothing, so it uses `.overflowFade()` instead —
-and so does the Notes switcher, whose search row is a sibling in a `VStack`, not a floating bar.
+and so does the Notes sidebar, whose search row is a sibling in a `VStack`, not a floating bar.
 
 ---
 
@@ -459,7 +425,7 @@ and so does the Notes switcher, whose search row is a sibling in a `VStack`, not
 
 Source: `DesignSystem/Scrolling/OverflowFade.swift`.
 
-The counterpart for any list with no bars over it — the Settings lists and the Notes switcher — and
+The counterpart for any list with no bars over it — the Settings lists and the Notes sidebar — and
 deliberately a separate type: sharing one modifier would tie such a list to geometry that only means
 something under a bar. Attach with `.overflowFade()` on the `ScrollView`, before `.thinScrollbar()`,
 or pass `includingTop: true` for a bounded popup whose title and rows scroll together.

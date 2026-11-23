@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 
 struct NoteEditorView: NSViewRepresentable {
+    var notesDirectory: URL?
     let input: NoteEditorInput
     let rendersMarkdown: Bool
     let onSourceChange: (String) -> Void
@@ -29,6 +30,7 @@ struct NoteEditorView: NSViewRepresentable {
         textView.editorUndoManager = context.coordinator.editorUndoManager
         scrollView.documentView = textView
         context.coordinator.textView = textView
+        context.coordinator.renderer.configureImages(directory: notesDirectory, scale: NSScreen.main?.backingScaleFactor ?? 2)
         context.coordinator.install(input, resetUndo: false)
         onReady(textView)
         return scrollView
@@ -36,6 +38,7 @@ struct NoteEditorView: NSViewRepresentable {
 
     func updateNSView(_ scrollView: NSScrollView, context: Context) {
         context.coordinator.parent = self
+        context.coordinator.renderer.configureImages(directory: notesDirectory, scale: scrollView.window?.backingScaleFactor ?? 2)
         context.coordinator.update(input)
         context.coordinator.setRendersMarkdown(rendersMarkdown)
     }
@@ -86,6 +89,7 @@ struct NoteEditorView: NSViewRepresentable {
         func install(_ input: NoteEditorInput, resetUndo: Bool) {
             guard let textView else { return }
             let wasEmpty = textView.textStorage?.length == 0
+            renderer.imageCache?.reset()
             self.input = input
             let selectionLocation = min(
                 textView.selectedRange().location,

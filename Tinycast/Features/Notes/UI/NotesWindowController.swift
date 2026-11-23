@@ -3,13 +3,12 @@ import SwiftUI
 
 @MainActor
 final class NotesWindowController: NSObject, NSWindowDelegate {
-    private static let frameAutosaveName = "Notes Window"
+    private static let frameAutosaveName = "Notes Split Window"
 
     private unowned let coordinator: NotesCoordinator
     private var panel: NotesPanel?
     private weak var editor: NoteTextView?
-    private var editorObservers: [NotificationToken] = []
-    private var fitTask: Task<Void, Never>?
+    private let imagePreview = NoteImagePreviewController()
     private var previousApp: NSRunningApplication?
     private weak var previousOwnWindow: NSWindow?
 
@@ -21,11 +20,13 @@ final class NotesWindowController: NSObject, NSWindowDelegate {
 
     func show(focusEditor: Bool) {
         let panel = ensurePanel()
-        if !panel.isVisible { captureFocusTarget() }
+        if !panel.isVisible {
+            captureFocusTarget()
+            (editor?.editing as? NoteEditorView.Coordinator)?.renderer.refreshImages()
+        }
         panel.contentView?.layoutSubtreeIfNeeded()
         panel.makeKeyAndOrderFront(nil)
         panel.orderFrontRegardless()
-        scheduleFit()
         seatTrafficLights(in: panel)
         // The corner is clipped in SwiftUI, so the shadow has to be recut from what was drawn.
         panel.invalidateShadow()
@@ -34,10 +35,11 @@ final class NotesWindowController: NSObject, NSWindowDelegate {
 
     func hide(restoreFocus: Bool) {
         let restore = restoreFocus && !userMovedOn
+        imagePreview.hide()
         panel?.orderOut(nil)
         guard restore else { return }
         if let previousOwnWindow, previousOwnWindow.isVisible {
-            NSApp.activate(ignoringOtherApps: true)
+            NSApp.activate()
             previousOwnWindow.makeKeyAndOrderFront(nil)
         } else {
             previousApp?.activate()
@@ -46,8 +48,6 @@ final class NotesWindowController: NSObject, NSWindowDelegate {
 
     func editorReady(_ textView: NoteTextView) {
         editor = textView
-        observeLayout(of: textView)
-        scheduleFit()
         guard let panel, panel.isVisible else { return }
         focusEditor(in: panel)
     }
@@ -75,15 +75,47 @@ final class NotesWindowController: NSObject, NSWindowDelegate {
         editor.format(action)
     }
 
-    func presentHeadingMenu(_ menu: NoteHeadingMenuWindowController) {
-        guard let panel, panel.isVisible else { return }
-        menu.show(above: panel)
+    func preview(_ url: URL) {
+        guard let panel else { return }
+        imagePreview.show(url, in: panel)
     }
 
-    /// Only this controller knows the host window, so handing it over stays its job.
-    func presentSwitcher(_ switcher: NoteSwitcherWindowController) {
-        guard let panel, panel.isVisible else { return }
-        switcher.show(under: panel)
+    func jump(to range: NSRange) {
+        focusEditor()
+        editor?.jump(to: range)
+    }
+
+    func pickImage(_ receive: @escaping (URL) -> Void) {
+        guard let panel else { return }
+        let picker = NSOpenPanel()
+        picker.allowedContentTypes = [.image]
+        picker.beginSheetModal(for: panel) { [weak self] result in
+            guard let self, panel.isVisible else { return }
+            focusEditor()
+            if result == .OK, let url = picker.url { receive(url) }
+        }
+    }
+
+    private var minimum: CGSize {
+        coordinator.isSidebarVisible ? Theme.Size.noteSplitMinimum : Theme.Size.noteSingleMinimum
+    }
+
+    func updateLevel() { panel?.level = coordinator.isAlwaysOnTop ? .floating : .normal }
+
+    func resizeSidebar() {
+        guard let panel, let visible = panel.screen?.visibleFrame ?? NSScreen.main?.visibleFrame else {
+            return
+        }
+        let delta = Theme.Size.noteSplitWindow.width - Theme.Size.noteWindow.width
+        let width = panel.frame.width + (coordinator.isSidebarVisible ? delta : -delta)
+        let frame = NoteWindowPlacement.resizing(panel.frame, width: width, minimum: minimum, in: visible)
+        panel.contentMinSize = minimum
+        let duration = Motion.duration(Theme.Duration.enter)
+        if duration == 0 { panel.setFrame(frame, display: true); return }
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = duration
+            panel.animator().setFrame(frame, display: true)
+        }
     }
 
     // MARK: - NSWindowDelegate
@@ -93,15 +125,11 @@ final class NotesWindowController: NSObject, NSWindowDelegate {
         coordinator.hide()
     }
 
-    func windowDidResignKey(_ notification: Notification) {
-        coordinator.closeHeadingMenu()
-    }
-
     /// `contentMinSize` alone leaks frames below it; AppKit takes whatever this returns verbatim.
     func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
         NSSize(
-            width: max(frameSize.width, Theme.Size.noteWindow.width),
-            height: max(frameSize.height, Theme.Size.noteWindow.height))
+            width: max(frameSize.width, minimum.width),
+            height: max(frameSize.height, minimum.height))
     }
 
     func windowDidResize(_ notification: Notification) {
@@ -116,57 +144,6 @@ final class NotesWindowController: NSObject, NSWindowDelegate {
 
     // MARK: - Private
 
-    /// Typing fits before the frame draws, or the caret scrolls first and the text bounces back.
-    private func observeLayout(of textView: NoteTextView) {
-        guard let storage = textView.textStorage, let clipView = textView.enclosingScrollView?.contentView
-        else { return }
-        editorObservers = [
-            observe(NSText.didChangeNotification, from: textView) { $0.fitToEditor() },
-            observe(NSTextStorage.didProcessEditingNotification, from: storage) { $0.scheduleFit() },
-            observe(NSView.frameDidChangeNotification, from: clipView) { $0.scheduleFit() }
-        ]
-    }
-
-    private func observe(
-        _ name: Notification.Name, from object: AnyObject,
-        perform: @escaping @MainActor (NotesWindowController) -> Void
-    ) -> NotificationToken {
-        let center = NotificationCenter.default
-        return NotificationToken(
-            center.addObserver(forName: name, object: object, queue: .main) { [weak self] _ in
-                MainActor.assumeIsolated {
-                    guard let self else { return }
-                    perform(self)
-                }
-            },
-            center: center)
-    }
-
-    /// Undo, note switches and the bars change layout mid-edit, so they fit once the edit is done.
-    private func scheduleFit() {
-        guard fitTask == nil else { return }
-        fitTask = Task { [weak self] in
-            guard let self else { return }
-            fitTask = nil
-            fitToEditor()
-        }
-    }
-
-    private func fitToEditor() {
-        guard let panel, panel.isVisible, !panel.inLiveResize,
-            let editor, let clipView = editor.enclosingScrollView?.contentView,
-            let visibleFrame = (panel.screen ?? NSScreen.main)?.visibleFrame
-        else { return }
-        let textHeight = editor.textHeight(upTo: Theme.Size.noteWindowMaxHeight)
-        let frame = NoteWindowPlacement.fitting(
-            panel.frame,
-            toHeight: panel.frame.height - clipView.bounds.height + textHeight,
-            within: Theme.Size.noteWindow.height...Theme.Size.noteWindowMaxHeight,
-            in: visibleFrame)
-        guard frame != panel.frame else { return }
-        panel.setFrame(frame, display: true)
-    }
-
     private func ensurePanel() -> NotesPanel {
         if let panel { return panel }
         let root = NotesView().environment(coordinator).motionScope()
@@ -174,7 +151,7 @@ final class NotesWindowController: NSObject, NSWindowDelegate {
         hosting.sizingOptions = []
         let panel = NotesPanel(
             content: hosting,
-            size: Theme.Size.noteWindow,
+            size: coordinator.isSidebarVisible ? Theme.Size.noteSplitWindow : Theme.Size.noteWindow,
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             acceptsMain: true)
         // A title-bar accessory drops AppKit off its centred-title layout, so `NotesView` draws it.
@@ -182,34 +159,46 @@ final class NotesWindowController: NSObject, NSWindowDelegate {
         panel.titlebarAppearsTransparent = true
         // `.automatic` draws a hairline the moment the editor scrolls under the bar.
         panel.titlebarSeparatorStyle = .none
-        panel.contentMinSize = Theme.Size.noteWindow
+        panel.contentMinSize = minimum
+        panel.level = coordinator.isAlwaysOnTop ? .floating : .normal
         panel.delegate = self
         panel.onEscape = { [weak self, weak coordinator] in
-            if self?.editor?.enclosingScrollView?.isFindBarVisible == true {
+            if coordinator?.menu != nil || coordinator?.isRenamingSwitcherNote == true {
+                coordinator?.handleEscape()
+            } else if self?.editor?.enclosingScrollView?.isFindBarVisible == true {
                 self?.editor?.find(.hideFindInterface)
             } else {
                 coordinator?.handleEscape()
             }
         }
-        panel.onMouseDown = { [weak coordinator] in coordinator?.noteWindowMouseDown() }
         panel.onDeleteChord = { [weak coordinator] in coordinator?.handleDeleteShortcut() ?? false }
         panel.commandChords = [
             "n": { [weak coordinator] in coordinator?.createNote() },
             "p": { [weak coordinator] in coordinator?.searchNotes() },
             "o": { [weak coordinator] in coordinator?.openNotesFolder() },
             "f": { [weak self] in self?.editor?.find(.showFindInterface) },
-            "w": { [weak panel] in panel?.performClose(nil) }
+            "\\": { [weak coordinator] in coordinator?.toggleSidebar() },
+            "w": { [weak panel] in panel?.onEscape?() }
         ]
         panel.optionCommandChords = [
-            "t": { [weak coordinator] in coordinator?.toggleFormattingBar() }
+            "t": { [weak coordinator] in coordinator?.toggleFormattingBar() },
+            "r": { [weak coordinator] in coordinator?.toggleRaw() },
+            "o": { [weak coordinator] in coordinator?.toggleMenu(.outline) },
+            "p": { [weak coordinator] in
+                if let id = coordinator?.activeSummary?.id { coordinator?.togglePin(id) }
+            }
+        ]
+        panel.shiftCommandChords = [
+            "c": { [weak coordinator] in coordinator?.copyNote(plain: false) },
+            "f": { [weak coordinator] in coordinator?.searchNotes() }
         ]
         panel.setFrameAutosaveName(Self.frameAutosaveName)
         if !panel.setFrameUsingName(Self.frameAutosaveName) { panel.center() }
         // An autosaved frame can sit below the floor, so it is clamped on the way back in.
         panel.setContentSize(
             CGSize(
-                width: max(panel.frame.width, Theme.Size.noteWindow.width),
-                height: max(panel.frame.height, Theme.Size.noteWindow.height)))
+                width: max(panel.frame.width, minimum.width),
+                height: max(panel.frame.height, minimum.height)))
         if let close = panel.standardWindowButton(.closeButton) {
             close.postsFrameChangedNotifications = true
             NotificationCenter.default.addObserver(
@@ -284,11 +273,6 @@ final class NotesWindowController: NSObject, NSWindowDelegate {
     private func focusEditor(in panel: NotesPanel) {
         guard let editor else { return }
         panel.makeFirstResponder(editor)
-        Task { @MainActor [weak panel, weak editor] in
-            await Task.yield()
-            guard let panel, panel.isVisible, let editor else { return }
-            panel.makeKeyAndOrderFront(nil)
-            panel.makeFirstResponder(editor)
-        }
+
     }
 }

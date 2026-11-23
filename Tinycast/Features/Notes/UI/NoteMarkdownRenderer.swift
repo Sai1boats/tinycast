@@ -13,6 +13,40 @@ final class NoteMarkdownRenderer: NSObject, @MainActor NSTextStorageDelegate {
 
     /// The edit not yet parsed, as the range it covered in `markdown` and the one it covers now.
     private var pendingEdit: (old: NSRange, new: NSRange)?
+    private(set) var imageCache: NoteImageCache?
+
+    func configureImages(directory: URL?, scale: CGFloat) {
+        guard imageCache?.directory != directory || (directory != nil && imageCache?.scale != scale) else {
+            return
+        }
+        imageCache?.reset()
+        imageCache = directory.map {
+            NoteImageCache(directory: $0, scale: scale) { [weak self] path in
+                guard let self, isEnabled else { return }
+                syncSource()
+                apply(
+                    IndexSet(
+                        markdown.lines.indices.filter {
+                            if case .image(_, let destination) = markdown.lines[$0].kind {
+                                return destination == path
+                            }
+                            return false
+                        }))
+            }
+        }
+        reset()
+    }
+
+    func refreshImages() {
+        guard isEnabled, let imageCache else { return }
+        imageCache.reset()
+        syncSource()
+        apply(IndexSet(markdown.lines.indices.filter {
+            if case .image = markdown.lines[$0].kind { return true }
+            return false
+        }))
+    }
+
     private var isStyling = false
 
     init(isEnabled: Bool) {
@@ -156,7 +190,8 @@ final class NoteMarkdownRenderer: NSObject, @MainActor NSTextStorageDelegate {
             restyle(span) { _ in
                 for index in lines {
                     let style = NoteMarkdownStyler.style(
-                        at: index, in: markdown, text: text, isRevealed: revealed.contains(index))
+                        at: index, in: markdown, text: text, isRevealed: revealed.contains(index),
+                        imageCache: imageCache)
                     textView.textStorage?.setAttributes(style.base, range: markdown.lines[index].range)
                     for run in style.runs {
                         textView.textStorage?.addAttributes(run.attributes, range: run.range)

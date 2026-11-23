@@ -1,17 +1,11 @@
 import CoreGraphics
 
 enum NoteWindowPlacement {
-    /// The top edge holds until the bottom would leave the visible frame, then the window moves up.
-    static func fitting(
-        _ frame: CGRect, toHeight height: CGFloat, within heights: ClosedRange<CGFloat>,
-        in visibleFrame: CGRect
-    ) -> CGRect {
-        let height = min(heights.upperBound, visibleFrame.height, max(heights.lowerBound, ceil(height)))
-        return CGRect(
-            x: frame.minX,
-            y: max(visibleFrame.minY, min(frame.maxY, visibleFrame.maxY) - height),
-            width: frame.width,
-            height: height)
+    static func resizing(_ frame: CGRect, width: CGFloat, minimum: CGSize, in visible: CGRect) -> CGRect {
+        let width = min(visible.width, max(width, minimum.width))
+        let height = min(visible.height, max(frame.height, minimum.height))
+        return CGRect(x: min(max(frame.maxX - width, visible.minX), visible.maxX - width),
+            y: min(max(frame.maxY - height, visible.minY), visible.maxY - height), width: width, height: height)
     }
 
     static func topRight(_ frame: CGRect, in visibleFrame: CGRect, inset: CGFloat) -> CGRect {

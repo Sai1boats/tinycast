@@ -1,7 +1,12 @@
 import AppKit
+import UniformTypeIdentifiers
 
 @MainActor
 final class NoteTextView: NSTextView, InjectableTextView {
+    var onImageImport: ((NotesAssetStore.Input) -> Void)?
+    var onImagePreview: ((String) -> Void)?
+    var onTag: ((String) -> Void)?
+    private var dropCaret: CGRect? { didSet { needsDisplay = true } }
     var editorUndoManager: UndoManager?
     weak var editing: NoteTextViewEditing?
     /// True during `mouseDown`'s drag loop; revealing mid-drag would shift text under the pointer.
@@ -54,22 +59,9 @@ final class NoteTextView: NSTextView, InjectableTextView {
         performTextFinderAction(item)
     }
 
-    /// The frame never gets shorter than the clip view, so only the layout knows the text's height.
-    func textHeight(upTo limit: CGFloat) -> CGFloat {
-        guard let textLayoutManager else { return frame.height }
-        var height: CGFloat = 0
-        // Summed: until the next draw, the lines below an edit keep their old origins.
-        textLayoutManager.enumerateTextLayoutFragments(
-            from: textLayoutManager.documentRange.location, options: [.ensuresLayout]
-        ) { fragment in
-            height += fragment.layoutFragmentFrame.height
-            return height < limit
-        }
-        return height + textContainerInset.height * 2
-    }
-
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
+        if let dropCaret { NSColor.controlAccentColor.setFill(); dropCaret.fill() }
         guard textStorage?.length == 0 else { return }
         NSAttributedString(
             string: String(localized: "Start writing…"),
@@ -139,8 +131,91 @@ final class NoteTextView: NSTextView, InjectableTextView {
     }
 
     override func paste(_ sender: Any?) {
-        guard !pasteLink(from: .general) else { return }
+        if rendersMarkdown, !hasMarkedText() {
+            if let onImageImport, let input = Self.imageInput(from: .general) { onImageImport(input); return }
+            if pasteLink(from: .general) { return }
+        }
         super.paste(sender)
+    }
+
+    static func imageInput(from board: NSPasteboard) -> NotesAssetStore.Input? {
+        if let files = board.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true])
+            as? [URL],
+            !files.isEmpty
+        {
+            return files.first { UTType(filenameExtension: $0.pathExtension)?.conforms(to: .image) == true }
+                .map(NotesAssetStore.Input.file)
+        }
+        let imageTypes = [.png, .tiff] + NSImage.imageTypes.map(NSPasteboard.PasteboardType.init(rawValue:))
+        if let type = board.availableType(from: imageTypes), let data = board.data(forType: type) { return .bitmap(data) }
+        return nil
+    }
+
+    private func canDrop(_ sender: any NSDraggingInfo) -> Bool {
+        guard rendersMarkdown, onImageImport != nil, !hasMarkedText() else { return false }
+        let board = sender.draggingPasteboard
+        if board.availableType(from: [.fileURL]) != nil {
+            return board.canReadObject(
+                forClasses: [NSURL.self],
+                options: [
+                    .urlReadingFileURLsOnly: true,
+                    .urlReadingContentsConformToTypes: [UTType.image.identifier]
+                ])
+        }
+        return board.availableType(from: [.png, .tiff]) != nil
+    }
+
+    override func prepareForDragOperation(_ sender: any NSDraggingInfo) -> Bool {
+        canDrop(sender) || super.prepareForDragOperation(sender)
+    }
+
+    override func validateUserInterfaceItem(_ item: any NSValidatedUserInterfaceItem) -> Bool {
+        if item.action == #selector(paste(_:)), rendersMarkdown, onImageImport != nil,
+            NSPasteboard.general.availableType(from: [.fileURL, .png, .tiff]) != nil
+        {
+            return true
+        }
+        return super.validateUserInterfaceItem(item)
+    }
+
+    override func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation {
+        canDrop(sender) ? .copy : super.draggingEntered(sender)
+    }
+
+    override func draggingUpdated(_ sender: any NSDraggingInfo) -> NSDragOperation {
+        guard canDrop(sender) else { dropCaret = nil; return super.draggingUpdated(sender) }
+        let location = characterIndexForInsertion(at: convert(sender.draggingLocation, from: nil))
+        let screen = firstRect(forCharacterRange: NSRange(location: location, length: 0), actualRange: nil)
+        if let window {
+            let rect = convert(window.convertFromScreen(screen), from: nil)
+            dropCaret = CGRect(x: rect.minX, y: rect.minY, width: 2, height: rect.height)
+        }
+        return .copy
+    }
+
+    override func draggingExited(_ sender: (any NSDraggingInfo)?) {
+        dropCaret = nil
+        super.draggingExited(sender)
+    }
+
+    override func performDragOperation(_ sender: any NSDraggingInfo) -> Bool {
+        dropCaret = nil
+        guard canDrop(sender), let input = Self.imageInput(from: sender.draggingPasteboard) else {
+            return super.performDragOperation(sender)
+        }
+        setSelectedRange(
+            NSRange(
+                location: characterIndexForInsertion(at: convert(sender.draggingLocation, from: nil)),
+                length: 0))
+        onImageImport?(input)
+        return true
+    }
+
+    func jump(to range: NSRange) {
+        guard range.location >= 0, NSMaxRange(range) <= (textStorage?.length ?? 0) else { return }
+        setSelectedRange(NSRange(location: range.location, length: 0))
+        scrollRangeToVisible(range)
+        showFindIndicator(for: range)
     }
 
     /// Pasting a lone URL over selected text makes a link; anything else pastes as plain text.
@@ -210,7 +285,45 @@ final class NoteTextView: NSTextView, InjectableTextView {
 
     override func mouseDown(with event: NSEvent) {
         guard rendersMarkdown else { return super.mouseDown(with: event) }
-        guard !toggleTask(atContainerPoint: containerPoint(for: event)) else { return }
+        let point = containerPoint(for: event)
+        if let fragment = textLayoutManager?.textLayoutFragment(for: point) as? NoteBlockLayoutFragment,
+            let content = textContentStorage
+        {
+            let start = content.offset(
+                from: content.documentRange.location, to: fragment.rangeInElement.location)
+            let local = CGPoint(x: point.x, y: point.y - fragment.layoutFragmentFrame.minY)
+            if case .image(let path, _) = fragment.decoration.shape, fragment.imageRect.contains(local),
+                let index = editing?.markdown.lineIndex(at: start), let line = editing?.markdown.lines[index]
+            {
+                window?.makeFirstResponder(self)
+                setSelectedRange(line.contentRange)
+                if event.clickCount == 2 { onImagePreview?(path) }
+                return
+            }
+            if case .code(let row, _) = fragment.decoration.shape, row == .top || row == .single,
+                local.x > (textContainer?.size.width ?? 0) - Theme.Size.noteTitlebar,
+                let markdown = editing?.markdown, let index = markdown.lineIndex(at: start),
+                let block = markdown.fenceBlocks.first(where: { $0.lowerBound == index })
+            {
+                let lower = NSMaxRange(markdown.lines[index].range)
+                let last = markdown.lines[block.upperBound]
+                let upper = last.kind == .fenceClose ? last.range.location : NSMaxRange(last.range)
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(
+                    (string as NSString).substring(with: NSRange(lower..<max(lower, upper))), forType: .string
+                )
+                return
+            }
+        }
+        let index = characterIndexForInsertion(at: convert(event.locationInWindow, from: nil))
+        if let storage = textStorage, index < storage.length,
+            let tag = storage.attribute(.noteTag, at: index, effectiveRange: nil) as? String,
+            let frame = glyphFrame(at: index), frame.insetBy(dx: -1, dy: 0).contains(point)
+        {
+            onTag?(tag)
+            return
+        }
+        guard !toggleTask(atContainerPoint: point) else { return }
         isDragSelecting = true
         super.mouseDown(with: event)
         isDragSelecting = false
@@ -307,6 +420,7 @@ final class NoteTextView: NSTextView, InjectableTextView {
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
         keyObservers = []
+        if onImageImport != nil { registerForDraggedTypes([.fileURL, .png, .tiff]) }
         guard let window else { return }
         let center = NotificationCenter.default
         keyObservers = [NSWindow.didBecomeKeyNotification, NSWindow.didResignKeyNotification].map { name in

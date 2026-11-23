@@ -8,6 +8,7 @@ struct NotesTests {
 
     static func main() async throws {
         try testRepositoryAndSearch()
+        try await testWorkspace()
         testDerivedTitles()
         testMarkdownParser()
         testMarkdownEditing()
@@ -26,6 +27,73 @@ struct NotesTests {
 
         print(failures == 0 ? "Notes tests passed" : "\(failures) tests failed")
         exit(failures == 0 ? 0 : 1)
+    }
+
+    private static func testWorkspace() async throws {
+        let root = temporaryRoot("images")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let repository = try repository(in: root)
+        let assets = NotesAssetStore(notesDirectory: repository.notesDirectory)
+        let png = try require(
+            Data(
+                base64Encoded:
+                    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNQTK4AAAGlAP0+0IVNAAAAAElFTkSuQmCC"
+            ))
+        let first = try await assets.importImage(.bitmap(png))
+        let original = try assets.validatedAssetURL(first)
+        let repeated = try await assets.importImage(.file(original))
+        let otherPNG = try require(
+            Data(
+                base64Encoded:
+                    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNo1T4BAAKxAXlFNj/+AAAAAElFTkSuQmCC"
+            ))
+        let second = try await assets.importImage(.bitmap(otherPNG))
+        check(
+            "identical bytes reuse an asset and different images get distinct paths",
+            first == repeated && first != second)
+        let source =
+            "![sample](\(first))\n# 🪴 Plan\nText #work #工作 #WORK\n## Test\n- [ ] open\n- [x] done\n```\n# ignored\n```"
+        let metadata = NoteMetadataExtractor(source: source)
+        check(
+            "metadata counts only rendered blocks",
+            metadata.tags == ["work", "工作"] && metadata.pendingTaskCount == 1
+                && metadata.totalTaskCount == 2 && metadata.imageCount == 1)
+        check(
+            "outline uses source UTF-16 offsets",
+            metadata.headings.map(\.level) == [1, 2]
+                && metadata.headings.map { (source as NSString).substring(with: $0.range) } == [
+                    "🪴 Plan", "Test"
+                ])
+        check("image references never become a note title", NoteTitle.firstLine(of: source) == "🪴 Plan")
+        let note = try repository.create()
+        try repository.save(id: note.id, source: source)
+        let other = try repository.create()
+        let notes = try repository.list()
+        check(
+            "pinned notes lead the sidebar",
+            NoteSidebarFilter.all.apply(to: notes, pins: [note.id]).first?.id == note.id)
+        check(
+            "tag and task filters respect metadata",
+            NoteSidebarFilter.tag("工作").apply(to: notes, pins: []).count == 1
+                && NoteSidebarFilter.tasks.apply(to: notes, pins: [other.id]).map(\.id) == [note.id])
+        check(
+            "only unreferenced imported images are cleanup candidates",
+            try assets.orphanedAssets().map(\.lastPathComponent) == [(second as NSString).lastPathComponent])
+        let link = original.deletingLastPathComponent().appendingPathComponent("outside.png")
+        try FileManager.default.createSymbolicLink(
+            at: link, withDestinationURL: root.appendingPathComponent("outside.png"))
+        for path in [
+            "assets/../file.png", "assets/.hidden.png", "assets/outside.png", "/tmp/file.png",
+            "assets//test.png"
+        ] {
+            check("rejects unsafe asset path \(path)", (try? assets.validatedAssetURL(path)) == nil)
+        }
+        let visible = CGRect(x: 0, y: 0, width: 1200, height: 800)
+        let frame = CGRect(x: 100, y: 50, width: 960, height: 660)
+        let collapsed = NoteWindowPlacement.resizing(frame, width: 680, minimum: .zero, in: visible)
+        check(
+            "collapsing preserves the right and top edges",
+            collapsed.maxX == frame.maxX && collapsed.maxY == frame.maxY)
     }
 
     private static func testRepositoryAndSearch() throws {
@@ -281,38 +349,6 @@ struct NotesTests {
                 == CGRect(x: -160, y: -100, width: 1600, height: 1000))
 
         let highWindow = CGRect(x: 100, y: 500, width: 440, height: 180)
-        let heights: ClosedRange<CGFloat> = 180...860
-        check(
-            "fitting grows downward and preserves width and the top edge",
-            NoteWindowPlacement.fitting(highWindow, toHeight: 300, within: heights, in: visible)
-                == CGRect(x: 100, y: 380, width: 440, height: 300))
-        check(
-            "fitting moves the window up when it reaches the Dock",
-            NoteWindowPlacement.fitting(window, toHeight: 500, within: heights, in: visible)
-                == CGRect(x: 100, y: 50, width: 440, height: 500))
-        check(
-            "fitting stops at the screen's usable height",
-            NoteWindowPlacement.fitting(highWindow, toHeight: 2000, within: heights, in: visible)
-                == CGRect(x: 100, y: 50, width: 440, height: 850))
-        let tall = CGRect(x: 0, y: 0, width: 2560, height: 1400)
-        let tallWindow = CGRect(x: 100, y: 1000, width: 440, height: 312)
-        check(
-            "fitting stops at the height limit on a tall display",
-            NoteWindowPlacement.fitting(tallWindow, toHeight: 2000, within: heights, in: tall)
-                == CGRect(x: 100, y: 452, width: 440, height: 860))
-        check(
-            "fitting shrinks shorter content and preserves the top edge",
-            NoteWindowPlacement.fitting(window, toHeight: 200, within: heights, in: visible)
-                == CGRect(x: 100, y: 212, width: 440, height: 200))
-        check(
-            "fitting never shrinks below the minimum height",
-            NoteWindowPlacement.fitting(window, toHeight: 40, within: heights, in: visible)
-                == CGRect(x: 100, y: 232, width: 440, height: 180))
-        let externalWindow = CGRect(x: -900, y: 700, width: 500, height: 180)
-        check(
-            "fitting uses the current display's origin and rounds up fractional heights",
-            NoteWindowPlacement.fitting(externalWindow, toHeight: 300.2, within: heights, in: external)
-                == CGRect(x: -900, y: 579, width: 500, height: 301))
     }
 
     private static func testStoreCollectionAndAutosave() async throws {
@@ -563,8 +599,20 @@ struct NotesTests {
         let retried = await store.retrySave()
         let retriedSource = try repository.load(activeID).source
         check(
-            "the retained draft can still be saved after reopening",
-            retried && retriedSource == "Draft after a failed save")
+            "retry detects the intervening disk revision and retains the draft",
+            !retried && retriedSource == "Cancelled external edit"
+                && store.saveState == .conflict(diskSource: retriedSource))
+        await store.resolveConflictKeepDraft()
+        check(
+            "explicitly keeping the draft saves it",
+            try repository.load(activeID).source == "Draft after a failed save")
+        store.updateSource("Second draft")
+        try "Disk version".write(to: activeURL, atomically: true, encoding: .utf8)
+        _ = await store.flush()
+        await store.resolveConflictLoadDisk()
+        check(
+            "loading disk resets the editor and leaves the file untouched",
+            store.source == "Disk version" && !store.isDirty && store.editorEpoch > failedEpoch)
     }
 
     private static func testCollectionMutationsFlushTheDraft() async throws {

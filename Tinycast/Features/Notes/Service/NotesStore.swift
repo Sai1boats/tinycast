@@ -1,8 +1,25 @@
+import CryptoKit
 import Foundation
 
 @MainActor
 @Observable
 final class NotesStore {
+    enum SaveState: Equatable {
+        case saved, saving, failed, conflict(diskSource: String)
+    }
+
+    private(set) var saveState = SaveState.saved
+    private var diskRevision: Data?
+    private(set) var pinnedIDs: Set<NoteID>
+    private let persistPins: (Set<NoteID>) -> Void
+
+    var availableTags: [String] { Set(summaries.flatMap(\.tags)).sorted() }
+
+    func togglePin(_ id: NoteID) {
+        if !pinnedIDs.insert(id).inserted { pinnedIDs.remove(id) }
+        persistPins(pinnedIDs)
+    }
+
     enum Issue: Sendable {
         case load(NotesRepository.Failure)
         case save(NotesRepository.Failure)
@@ -46,10 +63,13 @@ final class NotesStore {
 
     init(
         repository: NotesRepository,
+        pinnedIDs: Set<NoteID> = [], persistPins: @escaping (Set<NoteID>) -> Void = { _ in },
         loadSelection: @escaping @Sendable () -> NoteID? = { nil },
         saveSelection: @escaping @Sendable (NoteID?) -> Void = { _ in }
     ) {
         self.repository = repository
+        self.pinnedIDs = pinnedIDs
+        self.persistPins = persistPins
         self.loadSelection = loadSelection
         self.saveSelection = saveSelection
         notesDirectory = repository.notesDirectory
@@ -92,6 +112,8 @@ final class NotesStore {
         source = updated
         sourceRevision &+= 1
         isDirty = true
+        if case .conflict = saveState { return }
+        saveState = .saving
         saveFailed = false
         scheduleSave()
     }
@@ -100,6 +122,33 @@ final class NotesStore {
     func retrySave() async -> Bool {
         saveFailed = false
         return await flush()
+    }
+
+    func resolveConflictKeepDraft() async {
+        guard case .conflict(let disk) = saveState else { return }
+        diskRevision = Data(SHA256.hash(data: Data(disk.utf8)))
+        saveState = .saving
+        await retrySave()
+    }
+
+    func resolveConflictLoadDisk() async {
+        guard case .conflict = saveState, let activeID else { return }
+        let revision = sourceRevision
+        let repository = repository
+        let result = await detached {
+            try repository.load(activeID)
+        } recover: {
+            repository.fileURL(for: activeID)
+        }
+        guard self.activeID == activeID, sourceRevision == revision, case .conflict = saveState else {
+            return
+        }
+        switch result {
+        case .success(let document):
+            apply(document, summaries: summaries)
+            _ = await reload()
+        case .failure(let failure): publish(.load(failure))
+        }
     }
 
     /// The one place a write starts, so a debounced save and a flush can never overlap on one file.
@@ -172,6 +221,8 @@ final class NotesStore {
         guard id != activeID else { return true }
         guard await flush() else { return false }
         guard permitsApply() else { return false }
+        let epoch = editorEpoch
+        let revision = sourceRevision
         cancelSearch()
         let repository = repository
         let result = await detached {
@@ -179,7 +230,9 @@ final class NotesStore {
         } recover: {
             repository.fileURL(for: id)
         }
-        guard permitsApply(), !Task.isCancelled else { return false }
+        guard permitsApply(), !Task.isCancelled, epoch == editorEpoch, revision == sourceRevision,
+            notesDirectory == repository.notesDirectory
+        else { return false }
         switch result {
         case .success(let document):
             apply(document, summaries: summaries)
@@ -204,6 +257,10 @@ final class NotesStore {
         switch result {
         case .success(let payload):
             summaries = payload.1
+            if pinnedIDs.remove(id) != nil {
+                pinnedIDs.insert(payload.0)
+                persistPins(pinnedIDs)
+            }
             if id == activeID {
                 activeID = payload.0
                 saveSelection(payload.0)
@@ -231,6 +288,7 @@ final class NotesStore {
         switch result {
         case .success(let payload):
             cancelSearch()
+            if pinnedIDs.remove(id) != nil { persistPins(pinnedIDs) }
             // An empty collection is a legal resting state; only creating brings a note back.
             if replacesActive {
                 apply(payload.0, summaries: payload.1)
@@ -347,16 +405,21 @@ final class NotesStore {
 
     private func write() async {
         guard isDirty, let activeID else { return }
+        let expectedRevision = diskRevision
+        let cached = summaries.filter { $0.id != activeID }
         let savedSource = source
         let repository = repository
         let result = await detached {
-            try repository.save(id: activeID, source: savedSource)
-            return try repository.list()
+            let hash = try repository.save(
+                id: activeID, source: savedSource, expectedRevision: expectedRevision)
+            return (hash, try repository.list(reusing: cached))
         } recover: {
             repository.fileURL(for: activeID)
         }
         switch result {
-        case .success(let summaries):
+        case .success(let (hash, summaries)):
+            diskRevision = hash
+            saveState = savedSource == source ? .saved : .saving
             self.summaries = summaries
             isDirty = savedSource != source
             if !isDirty, let pending = pendingRelocation {
@@ -364,7 +427,12 @@ final class NotesStore {
             }
         case .failure(let failure):
             saveFailed = true
-            publish(.save(failure))
+            if case .conflict(let disk) = failure {
+                saveState = .conflict(diskSource: disk)
+            } else {
+                saveState = .failed
+                publish(.save(failure))
+            }
         }
     }
 
@@ -372,6 +440,8 @@ final class NotesStore {
         self.summaries = summaries
         activeID = document?.id
         source = document?.source ?? ""
+        diskRevision = document.map { Data(SHA256.hash(data: Data($0.source.utf8))) }
+        saveState = .saved
         editorEpoch &+= 1
         isDirty = false
         saveFailed = false

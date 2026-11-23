@@ -19,4 +19,6 @@ enum NoteEditAction: Sendable, Equatable {
     /// The `[] ` input rule.
     case typedSpace
     case pasteURL(String)
+    case insertImage(alt: String, path: String)
+    case insertSnippet(text: String, caretOffset: Int)
 }

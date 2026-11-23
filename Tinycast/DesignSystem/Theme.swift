@@ -90,24 +90,24 @@ enum Theme {
         static let panelWidth: CGFloat = 750
         static let panelHeight: CGFloat = 475
         /// Opening size on a first run and the floor: below it the title bar's own parts collide.
-        static let noteWindow = CGSize(width: 440, height: 180)
-        static let noteWindowMaxHeight: CGFloat = 860
-        static let noteEditorInset: CGFloat = 16
+        static let noteWindow = CGSize(width: 680, height: 660)
+        static let noteSplitWindow = CGSize(width: 960, height: 660)
+        static let noteSplitMinimum = CGSize(width: 760, height: 520)
+        static let noteSingleMinimum = CGSize(width: 480, height: 440)
+        static let noteSidebarWidth: CGFloat = 260
+        static let noteOutlineMenu = CGSize(width: 240, height: 280)
+        static let noteActionsMenuWidth: CGFloat = 215
+        static let noteImageMaxHeight: CGFloat = 260
+        static let noteImageMaxWidth: CGFloat = 560
+        static let noteImageCaptionHeight: CGFloat = 26
+        static let noteImageCornerRadius = Radius.card
+        static let noteEditorInset: CGFloat = 24
         /// Shorter than the horizontal inset, so the first line sits close under the title bar.
-        static let noteEditorTopInset: CGFloat = 6
-        static let noteSearchHeight: CGFloat = 34
-        /// The switcher popover, sized independently of a note window that can be 180pt tall.
-        static let noteSwitcher = CGSize(width: 300, height: 240)
-        static let noteSwitcherEmptyHeight: CGFloat = 96
-        static let noteSwitcherDrop: CGFloat = 56
-        /// Fixed like every menu's width; the height is exactly four heading rows.
-        static let noteHeadingMenu = CGSize(
-            width: 220, height: menuRowHeight * 4 + menuRowSpacing * 3 + Spacing.sm * 2)
+        static let noteEditorTopInset: CGFloat = 8
+        static let noteSearchHeight: CGFloat = 32
         static let noteFooterHeight: CGFloat = 28
         /// Holds the launcher's 36-point action capsule with the same margin its own bar gives it.
         static let noteTitlebar: CGFloat = 52
-        /// Symmetric, so the title stays centred on the window while clearing lights and capsule.
-        static let noteTitleInset: CGFloat = 120
         /// Nine points crowds the palette's 26-point corner, so Notes seats its lights further in.
         static let noteTrafficLightInset: CGFloat = 20
         /// Fraction of visible height above the palette's top edge; it grows downward.

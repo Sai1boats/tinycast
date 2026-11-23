@@ -4,9 +4,36 @@ struct NotesView: View {
     @Environment(NotesCoordinator.self) private var notes
 
     var body: some View {
-        VStack(spacing: 0) {
-            titleBar
-            content
+        HStack(spacing: 0) {
+            if notes.isSidebarVisible {
+                NoteSidebarView()
+                Rectangle().fill(Theme.Colors.separator).frame(width: Theme.Size.hairline)
+            }
+            VStack(spacing: 0) {
+                NoteEditorHeaderView()
+                ZStack(alignment: .topTrailing) {
+                    VStack(spacing: 0) {
+                        if case .conflict = notes.saveState {
+                            HStack {
+                                Text("Modified on disk").foregroundStyle(.secondary)
+                                Spacer()
+                                Button("Keep Draft") { notes.resolveConflict(keepDraft: true) }
+                                Button("Load Disk Version") { notes.resolveConflict(keepDraft: false) }
+                            }.padding(Theme.Spacing.md).background(Theme.Colors.cardFill)
+                        }
+                        content
+                    }
+                    if let menu = notes.menu {
+                        Color.clear.contentShape(Rectangle()).onTapGesture { notes.menu = nil }
+                        Group {
+                            switch menu {
+                            case .outline: NoteOutlinePopoverView()
+                            case .actions: NoteActionsMenuView()
+                            }
+                        }.padding(.trailing, Theme.Spacing.xl)
+                    }
+                }
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Theme.Colors.panelScrim)
@@ -14,29 +41,6 @@ struct NotesView: View {
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.panel, style: .continuous))
         // The band above is the title bar; AppKit must not inset the content a second time.
         .ignoresSafeArea()
-        .onChange(of: notes.showsFormattingBar && notes.hasActiveNote) { _, shown in
-            if !shown { notes.closeHeadingMenu() }
-        }
-    }
-
-    /// Lies over the real title bar and leaves its presses alone, so the system drags the window.
-    private var titleBar: some View {
-        HStack(spacing: 0) {
-            Color.clear
-                .overlay { NoteTitlebarDragRegion(onDoubleClick: notes.moveToTopRight) }
-            NoteTitlebarActions()
-        }
-        .frame(height: Theme.Size.noteTitlebar)
-        .overlay { title }
-    }
-
-    private var title: some View {
-        Text(notes.activeTitle)
-            .font(Theme.Typography.noteTitle)
-            .lineLimit(1)
-            .truncationMode(.tail)
-            .padding(.horizontal, Theme.Size.noteTitleInset)
-            .allowsHitTesting(false)
     }
 
     @ViewBuilder
@@ -51,7 +55,7 @@ struct NotesView: View {
     private var editorSurface: some View {
         VStack(spacing: 0) {
             NoteEditorView(
-                input: notes.editorInput,
+                notesDirectory: notes.notesDirectory, input: notes.editorInput,
                 rendersMarkdown: notes.rendersMarkdown,
                 onSourceChange: notes.updateSource,
                 onCharacterCountChange: notes.updateCharacterCount,
@@ -68,14 +72,16 @@ struct NotesView: View {
 
     /// The count hides first, and the band keeps the offered width so the bar never widens a note.
     private var formattingBand: some View {
-        HStack(spacing: Theme.Spacing.md) {
+        HStack(spacing: Theme.Spacing.sm) {
             ViewThatFits(in: .horizontal) {
                 characterCount
-                Color.clear.frame(width: 0, height: 0)
+                Color.clear.frame(width: 0)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            NoteFormattingBar()
-                .fixedSize()
+            Spacer(minLength: 0)
+            ViewThatFits(in: .horizontal) {
+                NoteFormattingBar().fixedSize()
+                ScrollView(.horizontal) { NoteFormattingBar() }.scrollIndicators(.hidden)
+            }.layoutPriority(1)
         }
         .padding(.leading, Theme.Size.noteEditorInset)
         .padding(.trailing, Theme.Spacing.md)
@@ -107,15 +113,16 @@ struct NotesView: View {
     }
 
     private var characterCount: some View {
-        Text(notes.characterCountLabel)
+        Button(notes.statsLabel, action: notes.cycleStats)
+            .buttonStyle(.plain)
             .font(Theme.Typography.rowTrailing)
             .foregroundStyle(Theme.Colors.textTertiary)
             .lineLimit(1)
-            .accessibilityLabel("\(notes.characterCount) characters in this note")
+            .accessibilityLabel(notes.statsLabel)
     }
 }
 
-private struct NoteTitlebarDragRegion: NSViewRepresentable {
+struct NoteTitlebarDragRegion: NSViewRepresentable {
     let onDoubleClick: () -> Void
 
     func makeNSView(context: Context) -> NoteTitlebarDragView {
@@ -129,7 +136,7 @@ private struct NoteTitlebarDragRegion: NSViewRepresentable {
 }
 
 /// Measures the band only: macOS 27.2 starts no move from `performDrag(with:)`.
-private final class NoteTitlebarDragView: NSView {
+final class NoteTitlebarDragView: NSView {
     var onDoubleClick: (() -> Void)?
 
     override func hitTest(_ point: NSPoint) -> NSView? { nil }
@@ -147,40 +154,5 @@ private final class NoteTitlebarDragView: NSView {
         else { return false }
         onDoubleClick?()
         return true
-    }
-}
-
-/// The title bar's trailing controls: the launcher's footer capsule, with glyphs instead of pills.
-private struct NoteTitlebarActions: View {
-    @Environment(NotesCoordinator.self) private var notes
-
-    var body: some View {
-        HStack(spacing: Theme.Spacing.xxs) {
-            action(
-                "plus", String(localized: "Create Note"), String(localized: "Create Note  ⌘N"),
-                notes.createNote)
-            action(
-                "rectangle.stack", String(localized: "Browse Notes"),
-                String(localized: "Browse Notes  ⌘P"), notes.searchNotes)
-            action(
-                "folder", String(localized: "Open Notes Folder"),
-                String(localized: "Open Notes Folder  ⌘O"), notes.openNotesFolder)
-        }
-        .padding(Theme.Spacing.xs)
-        .frosted(in: Capsule())
-        .padding(.trailing, Theme.Spacing.md)
-    }
-
-    private func action(
-        _ symbol: String,
-        _ label: String,
-        _ help: String,
-        _ perform: @escaping () -> Void
-    ) -> some View {
-        BarButton(action: perform) {
-            SymbolImage(name: symbol, size: Theme.Size.noteGlyph)
-        }
-        .accessibilityLabel(label)
-        .help(help)
     }
 }

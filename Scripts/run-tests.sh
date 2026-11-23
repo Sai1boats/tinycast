@@ -91,7 +91,7 @@ run() {
     local name=$1
     shift
     if [ -n "$only" ] && [ "$name" != "$only" ]; then return 0; fi
-    if [ "$index_only" -eq 1 ] && [ "$emit_db" -eq 0 ]; then return 0; fi
+    if [ "$index_only" -eq 1 ] && [ "$emit_db" -eq 0 ] && [ -z "$only" ]; then return 0; fi
     ran=$((ran + 1))
 
     # Absolute paths: sourcekit-lsp ignores `directory` for relative arguments and indexes nothing.
@@ -644,6 +644,10 @@ run notes-editor-test      Tinycast/Platform/Signposts.swift \
                            Tinycast/Features/Notes/Model/NoteFormatting.swift \
                            Tinycast/Features/Notes/Model/NoteMarkdownEditing.swift \
                            Tinycast/Features/Notes/Model/NoteRevealPolicy.swift \
+                           Tinycast/Features/Notes/Model/NoteMetadataExtractor.swift \
+                           Tinycast/Features/Notes/Service/NoteFileAccess.swift \
+                           Tinycast/Features/Notes/Service/NotesAssetStore.swift \
+                           Tinycast/Features/Notes/UI/NoteImageCache.swift \
                            Tinycast/Features/Notes/UI/NoteMarkdownTypography.swift \
                            Tinycast/Features/Notes/UI/NoteBlockDecoration.swift \
                            Tinycast/Features/Notes/UI/NoteMarkdownStyler.swift \
@@ -671,6 +675,10 @@ run -O index notes-editor-performance \
                            Tinycast/Features/Notes/Model/NoteFormatting.swift \
                            Tinycast/Features/Notes/Model/NoteMarkdownEditing.swift \
                            Tinycast/Features/Notes/Model/NoteRevealPolicy.swift \
+                           Tinycast/Features/Notes/Model/NoteMetadataExtractor.swift \
+                           Tinycast/Features/Notes/Service/NoteFileAccess.swift \
+                           Tinycast/Features/Notes/Service/NotesAssetStore.swift \
+                           Tinycast/Features/Notes/UI/NoteImageCache.swift \
                            Tinycast/Features/Notes/UI/NoteMarkdownTypography.swift \
                            Tinycast/Features/Notes/UI/NoteBlockDecoration.swift \
                            Tinycast/Features/Notes/UI/NoteMarkdownStyler.swift \
