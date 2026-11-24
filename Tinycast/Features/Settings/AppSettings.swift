@@ -363,6 +363,38 @@ final class AppSettings {
         didSet { defaults.set(notesEnabled, forKey: Key.notesEnabled.rawValue) }
     }
 
+    var pomodoroEnabled: Bool {
+        didSet { defaults.set(pomodoroEnabled, forKey: Key.pomodoroEnabled.rawValue) }
+    }
+
+    var pomodoroFocusMinutes: Int {
+        didSet { defaults.set(pomodoroFocusMinutes, forKey: Key.pomodoroFocusMinutes.rawValue) }
+    }
+
+    var pomodoroShortBreakMinutes: Int {
+        didSet {
+            defaults.set(pomodoroShortBreakMinutes, forKey: Key.pomodoroShortBreakMinutes.rawValue)
+        }
+    }
+
+    var pomodoroLongBreakMinutes: Int {
+        didSet {
+            defaults.set(pomodoroLongBreakMinutes, forKey: Key.pomodoroLongBreakMinutes.rawValue)
+        }
+    }
+
+    var pomodoroLongBreakEvery: Int {
+        didSet { defaults.set(pomodoroLongBreakEvery, forKey: Key.pomodoroLongBreakEvery.rawValue) }
+    }
+
+    var pomodoroConfiguration: PomodoroConfiguration {
+        PomodoroConfiguration(
+            focusMinutes: pomodoroFocusMinutes,
+            shortBreakMinutes: pomodoroShortBreakMinutes,
+            longBreakMinutes: pomodoroLongBreakMinutes,
+            longBreakEvery: pomodoroLongBreakEvery)
+    }
+
     var dictationEnabled: Bool {
         didSet { defaults.set(dictationEnabled, forKey: Key.dictationEnabled.rawValue) }
     }
@@ -820,6 +852,22 @@ final class AppSettings {
             defaults.object(forKey: Key.notesShowsFormattingBar.rawValue) == nil
             || defaults.bool(forKey: Key.notesShowsFormattingBar.rawValue)
         notesFolder = defaults.string(forKey: Key.notesFolder.rawValue)
+        // Ships on: the widget is the feature's front door, not an opt-in side panel.
+        pomodoroEnabled =
+            defaults.object(forKey: Key.pomodoroEnabled.rawValue) == nil
+            || defaults.bool(forKey: Key.pomodoroEnabled.rawValue)
+        pomodoroFocusMinutes =
+            (defaults.object(forKey: Key.pomodoroFocusMinutes.rawValue) as? Int)
+            ?? PomodoroConfiguration.standard.focusMinutes
+        pomodoroShortBreakMinutes =
+            (defaults.object(forKey: Key.pomodoroShortBreakMinutes.rawValue) as? Int)
+            ?? PomodoroConfiguration.standard.shortBreakMinutes
+        pomodoroLongBreakMinutes =
+            (defaults.object(forKey: Key.pomodoroLongBreakMinutes.rawValue) as? Int)
+            ?? PomodoroConfiguration.standard.longBreakMinutes
+        pomodoroLongBreakEvery =
+            (defaults.object(forKey: Key.pomodoroLongBreakEvery.rawValue) as? Int)
+            ?? PomodoroConfiguration.standard.longBreakEvery
         aiEnabled = defaults.bool(forKey: Key.aiEnabled.rawValue)
         mcpEnabled = defaults.bool(forKey: Key.mcpEnabled.rawValue)
         shellCommandDestination = ShellCommandDestination(

@@ -373,6 +373,23 @@ See [Notes](features/notes.md) for import, keyboard and conflict recovery behavi
 
 ---
 
+## Pomodoro widget
+
+Source: `Features/Pomodoro/UI/`.
+
+The pomodoro widget is one borderless glass card with two faces. The collapsed face (228×66) is the
+phase badge, the countdown, today's count and a hairline progress rail; hovering trades the count for
+the primary action (Start/Pause/Resume) and Skip, and a click expands. The expanded face (312×360) is
+a small Focus Panel console — cycle title, large countdown, task field, stats and one bottom action
+group, with `eye.slash` (hide) beside the collapse × in its header. The root follows the transparent recipe exactly: `panelScrim` → `GlassEffectView()` → one
+continuous **24pt** (`utilityWindow`) corner clip, recut on every resize, with the card's drag surface
+as the last background before that pair so a press on the glass still reaches it. The phase hue
+(`brand` / `success` / `primaryAction`) is a mark colour on the badge dot and the rail only, never a
+surface. The primary action is the one inverted mark: a `textPrimary` filled button carrying
+`composerSendInk` ink. See [features/pomodoro.md](features/pomodoro.md).
+
+---
+
 ## AI Chat window
 
 Source: `Features/AI/UI/AIChatSplitViewController.swift`, `AIChatDetailView.swift`.

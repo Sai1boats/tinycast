@@ -42,6 +42,8 @@ enum CommandID: String, CaseIterable, Sendable {
     case copyMeetingLink = "command:copy-meeting-link"
     case openInCalendar = "command:open-in-calendar"
     case localTodos = "command:local-todos"
+    case showPomodoro = "command:show-pomodoro"
+    case startPomodoro = "command:start-pomodoro"
     case showNotes = "command:show-notes"
     case createNote = "command:create-note"
     case searchNotes = "command:search-notes"
@@ -109,6 +111,8 @@ enum CommandID: String, CaseIterable, Sendable {
         case .copyMeetingLink: return "Copy Meeting Link"
         case .openInCalendar: return "Open in Calendar"
         case .localTodos: return "Local Todos"
+        case .showPomodoro: return "Show Pomodoro"
+        case .startPomodoro: return "Start Pomodoro"
         case .showNotes: return "Show Notes"
         case .createNote: return "Create Note"
         case .searchNotes: return "Search Notes"
@@ -172,6 +176,8 @@ enum CommandID: String, CaseIterable, Sendable {
         case .copyMeetingLink: return "link"
         case .openInCalendar: return "calendar.badge.clock"
         case .localTodos: return "checklist"
+        case .showPomodoro: return "timer"
+        case .startPomodoro: return "play.circle"
         case .showNotes: return "text.page"
         case .createNote: return "note.text.badge.plus"
         case .searchNotes: return "text.magnifyingglass"
@@ -198,6 +204,8 @@ enum CommandID: String, CaseIterable, Sendable {
     var searchKeywords: [String] {
         switch self {
         case .localTodos: ["todo", "task", "checklist", "待办", "任务", "清单"]
+        case .showPomodoro, .startPomodoro:
+            ["pomodoro", "timer", "focus", "番茄", "专注", "计时", "倒计时"]
         case .qrCode: ["QR", "QR code", "二维码", "生成二维码", "barcode"]
         case .urlCodec: ["percent encoding", "encode", "decode", "URL 编码", "URL 解码"]
         case .base64: ["base64url", "encode", "decode", "编码", "解码"]

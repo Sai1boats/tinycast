@@ -98,6 +98,24 @@ enum SettingsFileSchema {
         case .notesShowsFormattingBar: return bind(settings, \.notesShowsFormattingBar)
         case .notesFolder: return bind(settings, \.notesFolder, accept: folder)
         case .notesCommands: return launcher.commandsBinding(for: key, owner: .notes)
+        case .pomodoroEnabled: return bind(settings, \.pomodoroEnabled)
+        case .pomodoroFocusMinutes:
+            return bind(settings, \.pomodoroFocusMinutes) {
+                PomodoroConfiguration.focusRange.contains($0) ? $0 : nil
+            }
+        case .pomodoroShortBreakMinutes:
+            return bind(settings, \.pomodoroShortBreakMinutes) {
+                PomodoroConfiguration.breakRange.contains($0) ? $0 : nil
+            }
+        case .pomodoroLongBreakMinutes:
+            return bind(settings, \.pomodoroLongBreakMinutes) {
+                PomodoroConfiguration.breakRange.contains($0) ? $0 : nil
+            }
+        case .pomodoroLongBreakEvery:
+            return bind(settings, \.pomodoroLongBreakEvery) {
+                PomodoroConfiguration.cycleRange.contains($0) ? $0 : nil
+            }
+        case .pomodoroCommands: return launcher.commandsBinding(for: key, owner: .pomodoro)
         case .dictationMode: return bind(settings, \.dictationMode)
         case .dictationShortcut:
             return shortcuts.binding(for: key, action: .dictation, name: String(localized: "Dictation"))

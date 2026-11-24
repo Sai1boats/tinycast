@@ -66,9 +66,13 @@ enum Theme {
         static let utilityEditorMinimum: CGFloat = 260
         static let utilityDiffPaneMinimum: CGFloat = 120
         static let utilityCountWidth: CGFloat = 72
-        static let todoSidebar: CGFloat = 210
+        static let todoSidebar: CGFloat = 224
+        static let todoInspector: CGFloat = 310
         static let todosWindow = CGSize(width: 1150, height: 650)
         static let todosMinimum = CGSize(width: 760, height: 470)
+        /// The pomodoro widget's two faces; the panel swaps between them in place.
+        static let pomodoroCollapsed = CGSize(width: 228, height: 66)
+        static let pomodoroExpanded = CGSize(width: 312, height: 360)
         static let utilityFocusWindow = CGSize(width: 760, height: 740)
         static let utilityFocusMinimum = CGSize(width: 680, height: 600)
         static let utilityFocusPaneMinimum: CGFloat = 100
@@ -404,6 +408,12 @@ enum Theme {
         static let composerSymbol = Font.system(size: 13, weight: .medium)
         static let composerSend = Font.system(size: 13, weight: .bold)
         static let composerStop = Font.system(size: 10, weight: .bold)
+        /// The countdown's two faces; monospaced so the seconds never shift the layout.
+        static let pomodoroTime = Font.system(size: 42, weight: .semibold, design: .monospaced)
+        static let pomodoroCompactTime = Font.system(
+            size: 19, weight: .semibold, design: .monospaced)
+        static let pomodoroTitle = Font.system(size: 12.5, weight: .semibold)
+        static let pomodoroStatValue = Font.system(size: 15, weight: .semibold)
     }
 
     enum Colors {

@@ -242,6 +242,12 @@ final class LauncherCoordinator {
         case .localTodos:
             dismissPalette()
             core.todosCoordinator.show()
+        case .showPomodoro:
+            dismissPalette()
+            core.pomodoroCoordinator.toggleWidget()
+        case .startPomodoro:
+            dismissPalette()
+            core.pomodoroCoordinator.startPomodoro()
         case .showNotes:
             dismissPalette()
             notesCoordinator.toggle()

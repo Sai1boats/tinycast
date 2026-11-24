@@ -202,6 +202,11 @@ final class AppCore {
     @ObservationIgnored private(set) lazy var emojiCoordinator = EmojiCoordinator(
         frequentEmoji: frequentEmoji, settings: settings, windowController: windowController,
         paletteCoordinator: paletteCoordinator)
+    @ObservationIgnored private(set) lazy var pomodoroStore = PomodoroStore(
+        fileURL: AppPaths.applicationSupport().appendingPathComponent("pomodoro-state.json"),
+        configuration: settings.pomodoroConfiguration, isEnabled: settings.pomodoroEnabled)
+    @ObservationIgnored private(set) lazy var pomodoroCoordinator = PomodoroCoordinator(
+        store: pomodoroStore, settings: settings, appIndex: appIndex, core: self)
     let todoReminders = TodoReminders()
     @ObservationIgnored private(set) lazy var todosCoordinator = TodosCoordinator(
         repository: TodoRepository(url: AppPaths.applicationSupport().appending(path: "todos.json")),
@@ -316,6 +321,11 @@ final class AppCore {
             NSApp.setActivationPolicy(.accessory)
             todoReminders.openItem = { [weak self] in self?.todosCoordinator.show(itemID: $0) }
             todoReminders.start()
+            todosCoordinator.focusBridge = makeTodoFocusBridge()
+            pomodoroCoordinator.onFocusCompleted = { [weak self] taskID, minutes in
+                guard let taskID else { return }
+                self?.todosCoordinator.recordCompletedPomodoro(taskID: taskID, minutes: minutes)
+            }
             todosCoordinator.load()
             dictationAudioDucker.recover()
             applyAppearance()
@@ -334,6 +344,7 @@ final class AppCore {
             menuSearchCoordinator.applyEnabled()
             fileSearchCoordinator.applyPolicy()
             notesCoordinator.applyEnabled()
+            pomodoroCoordinator.applyEnabled()
             installedAI.launchSettings = { [aiSettings] in aiSettings.launch(for: $0) }
             chatGPTSubscription.launchSettings = { [aiSettings] in aiSettings.launch(for: .codex) }
             aiChatCoordinator.applyEnabled()
@@ -556,6 +567,40 @@ final class AppCore {
         await notesCoordinator.prepareForTermination()
     }
 
+    private func makeTodoFocusBridge() -> TodoFocusBridge {
+        TodoFocusBridge(
+            readSnapshot: { [unowned self] in
+                let state = pomodoroCoordinator.state
+                let stats = pomodoroCoordinator.stats
+                let phaseKind: TodoFocusBridge.PhaseKind = switch state.phase {
+                case .focus: .focus
+                case .shortBreak: .shortBreak
+                case .longBreak: .longBreak
+                }
+                let isIdle = !state.isRunning && state.phase == .focus && pomodoroCoordinator.progress == 0
+                return TodoFocusBridge.Snapshot(
+                    isEnabled: settings.pomodoroEnabled,
+                    isRunning: state.isRunning,
+                    isIdle: isIdle,
+                    phaseKind: phaseKind,
+                    phaseTitle: pomodoroCoordinator.titleText,
+                    remainingText: pomodoroCoordinator.remainingText,
+                    progress: pomodoroCoordinator.progress,
+                    activeTaskID: state.activeTaskID,
+                    activeTaskTitle: state.taskName,
+                    todayCount: stats.completedFocusCount,
+                    todayMinutes: stats.focusSeconds / 60,
+                    isWidgetVisible: pomodoroCoordinator.isWidgetVisible)
+            },
+            onToggleRunning: { [weak self] in self?.pomodoroCoordinator.toggleRunning() },
+            onSkip: { [weak self] in self?.pomodoroCoordinator.skip() },
+            onFocusTask: { [weak self] id, title in
+                self?.pomodoroCoordinator.focusTask(id: id, title: title)
+            },
+            onUnbindTask: { [weak self] in self?.pomodoroCoordinator.unbindTask() },
+            onToggleWidget: { [weak self] in self?.pomodoroCoordinator.toggleWidget() })
+    }
+
     func stopDictationForTermination() async {
         if settings.dictationEnabled { dictationCoordinator.prepareForTermination() }
         dictationAudioDucker.restoreImmediately()
@@ -601,6 +646,7 @@ final class AppCore {
     }
 
     func prepareForTermination() {
+        pomodoroStore.stop()
         if settings.dictationEnabled { dictationCoordinator.prepareForTermination() }
         settingsFile?.flush()
         clipboardTextIndexer?.stop()
@@ -727,6 +773,8 @@ final class AppCore {
                 $0.menuSearchCoordinator.applyEnabled()
             })
         track({ _ = $0.notesEnabled }, reproject: { $0.notesCoordinator.applyEnabled() })
+        track({ _ = $0.pomodoroEnabled }, reproject: { $0.pomodoroCoordinator.applyEnabled() })
+        track({ _ = $0.pomodoroConfiguration }, reproject: { $0.pomodoroCoordinator.applySettings() })
         track({ _ = $0.aiEnabled }, reproject: { $0.aiChatCoordinator.applyEnabled() })
         track(
             { _ = $0.dictationIdleRelease },

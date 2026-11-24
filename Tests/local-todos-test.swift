@@ -172,6 +172,61 @@ struct LocalTodosTest {
         todos.delete(root)
         await todos.pending?.value
         precondition(todos.items.isEmpty && reminders.upcoming.isEmpty)
+        precondition(todos.canUndoDelete && todos.undoBannerMessage != nil)
+        todos.undoDelete()
+        await todos.pending?.value
+        precondition(todos.items.count == 2 && !todos.canUndoDelete)
+        try await v2FeatureChecks(directory: directory)
+    }
+
+    static func v2FeatureChecks(directory: URL) async throws {
+        let url = directory.appending(path: "v2.json")
+        let reminders = TestReminders()
+        let todos = TodosCoordinator(
+            repository: TodoRepository(url: url), activation: nil, reminders: reminders,
+            requestProjectName: { _ in "Work" }, confirmDelete: { _, _ in true })
+        todos.load()
+        await todos.pending?.value
+        todos.composerPriority = .high
+        todos.draft = "Plan v2 release"
+        todos.submit()
+        await todos.pending?.value
+        let parent = todos.items[0]
+        precondition(parent.effectivePriority == .high)
+
+        todos.startInlineSubtask(for: parent)
+        todos.inlineSubtaskDraft = "Write release checklist"
+        todos.submitInlineSubtask()
+        await todos.pending?.value
+        precondition(todos.items.count == 2 && todos.items[1].parentID == parent.id)
+
+        let futureDate = TodoReminderPreset.tomorrowMorning.date(from: .now, calendar: .current)
+        precondition(futureDate > .now)
+        todos.updateTask(
+            parent.id, title: "Plan v2 launch", notes: "Focus on polish",
+            priority: .medium, reminder: .some(futureDate), estimatedPomodoros: 3)
+        await todos.pending?.value
+        let updated = todos.items.first { $0.id == parent.id }!
+        precondition(updated.title == "Plan v2 launch" && updated.notes == "Focus on polish")
+        precondition(updated.effectivePriority == .medium && updated.effectiveEstimatedPomodoros == 3)
+        precondition(updated.reminder == futureDate && reminders.upcoming == [parent.id])
+
+        todos.recordCompletedPomodoro(taskID: parent.id, minutes: 25)
+        try await Task.sleep(for: .milliseconds(150))
+        await todos.pending?.value
+        let withPomo = todos.items.first { $0.id == parent.id }!
+        precondition(withPomo.effectiveCompletedPomodoros == 1 && withPomo.effectiveFocusedMinutes == 25)
+
+        let searchHits = TodoListFilter.rootItems(
+            in: todos.items, scope: .all, query: "checklist", sort: .priority,
+            now: .now, calendar: .current)
+        precondition(searchHits.count == 1 && searchHits[0].id == parent.id)
+        let todayCount = TodoListFilter.openCount(
+            for: .today, in: todos.items, now: .now, calendar: .current)
+        precondition(todayCount == 0)
+        let scheduledCount = TodoListFilter.openCount(
+            for: .scheduled, in: todos.items, now: .now, calendar: .current)
+        precondition(scheduledCount == 1)
     }
 
     static func preview(_ coordinator: TodosCoordinator) async throws {

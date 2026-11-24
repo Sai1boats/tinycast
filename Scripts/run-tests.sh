@@ -236,6 +236,8 @@ run qr-code-test           Tinycast/Features/QRCode/Model/*.swift \
                            Tinycast/Features/QRCode/UI/QRCodeCoordinator.swift
 run calc-test              Tinycast/Features/Calculator/Model/*.swift
 run index calc-performance Tinycast/Features/Calculator/Model/*.swift
+run pomodoro-test          Tinycast/Features/Pomodoro/Model/*.swift \
+    Tinycast/Features/Pomodoro/Service/PomodoroStore.swift
 run calendar-test          Tinycast/Features/Calendar/Model/*.swift \
                            Tinycast/Features/Calendar/UI/EventEditorSession.swift
 run clipboard-test         Tinycast/Features/Clipboard/Model/ClipboardStore.swift \

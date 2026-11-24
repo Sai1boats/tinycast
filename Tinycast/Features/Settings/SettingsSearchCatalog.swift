@@ -111,7 +111,7 @@ enum SettingsSearchCatalog {
     static let entries: [SettingsSearchEntry] =
         general + applications + systemSettings + systemActions + commands + quicklinks
         + appleShortcuts + fallbacks + clipboard + snippets + fileSearch + windowManagement
-        + navigation + notes + calendar + emoji + ai + quickActions + dictation + extensions + permissions
+        + navigation + notes + pomodoro + calendar + emoji + ai + quickActions + dictation + extensions + permissions
         + backup + about
 
     private static let general: [SettingsSearchEntry] = [
@@ -405,6 +405,21 @@ enum SettingsSearchCatalog {
         .init(
             group: .notesCommands, "Notes commands",
             keywords: ["shortcut", "new note", "search notes"])
+    ]
+
+    private static let pomodoro: [SettingsSearchEntry] = [
+        .init(
+            pane: .pomodoro,
+            keywords: ["pomodoro", "timer", "focus", "番茄", "专注", "计时"]),
+        .init(
+            .pomodoroPomodoro, "Enable Pomodoro",
+            keywords: ["pomodoro", "timer", "widget", "番茄", "部件"]),
+        .init(
+            group: .pomodoroDurations, "Durations",
+            keywords: ["minutes", "focus", "break", "cycle", "时长", "休息"]),
+        .init(
+            group: .pomodoroCommands, "Pomodoro commands",
+            keywords: ["shortcut", "start pomodoro", "show pomodoro", "番茄", "快捷"])
     ]
 
     private static let snippets: [SettingsSearchEntry] = [

@@ -57,6 +57,12 @@ struct SettingsBackup: Codable {
         var notesEnabled: Bool?
         var notesRendersMarkdown: Bool?
         var notesShowsFormattingBar: Bool?
+        // Safe to carry: a timer and its durations grant no permission class.
+        var pomodoroEnabled: Bool?
+        var pomodoroFocusMinutes: Int?
+        var pomodoroShortBreakMinutes: Int?
+        var pomodoroLongBreakMinutes: Int?
+        var pomodoroLongBreakEvery: Int?
         // `snippetsEnabled` is absent: an import must not enable keystroke listening.
         var customCommandsEnabled: Bool?
         var customCommandsShowInLauncher: Bool?
@@ -172,6 +178,11 @@ extension SettingsBackup {
             notesEnabled: s.notesEnabled,
             notesRendersMarkdown: s.notesRendersMarkdown,
             notesShowsFormattingBar: s.notesShowsFormattingBar,
+            pomodoroEnabled: s.pomodoroEnabled,
+            pomodoroFocusMinutes: s.pomodoroFocusMinutes,
+            pomodoroShortBreakMinutes: s.pomodoroShortBreakMinutes,
+            pomodoroLongBreakMinutes: s.pomodoroLongBreakMinutes,
+            pomodoroLongBreakEvery: s.pomodoroLongBreakEvery,
             customCommandsEnabled: s.customCommandsEnabled,
             customCommandsShowInLauncher: s.customCommandsShowInLauncher,
             snippetsShowInLauncher: s.snippetsShowInLauncher,
@@ -450,6 +461,26 @@ extension SettingsBackup {
         }
         if let flag = s.notesShowsFormattingBar {
             settings.notesShowsFormattingBar = flag
+            count += 1
+        }
+        if let flag = s.pomodoroEnabled {
+            settings.pomodoroEnabled = flag
+            count += 1
+        }
+        if let value = s.pomodoroFocusMinutes {
+            settings.pomodoroFocusMinutes = value
+            count += 1
+        }
+        if let value = s.pomodoroShortBreakMinutes {
+            settings.pomodoroShortBreakMinutes = value
+            count += 1
+        }
+        if let value = s.pomodoroLongBreakMinutes {
+            settings.pomodoroLongBreakMinutes = value
+            count += 1
+        }
+        if let value = s.pomodoroLongBreakEvery {
+            settings.pomodoroLongBreakEvery = value
             count += 1
         }
         if let flag = s.customCommandsEnabled {
