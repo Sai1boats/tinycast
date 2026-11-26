@@ -23,6 +23,26 @@ buildServer.json
 .swiftpm/
 .build/
 
+# Locally installed AI tool skills
+/.agents/skills/
+/.augment/skills/
+/.claude/skills/
+/.codebuddy/skills/
+/.codewhale/skills/
+/.continue/skills/
+/.cursor/skills/
+/.factory/skills/
+/.gemini/skills/
+/.github/prompts/
+/.kilocode/skills/
+/.kiro/steering/
+/.opencode/skills/
+/.qoder/skills/
+/.roo/skills/
+/.trae/skills/
+/.warp/skills/
+/.windsurf/skills/
+
 # Build output
 build/
 dist/
@@ -74,3 +94,4 @@ website/media/
 website/worker/worker-configuration.d.ts
 website/.dev.vars
 /.playwright-mcp
+/.playwright-cli/

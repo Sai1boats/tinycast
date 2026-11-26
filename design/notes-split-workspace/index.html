@@ -1,0 +1,1840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tinycast Notes · 双栏手记（版本 B 原型）</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --page-bg: #111216;
+      --page-card: #1a1c22;
+      --page-border: rgba(255, 255, 255, 0.10);
+      --page-ink: #f3f4f6;
+      --page-muted: rgba(255, 255, 255, 0.62);
+      --page-accent: #6cb4ff;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Helvetica Neue", sans-serif;
+      background: var(--page-bg);
+      color: var(--page-ink);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .font-mono {
+      font-family: "SF Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    /* ---------- Outer Showcase Chrome ---------- */
+    .showcase-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 24px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .showcase-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--page-border);
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--page-accent);
+      color: #0b111b;
+      font-weight: 700;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .showcase-title {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .size-chip {
+      font-size: 11px;
+      padding: 2px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--page-border);
+      color: var(--page-muted);
+    }
+
+    .showcase-sub {
+      font-size: 12px;
+      color: var(--page-muted);
+      margin-top: 4px;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ui-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--page-border);
+      background: var(--page-card);
+      color: var(--page-ink);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 120ms ease, background-color 120ms ease;
+    }
+    .ui-btn:hover { opacity: 0.9; background: rgba(255, 255, 255, 0.08); }
+    .ui-btn.primary {
+      background: var(--page-accent);
+      color: #091321;
+      border-color: transparent;
+      font-weight: 600;
+    }
+
+    /* ---------- Desktop Stage & Wallpaper ---------- */
+    .desktop-stage {
+      border-radius: 20px;
+      border: 1px solid var(--page-border);
+      padding: 34px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+      position: relative;
+      min-height: 730px;
+    }
+
+    body.is-capture {
+      overflow: hidden;
+      background: transparent;
+    }
+    body.is-capture .showcase-wrap {
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+    body.is-capture .showcase-header,
+    body.is-capture .showcase-footer {
+      display: none;
+    }
+    body.is-capture .desktop-stage {
+      border-radius: 0;
+      border: none;
+      width: 100vw;
+      height: 100vh;
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    .tc-stage-dark {
+      --tc-scrim: rgba(18, 19, 22, 0.56);
+      --tc-rim: rgba(255, 255, 255, 0.14);
+      --tc-glass: rgba(255, 255, 255, 0.08);
+      --tc-glass-strong: rgba(34, 36, 42, 0.90);
+      --tc-glass-border: rgba(255, 255, 255, 0.16);
+      --tc-ink-primary: rgba(255, 255, 255, 1.0);
+      --tc-ink-body: rgba(255, 255, 255, 0.90);
+      --tc-ink-secondary: rgba(255, 255, 255, 0.60);
+      --tc-ink-tertiary: rgba(255, 255, 255, 0.40);
+      --tc-selection: rgba(255, 255, 255, 0.11);
+      --tc-hover: rgba(255, 255, 255, 0.055);
+      --tc-separator: rgba(255, 255, 255, 0.10);
+      --tc-card-fill: rgba(255, 255, 255, 0.055);
+      --tc-control-surface: rgba(255, 255, 255, 0.10);
+      --tc-border: rgba(255, 255, 255, 0.20);
+      --tc-shadow: 0 32px 72px rgba(0, 0, 0, 0.56), 0 4px 18px rgba(0, 0, 0, 0.36);
+      --tc-popover-shadow: 0 18px 42px rgba(0, 0, 0, 0.52);
+      --tc-link: #6cb4ff;
+      --tc-success: #4ade80;
+      --tc-warning: #fbbf24;
+      --tc-danger: #f87171;
+      --tc-accent-soft: rgba(108, 180, 255, 0.18);
+      --tc-check-ink: #141519;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(88, 101, 242, 0.44) 0%, transparent 48%),
+        radial-gradient(circle at 82% 28%, rgba(236, 72, 153, 0.30) 0%, transparent 45%),
+        radial-gradient(circle at 52% 85%, rgba(16, 185, 129, 0.28) 0%, transparent 52%),
+        linear-gradient(135deg, #131624 0%, #1d1b2f 50%, #121c22 100%);
+    }
+
+    .tc-stage-light {
+      --tc-scrim: rgba(250, 250, 252, 0.68);
+      --tc-rim: rgba(0, 0, 0, 0.10);
+      --tc-glass: rgba(255, 255, 255, 0.58);
+      --tc-glass-strong: rgba(248, 248, 250, 0.88);
+      --tc-glass-border: rgba(0, 0, 0, 0.10);
+      --tc-ink-primary: rgba(0, 0, 0, 1.0);
+      --tc-ink-body: rgba(0, 0, 0, 0.85);
+      --tc-ink-secondary: rgba(0, 0, 0, 0.60);
+      --tc-ink-tertiary: rgba(0, 0, 0, 0.42);
+      --tc-selection: rgba(0, 0, 0, 0.09);
+      --tc-hover: rgba(0, 0, 0, 0.045);
+      --tc-separator: rgba(0, 0, 0, 0.12);
+      --tc-card-fill: rgba(0, 0, 0, 0.045);
+      --tc-control-surface: rgba(0, 0, 0, 0.08);
+      --tc-border: rgba(0, 0, 0, 0.18);
+      --tc-shadow: 0 26px 60px rgba(15, 23, 42, 0.22), 0 4px 16px rgba(15, 23, 42, 0.12);
+      --tc-popover-shadow: 0 16px 36px rgba(15, 23, 42, 0.18);
+      --tc-link: #0066cc;
+      --tc-success: #16a34a;
+      --tc-warning: #d97706;
+      --tc-danger: #dc2626;
+      --tc-accent-soft: rgba(0, 102, 204, 0.12);
+      --tc-check-ink: #ffffff;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(99, 179, 237, 0.50) 0%, transparent 48%),
+        radial-gradient(circle at 82% 24%, rgba(244, 162, 184, 0.46) 0%, transparent 46%),
+        radial-gradient(circle at 48% 85%, rgba(134, 239, 172, 0.38) 0%, transparent 50%),
+        linear-gradient(135deg, #e2ebf8 0%, #ede7f6 52%, #e4f2ef 100%);
+    }
+
+    /* ---------- Tinycast Notes Panel (1:1 Version B) ---------- */
+    .tc-panel {
+      width: 960px;
+      height: 660px;
+      max-width: 100%;
+      background: var(--tc-scrim);
+      backdrop-filter: blur(32px) saturate(145%);
+      -webkit-backdrop-filter: blur(32px) saturate(145%);
+      border: 1px solid var(--tc-rim);
+      border-radius: 26px;
+      box-shadow: var(--tc-shadow);
+      color: var(--tc-ink-body);
+      display: flex;
+      overflow: hidden;
+      position: relative;
+      transition: width 260ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .tc-panel.is-collapsed {
+      width: 680px;
+    }
+
+    .tc-glass {
+      background: var(--tc-glass);
+      backdrop-filter: blur(22px) saturate(140%);
+      -webkit-backdrop-filter: blur(22px) saturate(140%);
+      border: 1px solid var(--tc-glass-border);
+    }
+
+    .tc-glass-popover {
+      background: var(--tc-glass-strong);
+      backdrop-filter: blur(28px) saturate(150%);
+      -webkit-backdrop-filter: blur(28px) saturate(150%);
+      border: 1px solid var(--tc-glass-border);
+      box-shadow: var(--tc-popover-shadow);
+      border-radius: 16px;
+    }
+
+    .tc-bar-btn {
+      color: var(--tc-ink-secondary);
+      border: none;
+      background: transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 120ms ease, color 120ms ease, transform 100ms ease;
+    }
+    .tc-bar-btn:hover { background: var(--tc-hover); color: var(--tc-ink-primary); }
+    .tc-bar-btn.is-selected { background: var(--tc-selection); color: var(--tc-ink-primary); }
+    .tc-bar-btn:active { transform: scale(0.95); }
+
+    /* ---------- Sidebar (260px) ---------- */
+    .tc-sidebar {
+      width: 260px;
+      flex-shrink: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--tc-separator);
+    }
+
+    .tc-sidebar-head {
+      padding: 16px 14px 10px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .tc-sidebar-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 24px;
+    }
+
+    .tc-traffic-lights {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .tc-tl-close {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ff5f57;
+      border: 1px solid rgba(0, 0, 0, 0.16);
+      cursor: pointer;
+    }
+    .tc-tl-dim {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--tc-control-surface);
+    }
+
+    .tc-search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 10px;
+      height: 32px;
+      border-radius: 10px;
+      background: var(--tc-card-fill);
+      border: 1px solid var(--tc-separator);
+    }
+    .tc-search-box input {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: var(--tc-ink-primary);
+      font-size: 12.5px;
+    }
+    .tc-search-box input::placeholder { color: var(--tc-ink-tertiary); }
+
+    .tc-filter-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .tc-pill-filter {
+      border: none;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      cursor: pointer;
+      background: transparent;
+      color: var(--tc-ink-secondary);
+      transition: background-color 120ms ease, color 120ms ease;
+    }
+    .tc-pill-filter.active {
+      background: var(--tc-selection);
+      color: var(--tc-ink-primary);
+      font-weight: 500;
+    }
+
+    .tc-tag-chip {
+      border: none;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      cursor: pointer;
+      background: var(--tc-card-fill);
+      color: var(--tc-ink-tertiary);
+    }
+    .tc-tag-chip.active {
+      background: var(--tc-accent-soft);
+      color: var(--tc-link);
+      font-weight: 500;
+    }
+
+    .tc-note-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 10px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .tc-note-card {
+      padding: 8px 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 110ms ease;
+    }
+    .tc-note-card:hover { background: var(--tc-hover); }
+    .tc-note-card.active { background: var(--tc-selection); }
+
+    .tc-note-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .tc-note-card-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+
+    .tc-note-card-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--tc-ink-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tc-note-card-pin {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      opacity: 0;
+      padding: 2px;
+      border-radius: 4px;
+      display: inline-flex;
+      transition: opacity 120ms ease;
+    }
+    .tc-note-card:hover .tc-note-card-pin { opacity: 0.9; }
+
+    .tc-note-card-preview {
+      font-size: 11.5px;
+      color: var(--tc-ink-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+    .tc-note-card-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+      font-size: 10.5px;
+      color: var(--tc-ink-tertiary);
+    }
+
+    .tc-meta-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .tc-sidebar-foot {
+      height: 38px;
+      padding: 0 16px;
+      border-top: 1px solid var(--tc-separator);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--tc-ink-tertiary);
+      flex-shrink: 0;
+    }
+
+    /* ---------- Right Editor Pane ---------- */
+    .tc-editor-pane {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .tc-titlebar {
+      height: 52px;
+      padding: 0 14px 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .tc-titlebar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .tc-title-btn {
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--tc-ink-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 280px;
+      cursor: text;
+      text-align: left;
+    }
+    .tc-title-btn:hover { opacity: 0.82; }
+
+    .tc-title-input {
+      width: 220px;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: var(--tc-selection);
+      color: var(--tc-ink-primary);
+      border: 1px solid var(--tc-border);
+      font-size: 13.5px;
+      font-weight: 600;
+      outline: none;
+    }
+
+    .tc-save-pill {
+      border: none;
+      background: transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      color: var(--tc-ink-secondary);
+      cursor: pointer;
+    }
+
+    .tc-capsule-group {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 4px;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+
+    .tc-icon-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+    }
+
+    /* ---------- Editor Scroll & Markdown Typography ---------- */
+    .tc-editor-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 6px 24px 16px;
+    }
+
+    .tc-md-h1 {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--tc-ink-primary);
+      margin: 2px 0 8px;
+      letter-spacing: -0.015em;
+    }
+    .tc-md-h2 {
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--tc-ink-primary);
+      margin: 14px 0 6px;
+    }
+    .tc-md-h3 {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--tc-ink-primary);
+      margin: 12px 0 4px;
+    }
+    .tc-md-p {
+      font-size: 14.5px;
+      line-height: 1.62;
+      color: var(--tc-ink-body);
+      margin: 5px 0;
+    }
+    .tc-md-quote {
+      margin: 8px 0;
+      padding: 2px 0 2px 12px;
+      border-left: 2px solid var(--tc-border);
+      color: var(--tc-ink-secondary);
+      font-size: 14px;
+      line-height: 1.58;
+    }
+
+    .tc-md-task {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 6px 0;
+    }
+    .tc-checkbox {
+      margin-top: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: all 120ms ease;
+    }
+
+    .tc-md-codeblock {
+      margin: 10px 0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: var(--tc-card-fill);
+      border: 1px solid var(--tc-separator);
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+    .tc-codeblock-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .tc-codeblock-lang {
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--tc-ink-tertiary);
+      font-weight: 600;
+    }
+    .tc-mini-copy {
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 11px;
+      background: var(--tc-control-surface);
+      color: var(--tc-ink-secondary);
+      cursor: pointer;
+    }
+    .tc-mini-copy:hover { color: var(--tc-ink-primary); }
+
+    /* ---------- Pasted Inline Image Card ---------- */
+    .tc-image-card {
+      margin: 12px 0;
+      border-radius: 10px;
+      border: 1px solid var(--tc-separator);
+      background: var(--tc-card-fill);
+      overflow: hidden;
+      position: relative;
+      max-width: 560px;
+      transition: border-color 140ms ease;
+    }
+    .tc-image-card:hover {
+      border-color: var(--tc-border);
+    }
+    .tc-image-stage {
+      width: 100%;
+      max-height: 196px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-in;
+      background: rgba(0, 0, 0, 0.14);
+    }
+    .tc-image-stage img {
+      width: 100%;
+      max-height: 196px;
+      object-fit: cover;
+      display: block;
+    }
+    .tc-image-actions {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px;
+      border-radius: 999px;
+      opacity: 0;
+      transition: opacity 140ms ease;
+    }
+    .tc-image-card:hover .tc-image-actions { opacity: 1; }
+    .tc-image-action-btn {
+      border: none;
+      background: transparent;
+      color: var(--tc-ink-primary);
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .tc-image-action-btn:hover { background: var(--tc-selection); }
+    .tc-image-caption {
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--tc-ink-tertiary);
+      border-top: 1px solid var(--tc-separator);
+    }
+
+    /* ---------- Bottom Formatting Band (52px) ---------- */
+    .tc-bottom-band {
+      height: 52px;
+      padding: 0 14px 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .tc-stats-btn {
+      border: none;
+      background: transparent;
+      font-size: 11.5px;
+      color: var(--tc-ink-tertiary);
+      font-variant-numeric: tabular-nums;
+      cursor: pointer;
+    }
+    .tc-stats-btn:hover { color: var(--tc-ink-secondary); }
+
+    .tc-formatting-bar {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 4px;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+
+    .tc-fmt-sep {
+      width: 1px;
+      height: 14px;
+      margin: 0 2px;
+      background: var(--tc-separator);
+    }
+
+    /* ---------- Popovers & Lightbox ---------- */
+    .tc-popover-outline {
+      position: absolute;
+      right: 52px;
+      top: 52px;
+      width: 240px;
+      padding: 6px;
+      z-index: 30;
+    }
+    .tc-popover-more {
+      position: absolute;
+      right: 14px;
+      top: 52px;
+      width: 215px;
+      padding: 6px;
+      z-index: 30;
+    }
+    .tc-pop-row {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: var(--tc-ink-body);
+      padding: 7px 10px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      text-align: left;
+    }
+    .tc-pop-row:hover { background: var(--tc-hover); }
+
+    .tc-lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 9, 12, 0.78);
+      backdrop-filter: blur(18px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 90;
+      padding: 28px;
+    }
+    .tc-lightbox-card {
+      max-width: 820px;
+      width: 100%;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(24, 25, 30, 0.92);
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.65);
+    }
+
+    .tc-hud {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 180ms ease;
+      z-index: 100;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(24, 26, 32, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #fff;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
+    .tc-hud.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .tc-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .tc-scroll::-webkit-scrollbar-track { background: transparent; }
+    .tc-scroll::-webkit-scrollbar-thumb { background: var(--tc-separator); border-radius: 99px; }
+
+    @keyframes tcPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+    .tc-saving-dot { animation: tcPulse 0.9s ease-in-out infinite; }
+  </style>
+</head>
+<body>
+  <div class="showcase-wrap">
+    <header class="showcase-header">
+      <div>
+        <div class="brand-row">
+          <span class="brand-badge">B</span>
+          <h1 class="showcase-title">Tinycast Notes · 双栏手记（版本 B 1:1 放大版原型）</h1>
+          <span class="size-chip" id="dim-chip">双栏 960 × 660pt（侧边栏 260pt）</span>
+        </div>
+        <p class="showcase-sub">
+          已按要求放大触发窗体并支持粘贴图片：可直接按 <strong>⌘V 粘贴系统剪贴板图片</strong>，或点击「模拟粘贴截图 / 目录大纲 / 折叠侧边栏 (⌘\)」体验完整交互。
+        </p>
+      </div>
+      <div class="toolbar-actions">
+        <button class="ui-btn primary" onclick="simulatePasteImage()">⌘V 模拟粘贴截图</button>
+        <button class="ui-btn" onclick="toggleSidebar()" id="btn-toggle-sidebar">收起侧边栏 (680×660)</button>
+        <button class="ui-btn" onclick="toggleTheme()" id="btn-toggle-theme">外观：深色 Dark</button>
+      </div>
+    </header>
+
+    <div id="desktop-stage" class="desktop-stage tc-stage-dark">
+      <div id="notes-panel" class="tc-panel"></div>
+    </div>
+
+    <div class="showcase-footer text-xs" style="color: var(--page-muted); font-size: 12px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+      <span>提示：点击图片可放大灯箱预览；点击正文里的 <code class="font-mono">#tag</code> 可直接过滤左侧边栏；点击左下角统计可切换字符 / 词数 / 待办与图片数。</span>
+      <span>关联执行文档：<code class="font-mono">design/notes-split-workspace/EXECUTION_PLAN.md</code></span>
+    </div>
+  </div>
+
+  <div id="lightbox-root"></div>
+  <div id="hud" class="tc-hud"></div>
+
+  <script>
+    // ---------- Self-contained Crisp SVG Data-URI Screenshots ----------
+    const SVG_WIREFRAME_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="880" height="440" viewBox="0 0 880 440">
+        <defs>
+          <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#191d2b"/>
+            <stop offset="100%" stop-color="#12151e"/>
+          </linearGradient>
+          <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#6cb4ff"/>
+            <stop offset="100%" stop-color="#a78bfa"/>
+          </linearGradient>
+        </defs>
+        <rect width="880" height="440" rx="18" fill="url(#bg)"/>
+        <rect x="28" y="24" width="824" height="392" rx="20" fill="#1e2230" stroke="rgba(255,255,255,0.14)"/>
+        <line x1="258" y1="24" x2="258" y2="416" stroke="rgba(255,255,255,0.10)"/>
+        <circle cx="54" cy="48" r="6" fill="#ff5f57"/>
+        <circle cx="74" cy="48" r="6" fill="rgba(255,255,255,0.16)"/>
+        <circle cx="94" cy="48" r="6" fill="rgba(255,255,255,0.16)"/>
+        <rect x="44" y="74" width="194" height="30" rx="8" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.10)"/>
+        <rect x="44" y="122" width="194" height="58" rx="10" fill="rgba(255,255,255,0.11)"/>
+        <rect x="56" y="135" width="118" height="10" rx="5" fill="rgba(255,255,255,0.88)"/>
+        <rect x="56" y="154" width="154" height="7" rx="3.5" fill="rgba(255,255,255,0.42)"/>
+        <rect x="44" y="190" width="194" height="58" rx="10" fill="rgba(255,255,255,0.04)"/>
+        <rect x="56" y="204" width="102" height="10" rx="5" fill="rgba(255,255,255,0.65)"/>
+        <rect x="56" y="222" width="140" height="7" rx="3.5" fill="rgba(255,255,255,0.32)"/>
+        <rect x="286" y="42" width="180" height="14" rx="7" fill="rgba(255,255,255,0.85)"/>
+        <rect x="698" y="34" width="128" height="30" rx="15" fill="rgba(255,255,255,0.09)" stroke="rgba(255,255,255,0.16)"/>
+        <rect x="286" y="92" width="528" height="148" rx="12" fill="rgba(108,180,255,0.09)" stroke="rgba(108,180,255,0.28)"/>
+        <rect x="308" y="118" width="140" height="12" rx="6" fill="url(#accent)"/>
+        <rect x="308" y="144" width="440" height="8" rx="4" fill="rgba(255,255,255,0.55)"/>
+        <rect x="308" y="164" width="380" height="8" rx="4" fill="rgba(255,255,255,0.38)"/>
+        <rect x="308" y="192" width="96" height="24" rx="12" fill="rgba(74,222,128,0.22)"/>
+        <text x="326" y="208" fill="#4ade80" font-family="-apple-system, sans-serif" font-size="11" font-weight="600">960 × 660 pt</text>
+        <rect x="286" y="262" width="340" height="10" rx="5" fill="rgba(255,255,255,0.72)"/>
+        <rect x="286" y="286" width="480" height="9" rx="4.5" fill="rgba(255,255,255,0.36)"/>
+        <rect x="286" y="308" width="410" height="9" rx="4.5" fill="rgba(255,255,255,0.36)"/>
+        <rect x="524" y="366" width="302" height="32" rx="16" fill="rgba(255,255,255,0.09)" stroke="rgba(255,255,255,0.16)"/>
+      </svg>
+    `);
+
+    const SVG_TERMINAL_IMG = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="880" height="360" viewBox="0 0 880 360">
+        <rect width="880" height="360" rx="16" fill="#0f1117"/>
+        <rect x="1" y="1" width="878" height="358" rx="15" fill="none" stroke="rgba(255,255,255,0.12)"/>
+        <rect width="880" height="38" rx="16" fill="#181b24"/>
+        <circle cx="24" cy="19" r="5.5" fill="#ff5f57"/>
+        <circle cx="44" cy="19" r="5.5" fill="#febc2e"/>
+        <circle cx="64" cy="19" r="5.5" fill="#28c840"/>
+        <text x="380" y="23" fill="rgba(255,255,255,0.55)" font-family="Menlo, monospace" font-size="12">zsh — tinycast</text>
+        <text x="28" y="76" fill="#6cb4ff" font-family="Menlo, monospace" font-size="14">~/PycharmProjects/tinycast $</text>
+        <text x="275" y="76" fill="#f3f4f6" font-family="Menlo, monospace" font-size="14">./Scripts/run-tests.sh --filter notes</text>
+        <text x="28" y="114" fill="#4ade80" font-family="Menlo, monospace" font-size="13.5">[PASS] notes-test (parser, image-assets, sidebar-filter, conflict-guard) — 0.42s</text>
+        <text x="28" y="144" fill="#4ade80" font-family="Menlo, monospace" font-size="13.5">[PASS] notes-editor-test (TextKit 2 inline image + paste undo + TOC jump) — 0.68s</text>
+        <text x="28" y="174" fill="#4ade80" font-family="Menlo, monospace" font-size="13.5">[PASS] notes-editor-performance (100k chars + 20 cached thumbs) — 11.4ms</text>
+        <text x="28" y="216" fill="rgba(255,255,255,0.55)" font-family="Menlo, monospace" font-size="13">Assets stored in: ~/Library/Application Support/com.tinycast.app.dev/Notes/assets/</text>
+        <text x="28" y="246" fill="#fbbf24" font-family="Menlo, monospace" font-size="13">All 3 suites passed · 0 new compiler warnings</text>
+      </svg>
+    `);
+
+    const ICONS = {
+      plus: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`,
+      search: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>`,
+      pin: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4.5l4.5 4.5-3 3v4l-2 2-3.5-3.5L5.5 20l5.5-5.5L7.5 11l2-2h4l3-4.5z"/></svg>`,
+      pinFilled: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15 3.5l5.5 5.5-3.2 3.2v3.8l-1.8 1.8-4-4-6 6 4.7-7.3-3.7-3.7 1.8-1.8h3.8L15 3.5z"/></svg>`,
+      more: `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></svg>`,
+      sidebar: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg>`,
+      outline: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 6h16M4 12h11M4 18h14"/></svg>`,
+      trash: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>`,
+      copy: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`,
+      folder: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>`,
+      paintbrush: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18.37 2.63 14 7l-1.59-1.59a2 2 0 0 0-2.82 0L8 7l9 9 1.59-1.59a2 2 0 0 0 0-2.82L17 10l4.37-4.37a2.12 2.12 0 1 0-3-3Z"/><path d="M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7"/></svg>`,
+      check: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>`,
+      code: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m8 9-4 3 4 3M16 9l4 3-4 3M13.5 6l-3 12"/></svg>`,
+      listCheck: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3 7 2 2 4-4M3 17l2 2 4-4M13 7h8M13 17h8"/></svg>`,
+      quote: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>`,
+      bold: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h8a4 4 0 0 1 0 8H6zM6 12h9a4 4 0 0 1 0 8H6z"/></svg>`,
+      italic: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg>`,
+      link: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+      listBullet: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>`,
+      image: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="m21 16-5-5L5 20"/></svg>`,
+      divider: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 12h16M7 7h2M15 7h2M7 17h2M15 17h2"/></svg>`,
+      clock: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
+      eye: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`,
+      zoom: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>`
+    };
+
+    const ASSET_REGISTRY = {
+      'assets/20261123-152501-a9f2.png': {
+        src: SVG_WIREFRAME_IMG,
+        dims: '1440×720 · PNG',
+        alt: '双栏窗口线框对比截图'
+      },
+      'assets/20261123-152814-c308.png': {
+        src: SVG_TERMINAL_IMG,
+        dims: '1760×720 · PNG',
+        alt: '本地测试套件运行结果截图'
+      }
+    };
+
+    const INITIAL_NOTES = [
+      {
+        id: 'tinycast-release.md',
+        title: 'Tinycast 2.4 双栏手记设计',
+        pinned: true,
+        updatedLabel: '2分钟前',
+        tags: ['release', 'work'],
+        content: [
+          '# Tinycast 2.4 双栏手记设计',
+          '',
+          '> 保持 TextKit 2 原地渲染与纯 `.md` 本地文件不变量，触发窗口放大至 **960 × 660pt**。',
+          '',
+          '## 核心验收项',
+          '- [x] 左侧 260pt 可折叠侧边栏（`⌘\\` 一键收起至 680 × 660pt）',
+          '- [x] 粘贴 / 拖拽截图自动落盘 `assets/` 并内联渲染卡片',
+          '- [ ] 完成标题栏行内改名、大纲目录 TOC 与窗口置顶开关',
+          '- [ ] 跑通 `notes-test` 与 Release DMG 签名打包',
+          '',
+          '## 原型视觉参考（⌘V 粘贴示例）',
+          '![双栏窗口线框对比截图](assets/20261123-152501-a9f2.png)',
+          '',
+          '## 构建校验命令',
+          '```bash',
+          './Scripts/run-tests.sh --filter notes && ./Scripts/lint.sh',
+          '```',
+          '',
+          '相关标签：#release #work'
+        ].join('\n')
+      },
+      {
+        id: 'daily-2026-11-23.md',
+        title: '每日速记 11-23',
+        pinned: true,
+        updatedLabel: '18分钟前',
+        tags: ['daily'],
+        content: [
+          '# 今日重点 · 11/23',
+          '',
+          '- [ ] 确认粘贴图片后的光标定位与单步 Undo 体验',
+          '- [x] 检查深色 / 浅色外观的 `1px` 分割线与胶囊对比度',
+          '',
+          '## 测试终端截图留档',
+          '![本地测试套件运行结果截图](assets/20261123-152814-c308.png)',
+          '',
+          '> 截图直接存在 `Notes/assets/` 下，和 Obsidian / VS Code 完全兼容。 #daily'
+        ].join('\n')
+      },
+      {
+        id: 'api-auth.md',
+        title: 'API 鉴权方案梳理',
+        pinned: false,
+        updatedLabel: '1小时前',
+        tags: ['work'],
+        content: [
+          '# API 鉴权方案梳理',
+          '',
+          '所有联网请求统一使用私有 `.ephemeral` 会话并关闭 `urlCache`。',
+          '',
+          '```swift',
+          'let config = URLSessionConfiguration.ephemeral',
+          'config.urlCache = nil',
+          'let session = URLSession(configuration: config)',
+          '```',
+          '',
+          '- [ ] 401 并发重试时是否合并刷新请求 #work'
+        ].join('\n')
+      },
+      {
+        id: 'design-review.md',
+        title: '会议纪要：设计评审',
+        pinned: false,
+        updatedLabel: '昨天',
+        tags: ['work', 'ideas'],
+        content: [
+          '# 设计评审纪要',
+          '',
+          '## 共识结论',
+          '1. 标题栏保留 52pt 高度与 Liquid Glass 胶囊',
+          '2. 侧边栏与编辑区之间用 `Theme.Colors.separator` 1pt 竖线分隔',
+          '3. 光标落在图片行时揭示 Markdown 源码，下方卡片保持高度不跳动',
+          '',
+          '> 少即是多的前提是高频动作一步直达。 #work #ideas'
+        ].join('\n')
+      },
+      {
+        id: 'ideas-fragment.md',
+        title: '灵感碎片',
+        pinned: false,
+        updatedLabel: '3天前',
+        tags: ['ideas'],
+        content: [
+          '# 灵感碎片',
+          '',
+          '- [ ] 双击图片打开原生灯箱，支持 `⌘C` 复制原图',
+          '- [ ] 支持将未引用的 `assets/` 孤儿图片安全移至废纸篓 #ideas'
+        ].join('\n')
+      }
+    ];
+
+    const params = new URLSearchParams(window.location.search);
+    const isCapture = params.get('capture') === '1';
+    if (isCapture) document.body.classList.add('is-capture');
+
+    const state = {
+      appearance: params.get('theme') === 'light' ? 'light' : 'dark',
+      sidebarOpen: params.get('sidebar') !== 'closed',
+      outlineOpen: params.get('outline') === 'open',
+      notes: JSON.parse(JSON.stringify(INITIAL_NOTES)),
+      activeNoteId: 'tinycast-release.md',
+      alwaysOnTop: true,
+      rawMode: false,
+      formattingExpanded: true,
+      statsMode: 0,
+      saveStatus: 'saved',
+      renamingHeader: false,
+      renameDraft: '',
+      query: '',
+      filter: 'all',
+      activeTag: null,
+      moreMenuOpen: false,
+      highlightedHeadingIdx: null,
+      lightboxAsset: null,
+      pasteCounter: 1
+    };
+
+    let hudTimer = null;
+    function showHUD(msg) {
+      const hud = document.getElementById('hud');
+      hud.innerHTML = `<span style="width:7px;height:7px;border-radius:50%;background:#4ade80;"></span><span>${escapeHtml(msg)}</span>`;
+      hud.classList.add('show');
+      clearTimeout(hudTimer);
+      hudTimer = setTimeout(() => hud.classList.remove('show'), 2000);
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function getActiveNote() {
+      return state.notes.find(n => n.id === state.activeNoteId) || state.notes[0];
+    }
+
+    function getNoteMetrics(note) {
+      const lines = note.content.split('\n');
+      let tasksTotal = 0, tasksDone = 0, images = 0;
+      for (const l of lines) {
+        if (/^\s*-\s+\[(x|X| )\]\s+/.test(l)) {
+          tasksTotal++;
+          if (/^\s*-\s+\[(x|X)\]\s+/.test(l)) tasksDone++;
+        }
+        if (/^\s*!\[[^\]]*\]\([^)]+\)\s*$/.test(l)) images++;
+      }
+      const chars = note.content.length;
+      const words = note.content.replace(/[#`>*\-\[\]!()]/g, ' ').trim().split(/\s+/).filter(Boolean).length;
+      const mins = Math.max(1, Math.round(chars / 260));
+      return { chars, words, mins, tasksTotal, tasksDone, images };
+    }
+
+    function getPlainPreview(note, query = '') {
+      const lines = note.content.split('\n')
+        .filter(l => !/^\s*!\[/.test(l) && !l.trim().startsWith('```'))
+        .map(l => l.replace(/^#{1,6}\s+/, '').replace(/^>\s?/, '').replace(/^-\s+\[[ xX]\]\s+/, '').replace(/[`*_~]/g, '').trim())
+        .filter(Boolean);
+      if (query) {
+        const hit = lines.find(l => l.toLowerCase().includes(query.toLowerCase()));
+        if (hit) return hit;
+      }
+      return lines[1] || lines[0] || '空白笔记';
+    }
+
+    function getHeadings(note) {
+      const lines = note.content.split('\n');
+      const result = [];
+      let inFence = false;
+      lines.forEach((line, idx) => {
+        if (line.trim().startsWith('```')) { inFence = !inFence; return; }
+        if (inFence) return;
+        const m = line.match(/^(#{1,3})\s+(.+)$/);
+        if (m) result.push({ level: m[1].length, text: m[2].trim(), lineIdx: idx });
+      });
+      return result;
+    }
+
+    function getFilteredNotes() {
+      const q = state.query.trim().toLowerCase();
+      return state.notes.filter(n => {
+        if (state.activeTag) {
+          const t = '#' + state.activeTag.toLowerCase();
+          if (!n.tags.includes(state.activeTag) && !n.content.toLowerCase().includes(t)) return false;
+        } else if (state.filter === 'pinned' && !n.pinned) {
+          return false;
+        } else if (state.filter === 'tasks' && getNoteMetrics(n).tasksTotal === 0) {
+          return false;
+        }
+        if (!q) return true;
+        return n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q);
+      });
+    }
+
+    function triggerSavePulse() {
+      if (state.saveStatus === 'conflict') return;
+      state.saveStatus = 'saving';
+      renderPanel();
+      setTimeout(() => {
+        if (state.saveStatus === 'saving') {
+          state.saveStatus = 'saved';
+          renderPanel();
+        }
+      }, 420);
+    }
+
+    function renderInlineMarkdown(text) {
+      let html = escapeHtml(text);
+      html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+        `<a href="javascript:void(0)" onclick="showHUD('打开链接：$2')" style="color: var(--tc-link); text-decoration: underline;">$1</a>`);
+      html = html.replace(/`([^`]+)`/g,
+        `<code class="font-mono" style="padding: 1px 6px; border-radius: 5px; font-size: 13px; background: var(--tc-control-surface); color: var(--tc-ink-primary);">$1</code>`);
+      html = html.replace(/\*\*([^*]+)\*\*/g, `<strong style="font-weight: 600; color: var(--tc-ink-primary);">$1</strong>`);
+      html = html.replace(/(^|\s)#([a-zA-Z0-9_-]+)/g,
+        `$1<button onclick="filterByTag('$2')" style="border:none; padding: 1px 7px; border-radius: 999px; font-size: 12px; font-weight: 500; cursor: pointer; background: var(--tc-accent-soft); color: var(--tc-link);">#$2</button>`);
+      return html;
+    }
+
+    function renderMarkdownBody(note) {
+      if (state.rawMode) {
+        return `<pre class="font-mono" style="font-size: 13px; line-height: 1.65; white-space: pre-wrap; color: var(--tc-ink-body);">${escapeHtml(note.content)}</pre>`;
+      }
+
+      const lines = note.content.split('\n');
+      let html = '';
+      let i = 0;
+      let orderedNum = 0;
+
+      while (i < lines.length) {
+        const line = lines[i];
+
+        if (line.trim().startsWith('```')) {
+          const lang = line.trim().slice(3).trim() || 'code';
+          const codeLines = [];
+          i++;
+          while (i < lines.length && !lines[i].trim().startsWith('```')) {
+            codeLines.push(lines[i]);
+            i++;
+          }
+          const codeText = codeLines.join('\n');
+          html += `
+            <div class="tc-md-codeblock font-mono">
+              <div class="tc-codeblock-head">
+                <span class="tc-codeblock-lang">${escapeHtml(lang)}</span>
+                <button onclick="copyText(${JSON.stringify(codeText).replace(/"/g, '&quot;')}, '已复制代码块内容')" class="tc-mini-copy">
+                  ${ICONS.copy}<span>复制</span>
+                </button>
+              </div>
+              <pre style="overflow-x: auto; white-space: pre-wrap; color: var(--tc-ink-primary);">${escapeHtml(codeText)}</pre>
+            </div>
+          `;
+          i++;
+          continue;
+        }
+
+        // Standalone Markdown Image ![alt](path)
+        const imgMatch = line.trim().match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+        if (imgMatch) {
+          const alt = imgMatch[1] || 'Pasted Image';
+          const path = imgMatch[2];
+          const asset = ASSET_REGISTRY[path];
+          if (asset) {
+            html += `
+              <div class="tc-image-card">
+                <div class="tc-image-stage" onclick="openLightbox('${escapeHtml(path)}')">
+                  <img src="${asset.src}" alt="${escapeHtml(alt)}" />
+                </div>
+                <div class="tc-image-actions tc-glass-popover">
+                  <button class="tc-image-action-btn" onclick="openLightbox('${escapeHtml(path)}')">${ICONS.zoom}<span>原图</span></button>
+                  <button class="tc-image-action-btn" onclick="showHUD('已复制图片到剪贴板')">${ICONS.copy}<span>复制</span></button>
+                  <button class="tc-image-action-btn" style="color: var(--tc-danger);" onclick="removeImageLine('${note.id}', ${i})">${ICONS.trash}</button>
+                </div>
+                <div class="tc-image-caption">
+                  <span class="font-mono">${escapeHtml(path)}</span>
+                  <span>${escapeHtml(asset.dims)}</span>
+                </div>
+              </div>
+            `;
+          } else {
+            html += `<div class="tc-md-p font-mono" style="font-size:12px; color:var(--tc-warning);">[缺失图片: ${escapeHtml(path)}]</div>`;
+          }
+          i++;
+          continue;
+        }
+
+        if (!line.trim()) {
+          orderedNum = 0;
+          html += `<div style="height: 8px;"></div>`;
+          i++;
+          continue;
+        }
+
+        if (/^---+$/.test(line.trim())) {
+          html += `<div style="height: 1px; background: var(--tc-separator); margin: 14px 0;"></div>`;
+          i++;
+          continue;
+        }
+
+        const hMatch = line.match(/^(#{1,3})\s+(.+)$/);
+        if (hMatch) {
+          const lvl = hMatch[1].length;
+          const cls = lvl === 1 ? 'tc-md-h1' : lvl === 2 ? 'tc-md-h2' : 'tc-md-h3';
+          const hl = state.highlightedHeadingIdx === i
+            ? 'background: var(--tc-accent-soft); border-radius: 6px; padding: 2px 6px; margin-left: -6px;'
+            : '';
+          html += `<div id="heading-line-${i}" class="${cls}" style="${hl}">${renderInlineMarkdown(hMatch[2])}</div>`;
+          i++;
+          continue;
+        }
+
+        if (line.startsWith('>')) {
+          html += `<div class="tc-md-quote">${renderInlineMarkdown(line.replace(/^>\s?/, ''))}</div>`;
+          i++;
+          continue;
+        }
+
+        const taskMatch = line.match(/^\s*-\s+\[( |x|X)\]\s+(.+)$/);
+        if (taskMatch) {
+          const checked = taskMatch[1].toLowerCase() === 'x';
+          html += `
+            <div class="tc-md-task">
+              <button onclick="toggleTaskLine('${note.id}', ${i})" class="tc-checkbox"
+                style="border: 1.5px solid ${checked ? 'var(--tc-ink-secondary)' : 'var(--tc-border)'}; background: ${checked ? 'var(--tc-ink-secondary)' : 'transparent'}; color: var(--tc-check-ink);">
+                ${checked ? ICONS.check : ''}
+              </button>
+              <span style="font-size: 14.5px; line-height: 1.58; ${checked ? 'text-decoration: line-through; color: var(--tc-ink-secondary);' : 'color: var(--tc-ink-body);'}">${renderInlineMarkdown(taskMatch[2])}</span>
+            </div>
+          `;
+          i++;
+          continue;
+        }
+
+        const ordMatch = line.match(/^\s*\d+\.\s+(.+)$/);
+        if (ordMatch) {
+          orderedNum++;
+          html += `
+            <div style="display:flex; align-items:flex-start; gap:8px; margin:4px 0;">
+              <span style="width:18px; text-align:right; font-size:13.5px; color:var(--tc-ink-secondary); font-variant-numeric:tabular-nums;">${orderedNum}.</span>
+              <span style="font-size:14.5px; line-height:1.6; color:var(--tc-ink-body);">${renderInlineMarkdown(ordMatch[1])}</span>
+            </div>
+          `;
+          i++;
+          continue;
+        }
+
+        const bulMatch = line.match(/^\s*[-*]\s+(.+)$/);
+        if (bulMatch) {
+          html += `
+            <div style="display:flex; align-items:flex-start; gap:10px; margin:4px 0;">
+              <span style="width:6px; height:6px; border-radius:50%; margin-top:9px; margin-left:4px; background:var(--tc-ink-secondary); flex-shrink:0;"></span>
+              <span style="font-size:14.5px; line-height:1.6; color:var(--tc-ink-body);">${renderInlineMarkdown(bulMatch[1])}</span>
+            </div>
+          `;
+          i++;
+          continue;
+        }
+
+        html += `<p class="tc-md-p">${renderInlineMarkdown(line)}</p>`;
+        i++;
+      }
+
+      return html;
+    }
+
+    function renderPanel() {
+      const panel = document.getElementById('notes-panel');
+      panel.className = `tc-panel ${state.sidebarOpen ? '' : 'is-collapsed'}`;
+      const note = getActiveNote();
+      const metrics = getNoteMetrics(note);
+      const headings = getHeadings(note);
+      const list = getFilteredNotes();
+
+      let statsText = `${metrics.chars} 字符`;
+      if (state.statsMode === 1) statsText = `${metrics.words} 词 · 约 ${metrics.mins} 分钟`;
+      if (state.statsMode === 2) statsText = `${metrics.tasksDone}/${metrics.tasksTotal} 待办 · ${metrics.images} 张图片`;
+
+      let saveDot = 'var(--tc-success)', saveLabel = '已保存', pulse = '';
+      if (state.saveStatus === 'saving') { saveDot = 'var(--tc-warning)'; saveLabel = '保存中…'; pulse = 'tc-saving-dot'; }
+      if (state.saveStatus === 'conflict') { saveDot = 'var(--tc-danger)'; saveLabel = '外部有修改'; }
+
+      const fmtControls = [
+        { icon: ICONS.bold, title: '加粗 ⌘B', snippet: '**重点内容**' },
+        { icon: ICONS.italic, title: '斜体 ⌘I', snippet: '_斜体文本_' },
+        { icon: ICONS.code, title: '行内代码 ⌘E', snippet: '`inlineCode()`' },
+        { icon: ICONS.link, title: '链接 ⌘K', snippet: '[参考链接](https://tinycast.app)' },
+        { sep: true },
+        { icon: ICONS.quote, title: '引用 ⇧⌘B', snippet: '> 新增引用说明' },
+        { icon: ICONS.listBullet, title: '无序列表 ⇧⌘8', snippet: '- 新增列表项' },
+        { icon: ICONS.listCheck, title: '待办事项 ⇧⌘9', snippet: '- [ ] 新待办事项' },
+        { sep: true },
+        { icon: ICONS.image, title: '粘贴 / 插入图片 ⌘V', action: 'simulatePasteImage()' },
+        { icon: ICONS.divider, title: '分割线 ---', snippet: '\n---' },
+        { icon: ICONS.clock, title: '插入时间戳', snippet: '\n> 记录时间：2026-11-23 15:25' }
+      ];
+
+      panel.innerHTML = `
+        ${state.sidebarOpen ? `
+          <aside class="tc-sidebar">
+            <div class="tc-sidebar-head">
+              <div class="tc-sidebar-top">
+                <div class="tc-traffic-lights">
+                  <button class="tc-tl-close" title="隐藏 (⌘W)" onclick="showHUD('⌘W 隐藏便笺面板并恢复焦点')"></button>
+                  <span class="tc-tl-dim"></span>
+                  <span class="tc-tl-dim"></span>
+                </div>
+                <button class="tc-bar-btn tc-icon-btn" title="新建笔记 ⌘N" onclick="createNewNote()">${ICONS.plus}</button>
+              </div>
+
+              <div class="tc-search-box">
+                <span style="color: var(--tc-ink-tertiary); display:inline-flex;">${ICONS.search}</span>
+                <input id="sidebar-search" type="text" value="${escapeHtml(state.query)}" oninput="onSearchInput(this.value)" placeholder="搜索笔记…" />
+              </div>
+
+              <div class="tc-filter-row">
+                ${[
+                  { k: 'all', label: '全部' },
+                  { k: 'pinned', label: '置顶' },
+                  { k: 'tasks', label: '待办' }
+                ].map(f => `
+                  <button onclick="setFilter('${f.k}')" class="tc-pill-filter ${!state.activeTag && state.filter === f.k ? 'active' : ''}">${f.label}</button>
+                `).join('')}
+                ${['release', 'work', 'ideas'].map(tag => `
+                  <button onclick="filterByTag('${tag}')" class="tc-tag-chip ${state.activeTag === tag ? 'active' : ''}">#${tag}</button>
+                `).join('')}
+              </div>
+            </div>
+
+            <div class="tc-note-list tc-scroll">
+              ${list.length === 0 ? `
+                <div style="padding: 36px 12px; text-align: center; font-size: 12px; color: var(--tc-ink-tertiary);">无符合条件笔记</div>
+              ` : list.map(n => {
+                const active = n.id === state.activeNoteId;
+                const m = getNoteMetrics(n);
+                return `
+                  <div class="tc-note-card ${active ? 'active' : ''}" onclick="selectNote('${n.id}')">
+                    <div class="tc-note-card-top">
+                      <div class="tc-note-card-title-wrap">
+                        ${n.pinned ? `<span style="color: var(--tc-link); display:inline-flex;">${ICONS.pinFilled}</span>` : ''}
+                        <span class="tc-note-card-title">${escapeHtml(n.title)}</span>
+                      </div>
+                      <button class="tc-note-card-pin" title="置顶/取消置顶" onclick="togglePin('${n.id}', event)" style="color: ${n.pinned ? 'var(--tc-link)' : 'var(--tc-ink-tertiary)'}">${ICONS.pin}</button>
+                    </div>
+                    <div class="tc-note-card-preview">${escapeHtml(getPlainPreview(n, state.query))}</div>
+                    <div class="tc-note-card-meta">
+                      <span>${n.updatedLabel}</span>
+                      <div class="tc-meta-badges">
+                        ${m.images > 0 ? `<span>${m.images} 图</span>` : ''}
+                        ${m.tasksTotal > 0 ? `<span>${m.tasksDone}/${m.tasksTotal} 待办</span>` : ''}
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
+            <div class="tc-sidebar-foot">
+              <span>共 ${state.notes.length} 篇本地 .md</span>
+              <button onclick="showHUD('已在 Finder 中打开 Notes 文件夹')" style="border:none; background:transparent; color:inherit; font-size:inherit; cursor:pointer;">打开文件夹</button>
+            </div>
+          </aside>
+        ` : ''}
+
+        <section class="tc-editor-pane">
+          <div class="tc-titlebar">
+            <div class="tc-titlebar-left">
+              ${!state.sidebarOpen ? `
+                <div class="tc-traffic-lights" style="margin-right: 4px;">
+                  <button class="tc-tl-close" title="隐藏 (⌘W)" onclick="showHUD('⌘W 隐藏便笺面板并恢复焦点')"></button>
+                  <span class="tc-tl-dim"></span>
+                  <span class="tc-tl-dim"></span>
+                </div>
+              ` : ''}
+              <button class="tc-bar-btn tc-icon-btn ${state.sidebarOpen ? 'is-selected' : ''}" title="展开/收起侧边栏 ⌘\\" onclick="toggleSidebar()">${ICONS.sidebar}</button>
+              ${state.renamingHeader ? `
+                <input id="header-rename-input" class="tc-title-input" value="${escapeHtml(state.renameDraft)}"
+                  onkeydown="handleRenameKey(event)" onblur="commitRename()" />
+              ` : `
+                <button class="tc-title-btn" title="点击行内重命名" onclick="beginRename()">${escapeHtml(note.title)}</button>
+              `}
+              <button class="tc-save-pill" onclick="cycleSaveStatus()" title="点击演示保存状态">
+                <span class="${pulse}" style="width:6px; height:6px; border-radius:50%; background:${saveDot};"></span>
+                <span>${saveLabel}</span>
+              </button>
+            </div>
+
+            <div class="tc-capsule-group tc-glass">
+              <button class="tc-bar-btn tc-icon-btn ${state.outlineOpen ? 'is-selected' : ''}" title="文档大纲 TOC ⌥⌘O" onclick="toggleOutline()">${ICONS.outline}</button>
+              <button class="tc-bar-btn tc-icon-btn ${state.alwaysOnTop ? 'is-selected' : ''}" title="${state.alwaysOnTop ? '窗口置顶中（点击取消）' : '窗口未置顶'}" onclick="toggleAlwaysOnTop()">${state.alwaysOnTop ? ICONS.pinFilled : ICONS.pin}</button>
+              <button class="tc-bar-btn tc-icon-btn ${state.moreMenuOpen ? 'is-selected' : ''}" title="更多操作" onclick="toggleMoreMenu()">${ICONS.more}</button>
+            </div>
+
+            ${state.outlineOpen ? `
+              <div class="tc-popover-outline tc-glass-popover">
+                <div style="padding: 4px 10px; font-size: 10.5px; font-weight: 600; color: var(--tc-ink-tertiary);">本文目录大纲 (${headings.length})</div>
+                ${headings.length === 0 ? `
+                  <div style="padding: 12px 10px; font-size: 12px; color: var(--tc-ink-tertiary);">当前笔记暂无标题层级</div>
+                ` : headings.map(h => `
+                  <button class="tc-pop-row" style="padding-left: ${10 + (h.level - 1) * 12}px; justify-content: flex-start; gap: 6px;" onclick="jumpToHeading(${h.lineIdx})">
+                    <span class="font-mono" style="font-size: 10px; color: var(--tc-ink-tertiary);">H${h.level}</span>
+                    <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(h.text)}</span>
+                  </button>
+                `).join('')}
+              </div>
+            ` : ''}
+
+            ${state.moreMenuOpen ? `
+              <div class="tc-popover-more tc-glass-popover">
+                <button class="tc-pop-row" onclick="copyText(${JSON.stringify(note.content).replace(/"/g, '&quot;')}, '已复制完整 Markdown 源码'); state.moreMenuOpen=false; renderPanel();">
+                  <span>复制为 Markdown</span><span class="font-mono" style="font-size:10.5px; color:var(--tc-ink-tertiary);">⇧⌘C</span>
+                </button>
+                <button class="tc-pop-row" onclick="simulatePasteImage(); state.moreMenuOpen=false; renderPanel();">
+                  <span>插入图片 / 粘贴截图</span><span class="font-mono" style="font-size:10.5px; color:var(--tc-ink-tertiary);">⌘V</span>
+                </button>
+                <button class="tc-pop-row" onclick="showHUD('已在 Finder 中定位 ${escapeHtml(note.id)}'); state.moreMenuOpen=false; renderPanel();">
+                  <span>在 Finder 中显示</span><span class="font-mono" style="font-size:10.5px; color:var(--tc-ink-tertiary);">⌘O</span>
+                </button>
+                <div style="height:1px; background:var(--tc-separator); margin:4px 0;"></div>
+                <button class="tc-pop-row" style="color: var(--tc-danger);" onclick="deleteActiveNote()">
+                  <span>移到废纸篓</span><span class="font-mono" style="font-size:10.5px;">⌘⌫</span>
+                </button>
+              </div>
+            ` : ''}
+          </div>
+
+          <div id="editor-scroll" class="tc-editor-scroll tc-scroll">
+            ${renderMarkdownBody(note)}
+          </div>
+
+          <div class="tc-bottom-band">
+            <button class="tc-stats-btn" onclick="cycleStatsMode()" title="点击切换字符数 / 词数 / 待办与图片">${statsText}</button>
+
+            <div class="tc-formatting-bar tc-glass">
+              ${state.formattingExpanded ? `
+                <button class="tc-bar-btn ${state.rawMode ? 'is-selected' : ''}" style="height:28px; padding:0 8px; border-radius:999px; font-size:11px; gap:4px;" onclick="toggleRawMode()" title="切换纯源码 / Markdown 渲染">
+                  ${ICONS.eye}<span class="font-mono">${state.rawMode ? 'Raw' : '渲染'}</span>
+                </button>
+                ${fmtControls.map(c => c.sep
+                  ? `<span class="tc-fmt-sep"></span>`
+                  : `<button class="tc-bar-btn tc-icon-btn" title="${c.title}" onclick="${c.action ? c.action : `insertSnippet(${JSON.stringify(c.snippet).replace(/"/g, '&quot;')}, '${c.title}')`}">${c.icon}</button>`
+                ).join('')}
+              ` : ''}
+              <button class="tc-bar-btn tc-icon-btn ${state.formattingExpanded ? 'is-selected' : ''}" title="展开/收起格式栏 ⌥⌘T" onclick="toggleFormattingBar()">${ICONS.paintbrush}</button>
+            </div>
+          </div>
+        </section>
+      `;
+
+      // Update outer controls if visible
+      const dimChip = document.getElementById('dim-chip');
+      if (dimChip) {
+        dimChip.textContent = state.sidebarOpen ? '双栏 960 × 660pt（侧边栏 260pt）' : '单窗收起 680 × 660pt';
+      }
+      const sbBtn = document.getElementById('btn-toggle-sidebar');
+      if (sbBtn) sbBtn.textContent = state.sidebarOpen ? '收起侧边栏 (680×660)' : '展开侧边栏 (960×660)';
+      const thBtn = document.getElementById('btn-toggle-theme');
+      if (thBtn) thBtn.textContent = state.appearance === 'dark' ? '外观：深色 Dark' : '外观：浅色 Light';
+    }
+
+    function renderLightbox() {
+      const root = document.getElementById('lightbox-root');
+      if (!state.lightboxAsset) { root.innerHTML = ''; return; }
+      const asset = ASSET_REGISTRY[state.lightboxAsset];
+      if (!asset) { root.innerHTML = ''; return; }
+      root.innerHTML = `
+        <div class="tc-lightbox" onclick="closeLightbox()">
+          <div class="tc-lightbox-card" onclick="event.stopPropagation()">
+            <div style="padding:12px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.12); color:#fff;">
+              <div>
+                <div style="font-size:13px; font-weight:600;">${escapeHtml(asset.alt)}</div>
+                <div class="font-mono" style="font-size:11px; color:rgba(255,255,255,0.55);">${escapeHtml(state.lightboxAsset)} · ${escapeHtml(asset.dims)}</div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button class="ui-btn" onclick="showHUD('已复制原图到剪贴板')">复制图片</button>
+                <button class="ui-btn" onclick="closeLightbox()">关闭 Esc</button>
+              </div>
+            </div>
+            <div style="padding:16px; display:flex; justify-content:center; background:#0d0f14;">
+              <img src="${asset.src}" style="max-width:100%; max-height:70vh; border-radius:10px;" />
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ---------- Interactions ----------
+    function toggleTheme() {
+      state.appearance = state.appearance === 'dark' ? 'light' : 'dark';
+      const stage = document.getElementById('desktop-stage');
+      stage.className = `desktop-stage ${state.appearance === 'dark' ? 'tc-stage-dark' : 'tc-stage-light'}`;
+      renderPanel();
+    }
+
+    function toggleSidebar() {
+      state.sidebarOpen = !state.sidebarOpen;
+      renderPanel();
+    }
+
+    function toggleOutline() {
+      state.outlineOpen = !state.outlineOpen;
+      state.moreMenuOpen = false;
+      renderPanel();
+    }
+
+    function toggleMoreMenu() {
+      state.moreMenuOpen = !state.moreMenuOpen;
+      state.outlineOpen = false;
+      renderPanel();
+    }
+
+    function toggleAlwaysOnTop() {
+      state.alwaysOnTop = !state.alwaysOnTop;
+      showHUD(state.alwaysOnTop ? '已设为浮在所有窗口之上' : '已取消永久置顶');
+      renderPanel();
+    }
+
+    function toggleRawMode() {
+      state.rawMode = !state.rawMode;
+      showHUD(state.rawMode ? '切换至纯 Markdown 源码' : '切换至 TextKit 2 渲染视图');
+      renderPanel();
+    }
+
+    function toggleFormattingBar() {
+      state.formattingExpanded = !state.formattingExpanded;
+      renderPanel();
+    }
+
+    function cycleStatsMode() {
+      state.statsMode = (state.statsMode + 1) % 3;
+      renderPanel();
+    }
+
+    function cycleSaveStatus() {
+      const order = ['saved', 'saving', 'conflict'];
+      state.saveStatus = order[(order.indexOf(state.saveStatus) + 1) % order.length];
+      renderPanel();
+    }
+
+    function onSearchInput(val) {
+      state.query = val;
+      renderPanel();
+      const input = document.getElementById('sidebar-search');
+      if (input) { input.focus(); input.setSelectionRange(val.length, val.length); }
+    }
+
+    function setFilter(f) {
+      state.activeTag = null;
+      state.filter = f;
+      renderPanel();
+    }
+
+    function filterByTag(tag) {
+      state.activeTag = state.activeTag === tag ? null : tag;
+      if (!state.sidebarOpen) state.sidebarOpen = true;
+      showHUD(state.activeTag ? `侧边栏已按 #${tag} 过滤` : '已清除标签过滤');
+      renderPanel();
+    }
+
+    function selectNote(id) {
+      state.activeNoteId = id;
+      state.outlineOpen = false;
+      state.moreMenuOpen = false;
+      state.highlightedHeadingIdx = null;
+      state.renamingHeader = false;
+      renderPanel();
+    }
+
+    function togglePin(id, e) {
+      e.stopPropagation();
+      const n = state.notes.find(x => x.id === id);
+      if (!n) return;
+      n.pinned = !n.pinned;
+      showHUD(n.pinned ? `已置顶「${n.title}」` : `已取消置顶「${n.title}」`);
+      renderPanel();
+    }
+
+    function createNewNote() {
+      const idx = state.notes.length + 1;
+      const n = {
+        id: `untitled-${idx}.md`,
+        title: `随手记 ${idx}`,
+        pinned: false,
+        updatedLabel: '刚刚',
+        tags: ['daily'],
+        content: `# 随手记 ${idx}\n\n- [ ] 记录第一条待办\n\n直接按 **⌘V** 可粘贴剪贴板截图，自动存为 \`assets/\` 相对路径。 #daily`
+      };
+      state.notes.unshift(n);
+      state.activeNoteId = n.id;
+      triggerSavePulse();
+      showHUD(`已新建「${n.title}」`);
+      renderPanel();
+    }
+
+    function deleteActiveNote() {
+      state.moreMenuOpen = false;
+      if (state.notes.length <= 1) { showHUD('保留最后 1 篇演示笔记'); return; }
+      const target = getActiveNote();
+      state.notes = state.notes.filter(n => n.id !== target.id);
+      state.activeNoteId = state.notes[0].id;
+      showHUD(`已移到废纸篓：${target.title}`);
+      renderPanel();
+    }
+
+    function beginRename() {
+      state.renamingHeader = true;
+      state.renameDraft = getActiveNote().title;
+      renderPanel();
+      setTimeout(() => {
+        const el = document.getElementById('header-rename-input');
+        if (el) { el.focus(); el.select(); }
+      }, 20);
+    }
+
+    function commitRename() {
+      if (!state.renamingHeader) return;
+      const v = state.renameDraft.trim();
+      const n = getActiveNote();
+      if (v && v !== n.title) {
+        n.title = v;
+        triggerSavePulse();
+        showHUD(`已重命名为「${v}」`);
+      }
+      state.renamingHeader = false;
+      renderPanel();
+    }
+
+    function handleRenameKey(e) {
+      state.renameDraft = e.target.value;
+      if (e.key === 'Enter') commitRename();
+      if (e.key === 'Escape') { state.renamingHeader = false; renderPanel(); }
+    }
+
+    function toggleTaskLine(noteId, lineIdx) {
+      const n = state.notes.find(x => x.id === noteId);
+      if (!n) return;
+      const lines = n.content.split('\n');
+      if (/^\s*-\s+\[ \]\s+/.test(lines[lineIdx])) {
+        lines[lineIdx] = lines[lineIdx].replace('- [ ] ', '- [x] ');
+      } else {
+        lines[lineIdx] = lines[lineIdx].replace(/- \[[xX]\] /, '- [ ] ');
+      }
+      n.content = lines.join('\n');
+      n.updatedLabel = '刚刚';
+      triggerSavePulse();
+      renderPanel();
+    }
+
+    function removeImageLine(noteId, lineIdx) {
+      const n = state.notes.find(x => x.id === noteId);
+      if (!n) return;
+      const lines = n.content.split('\n');
+      lines.splice(lineIdx, 1);
+      n.content = lines.join('\n');
+      triggerSavePulse();
+      showHUD('已移除图片引用（本地 assets 原文件保留）');
+      renderPanel();
+    }
+
+    function insertSnippet(snippet, label) {
+      const n = getActiveNote();
+      n.content = n.content.trimEnd() + '\n' + snippet;
+      n.updatedLabel = '刚刚';
+      triggerSavePulse();
+      showHUD(`已插入「${label}」`);
+      renderPanel();
+    }
+
+    function jumpToHeading(lineIdx) {
+      state.outlineOpen = false;
+      state.highlightedHeadingIdx = lineIdx;
+      renderPanel();
+      setTimeout(() => {
+        const el = document.getElementById(`heading-line-${lineIdx}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 20);
+    }
+
+    function copyText(text, msg) {
+      navigator.clipboard?.writeText(text).catch(() => {});
+      showHUD(msg);
+    }
+
+    function openLightbox(path) {
+      state.lightboxAsset = path;
+      renderLightbox();
+    }
+
+    function closeLightbox() {
+      state.lightboxAsset = null;
+      renderLightbox();
+    }
+
+    function insertImageAsset(path, dataUrl, dims, altText) {
+      ASSET_REGISTRY[path] = { src: dataUrl, dims, alt: altText };
+      const n = getActiveNote();
+      n.content = n.content.trimEnd() + `\n\n![${altText}](${path})`;
+      n.updatedLabel = '刚刚';
+      triggerSavePulse();
+      renderPanel();
+      setTimeout(() => {
+        const scroller = document.getElementById('editor-scroll');
+        if (scroller) scroller.scrollTop = scroller.scrollHeight;
+      }, 30);
+    }
+
+    function simulatePasteImage() {
+      const id = state.pasteCounter++;
+      const path = `assets/20261123-15300${id}-f8a${id}.png`;
+      insertImageAsset(path, SVG_TERMINAL_IMG, '1760×720 · PNG', `剪贴板粘贴截图 #${id}`);
+      showHUD(`已保存并插入 ${path}`);
+    }
+
+    // Real clipboard paste listener (handles genuine Cmd+V screenshot paste in browser!)
+    window.addEventListener('paste', (e) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of items) {
+        if (item.type.startsWith('image/')) {
+          e.preventDefault();
+          const file = item.getAsFile();
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const url = ev.target.result;
+            const img = new Image();
+            img.onload = () => {
+              const id = state.pasteCounter++;
+              const ext = file.type === 'image/jpeg' ? 'jpg' : 'png';
+              const path = `assets/20261123-clip-${id}.${ext}`;
+              insertImageAsset(path, url, `${img.width}×${img.height} · ${ext.toUpperCase()}`, `剪贴板图片 #${id}`);
+              showHUD(`真实 ⌘V 粘贴成功：${path}`);
+            };
+            img.src = url;
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+      }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === '\\') {
+        e.preventDefault();
+        toggleSidebar();
+      }
+      if (e.key === 'Escape' && state.lightboxAsset) {
+        closeLightbox();
+      }
+    });
+
+    // Apply initial theme from query params
+    document.getElementById('desktop-stage').className =
+      `desktop-stage ${state.appearance === 'dark' ? 'tc-stage-dark' : 'tc-stage-light'}`;
+    renderPanel();
+  </script>
+</body>
+</html>
